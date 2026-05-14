@@ -1,4 +1,5 @@
 name: CI
+# PR テスト用（コメントのみ変更して CI 動作を確認する場合あり）
 
 on:
   pull_request:
