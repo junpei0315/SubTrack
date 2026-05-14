@@ -1,0 +1,17 @@
+---
+description: Expo / TypeScript の命名とスタイル（EXPO_TYPESCRIPT_CONVENTIONS と整合）
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Expo（本リポジトリ）のコード規約
+
+詳細は **`docs/EXPO_TYPESCRIPT_CONVENTIONS.md`**。実装時は次を優先する。
+
+- **コンポーネント**: `PascalCase`（例: `SubscriptionCard.tsx`）。
+- **`app/` ルート**: 原則 **kebab-case**（例: `subscription-detail.tsx`）。既存レイアウトに合わせる。
+- **変数・関数**: `camelCase`。真偽系は `is` / `has` / `can` など。
+- **フック**: `use` 接頭辞（例: `useSubscriptions`）。
+- **定数**: ファイル内で `SCREAMING_SNAKE` と `camelCase` のどちらかに統一。
+- 重複は関数・コンポーネントに切り出す。複雑な条件は名前付き変数で意図を明示。
+- 識別子に日本語・絵文字は使わない（`docs/Rule.md` の禁止事項と同一）。

@@ -1,0 +1,50 @@
+---
+description: SubTrack のチーム運用・Git/PR・セキュリティ（docs/Rule.md と整合）
+alwaysApply: true
+---
+
+# SubTrack プロジェクトコンテキスト
+
+- **プロダクト**: サブスクリプション契約・支出の管理アプリ（**SubTrack**）。UI・ドメイン用語はこの文脈に揃える。
+
+## 正とするドキュメント（変更時はここを更新／ルールと矛盾させない）
+
+| 内容 | パス |
+|------|------|
+| チーム開発ルール（Git・コミット・PR・禁止事項など） | `docs/Rule.md` |
+| Expo / TS の命名・スタイル | `docs/EXPO_TYPESCRIPT_CONVENTIONS.md` |
+| PR 本文のひな形 | `.github/pull_request_template.md`（GitHub が自動挿入）／補助 `docs/PR_TEMPLATE.md` |
+
+## Git・ブランチ（Git Flow）
+
+- `main`: 本番。原則直接コミットしない。`develop` からマージ。
+- `develop`: 開発の統合先。feature はここへ PR。
+- `feature/PascalCase` 例: `feature/SubscriptionList`。**自己マージしない**。
+- `hotfix/…`: `main` から分岐 → `main` マージ後、**同じ変更を `develop` にも**取り込む。
+
+## コミットメッセージ
+
+- 形式: `type: 日本語一文`（`add` / `fix` / `refactor` / `test` / `chore` / `perf`）。1 目的 1 コミット。
+- 詳細・例は `docs/Rule.md`。
+
+## プルリクエスト
+
+- タイトル: `prefix: 日本語`。本文は **`.github/pull_request_template.md` の見出し**に沿う。
+- ドラフト PR 可。レビュー後にマージ（自己マージ禁止）。Issue がある場合は本文に紐づけ（例: `Closes #123`）。
+
+## 品質（CI / ローカル）
+
+- CI: `.github/workflows/ci.yml` — `npm run lint` と `npm run typecheck`。変更したら pre-push（`.githooks/pre-push`）と手順を揃える。
+- 初回のみ: `scripts/setup-hooks` で `core.hooksPath=.githooks`。緊急時のみ `git push --no-verify`。
+
+## 秘密情報・ロックファイル
+
+- 機密をコミットしない。必要な環境変数名のみ `.env.example` 等に記載。ログ・スクショにトークンを載せない。
+- `package-lock.json` をコミットし、依存変更は PR で説明。
+
+## 禁止（コード・コミット・PR 共通）
+
+- 識別子に**日本語・絵文字**、ファイル名に**規定の特殊文字**を使わない（詳細は `docs/Rule.md`）。
+- **AI ツール表記**（`Made with Cursor`、`Co-Authored-By` 等）を含めない。
+
+詳細・例外の判断は必ず **`docs/Rule.md`** を参照する。
