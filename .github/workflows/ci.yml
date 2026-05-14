@@ -1,4 +1,5 @@
 name: CI
+# PR テスト用（develop から切ったブランチでの CI 動作確認）
 
 on:
   pull_request:
