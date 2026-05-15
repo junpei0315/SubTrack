@@ -62,6 +62,8 @@
 
 ### マイグレーション（概要）
 
+**詳細手順**: [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md)
+
 **Supabase の Table Editor 等でテーブルを作らない。** スキーマは **`supabase/migrations/`** の SQL のみで管理する（原則・例外は [`docs/Rule.md`](docs/Rule.md)「データベーススキーマ」）。
 
 スキーマの一次情報は [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md)。SQL の正は `supabase/migrations/` に置く。
@@ -106,6 +108,8 @@ npm run typecheck
 | 技術・ローカル方針の詳細 | [`docs/TRD.md`](docs/TRD.md) |
 | 機能 F-01〜F-14 | [`docs/FEATURE_REQUIREMENTS.md`](docs/FEATURE_REQUIREMENTS.md) |
 | DB / API 設計 | [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md) / [`docs/API_DESIGN.md`](docs/API_DESIGN.md) |
+| **DB マイグレーション手順** | [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) |
+| **アプリのディレクトリ・採用方針** | [`docs/ARCHITECTURE_GUIDE.md`](docs/ARCHITECTURE_GUIDE.md) |
 | Expo / TypeScript スタイル | [`docs/EXPO_TYPESCRIPT_CONVENTIONS.md`](docs/EXPO_TYPESCRIPT_CONVENTIONS.md) |
 
 ## Expo の参考

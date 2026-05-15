@@ -16,7 +16,8 @@ alwaysApply: true
 | **技術要件（どう作るか・スタック・全体参照）** | `docs/TRD.md` |
 | **API 設計**（PostgREST / **Edge Functions**） | `docs/API_DESIGN.md` |
 | **DB 設計**（プレースホルダ可） | `docs/DATABASE_DESIGN.md` |
-| **Expo アプリ構成**（クリーンアーキテクチャ） | `docs/TRD.md` §1「フロントエンド（Expo）— クリーンアーキテクチャ」 |
+| **DB マイグレーション手順** | `docs/MIGRATIONS.md` |
+| **Expo・ディレクトリ**（クリーン + **採用ツリー・components/hooks**） | `docs/TRD.md` §1／`docs/ARCHITECTURE_GUIDE.md` |
 | チーム開発ルール（Git・コミット・PR・禁止事項など） | `docs/Rule.md` |
 | Expo / TS の命名・スタイル | `docs/EXPO_TYPESCRIPT_CONVENTIONS.md` |
 | PR 本文のひな形 | `.github/pull_request_template.md`（GitHub が自動挿入）／補助 `docs/PR_TEMPLATE.md` |
@@ -55,13 +56,13 @@ alwaysApply: true
 
 ## フロントエンド（クリーンアーキテクチャ）
 
-本プロジェクトの **Expo アプリはクリーンアーキテクチャを採用する**。実装・リファクタ・新規ファイル配置は **`docs/TRD.md` §1「フロントエンド（Expo）— クリーンアーキテクチャ」** に沿う。
+本プロジェクトの **Expo アプリはクリーンアーキテクチャを採用する**。実装・リファクタ・新規ファイル配置は **`docs/TRD.md` §1「フロントエンド（Expo）— クリーンアーキテクチャ」** に沿う。**リポジトリ全体のディレクトリ、`components` / `hooks`、UI と `useXxx` の分け方**は **`docs/ARCHITECTURE_GUIDE.md`（採用方針・確定）** に従う。
 
 - **domain**: サブスク・利用実績などの**ルールと純粋関数**（React・`@supabase/supabase-js` に依存しない）。金額換算・`paused` の扱い・検証ロジックをここに寄せる。
 - **application**: **ユースケース**（1 操作の流れ）。`ports` のみ呼ぶ。
 - **ports**: リポジトリ等の**インターフェース**（抽象）。
 - **infrastructure**: **Supabase / `fetch`(Edge) / ストレージ**の具象実装とマッピング。`createClient` の import は主にこの層。
-- **presentation**: **`app/` の画面・フック**。**ドメインルールのべた書きを避け**、ユースケースまたは domain 関数を呼ぶ。
+- **presentation**: **`app/` の画面・フック**。**ドメインルールのべた書きを避け**、ユースケースまたは domain 関数を呼ぶ。`src/` 配下に **domain / application / ports / infrastructure** の雛形あり（`src/README.md`）。
 - **段階的導入**: 極めて薄い画面は簡略化してよい。**ロジックが増える箇所から**層を導入する。既存コードは触る範囲で徐々に寄せる。
 
 ## 禁止（コード・コミット・PR 共通）

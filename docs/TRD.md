@@ -14,6 +14,7 @@
 | 機能要件 F-01〜F-14（リポジトリ） | [`docs/FEATURE_REQUIREMENTS.md`](./FEATURE_REQUIREMENTS.md) |
 | API 設計（リポジトリ） | [`docs/API_DESIGN.md`](./API_DESIGN.md) |
 | DB 設計（リポジトリ） | [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md) |
+| **アプリ構成ガイド**（ディレクトリ・具体例） | [`docs/ARCHITECTURE_GUIDE.md`](./ARCHITECTURE_GUIDE.md) |
 | PRD（Notion） | [要求仕様書 (PRD)](https://www.notion.so/PRD-34829a9d48118038aaf8d7ee22bbf508?pvs=21) |
 | UI 設計（Figma） | （未定） |
 
@@ -68,17 +69,21 @@
 | **infrastructure** | ポートの実装。外部 I/O | Supabase クライアント、`fetch` で Edge Functions、AsyncStorage 等 |
 | **presentation** | 画面・フック・expo-router | `app/` のルートは薄く、表示と入力、ユースケース呼び出し |
 
-**ディレクトリの目安**（導入時に `src/` 等で名前を揃える。既存の `app/` はルート中心でよい）:
+**ディレクトリの目安**（リポジトリでは **`src/`** に空の雛形を用意済み。`src/README.md` 参照）:
 
-- `domain/` … エンティティ・値オブジェクト・ドメイン関数
-- `application/` … ユースケース（1 ファイル 1 流れ程度）
-- `ports/` … リポジトリ・サービスインターフェース
-- `infrastructure/` … `supabase/` 等のアダプタ、DTO ↔ domain のマッパー
+- `src/domain/` … エンティティ・値オブジェクト・ドメイン関数
+- `src/application/` … ユースケース（1 ファイル 1 流れ程度）
+- `src/ports/` … リポジトリ・サービスインターフェース
+- `src/infrastructure/` … `supabase/` 等のアダプタ、DTO ↔ domain のマッパー
 - `app/`（または `presentation/`）… UI・ルーティング
+
+**リポジトリ直下の `components/`・`hooks/`** および **`app/` の下層の切り方**は、チームで **採用済み**の [`docs/ARCHITECTURE_GUIDE.md`](./ARCHITECTURE_GUIDE.md)（推奨ツリー・UI と `useXxx` の分け方）に従う。
 
 **サーバー側**: Postgres の RLS・ビュー・SQL 関数は引き続き「サーバー上のドメイン境界」として使う。Edge Functions は **infrastructure の延長**（`docs/API_DESIGN.md`）。
 
 **段階的導入**: ルールが薄い CRUD ・単一トグルの保存だけは **画面近くに簡略実装してよい**。**分岐・金額・通知条件が増える処理から**層を分ける。新規の複雑な機能は **原則クリーンの層に沿う**。
+
+**具体例・ディレクトリの読み方**は [`docs/ARCHITECTURE_GUIDE.md`](./ARCHITECTURE_GUIDE.md) を参照。
 
 ### 特記事項
 
@@ -89,7 +94,7 @@
 
 **Supabase ダッシュボードの Table Editor 等でのスキーマ変更は原則禁止**（本番・Staging に限らず、チームで再現できる形を最優先）。詳細・例外は [`docs/Rule.md`](./Rule.md) の「データベーススキーマ（Supabase）」。
 
-作業コマンドの手元手順は [`README.md`](../README.md) を正とする。ここでは方針のみ。
+作業コマンドの**詳細手順**は [`docs/MIGRATIONS.md`](./MIGRATIONS.md)。クイックリファレンスは [`README.md`](../README.md)。ここでは方針のみ。
 
 1. `supabase start` でローカルスタックを起動（Docker 必須）。
 2. スキーマ変更は **`supabase/migrations/*.sql`** にのみ加え、**`docs/DATABASE_DESIGN.md`** と意図が食い違わないようにする。
