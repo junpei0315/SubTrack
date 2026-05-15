@@ -1,50 +1,100 @@
-# Welcome to your Expo app 👋
+# SubTrack
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+サブスクリプション契約・支出をまとめて把握・見直しするためのモバイルアプリ（[Expo](https://expo.dev) + React Native + TypeScript）。
 
-## Get started
+## 前提
 
-1. Install dependencies
+| 項目 | バージョン・備考 |
+| --- | --- |
+| Node.js | **22**（[CI](.github/workflows/ci.yml) と揃える） |
+| パッケージマネージャ | npm（`package-lock.json` 使用） |
+| Docker | ローカル Supabase 利用時に必要（[Supabase CLI](https://supabase.com/docs/guides/cli) 前提） |
+
+## クイックスタート
+
+1. 依存関係のインストール
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. 環境変数（Supabase 接続）
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   `.env` に **`EXPO_PUBLIC_SUPABASE_URL`** と **`EXPO_PUBLIC_SUPABASE_ANON_KEY`** を設定する。ローカル Supabase を使う場合は「[ローカル Supabase](#ローカル-supabase)」の出力値をそのまま利用できる。
+
+3. アプリ起動
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Git フック（初回のみ）
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+プッシュ前に `lint` / `typecheck` をかける場合など、[`.githooks/pre-push`](.githooks/pre-push) を有効にする。
 
 ```bash
-npm run reset-project
+./scripts/setup-hooks
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+詳細は [`docs/Rule.md`](docs/Rule.md) を参照。
 
-## Learn more
+## ローカル Supabase
 
-To learn more about developing your project with Expo, look at the following resources:
+1. [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) をインストールし、Docker を起動した状態でリポジトリ直下から:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+   ```bash
+   supabase start
+   ```
 
-## Join the community
+2. API URL と `anon` key は次で確認できる。
 
-Join our community of developers creating universal apps.
+   ```bash
+   supabase status
+   ```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   表示された **API URL** → `EXPO_PUBLIC_SUPABASE_URL`、**anon key** → `EXPO_PUBLIC_SUPABASE_ANON_KEY` に設定する。
+
+3. 終了するときは `supabase stop`。
+
+### マイグレーション（概要）
+
+スキーマの一次情報は [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md)。SQL の正は `supabase/migrations/` に置く。
+
+```bash
+# 新規マイグレーションファイルを追加（ファイル名は英語のスネークケース推奨）
+supabase migration new add_example_table
+
+# 編集後、ローカル DB に適用して検証
+supabase db reset
+```
+
+運用の補足は [`docs/TRD.md`](docs/TRD.md) を参照。
+
+## 品質チェック（ローカル）
+
+CI と同じコマンド。
+
+```bash
+npm run lint
+npm run typecheck
+```
+
+## ドキュメント
+
+| 内容 | パス |
+| --- | --- |
+| チーム開発（ブランチ・コミット・PR） | [`docs/Rule.md`](docs/Rule.md) |
+| プロダクト要件 | [`docs/PRD.md`](docs/PRD.md) |
+| 技術・ローカル方針の詳細 | [`docs/TRD.md`](docs/TRD.md) |
+| 機能 F-01〜F-14 | [`docs/FEATURE_REQUIREMENTS.md`](docs/FEATURE_REQUIREMENTS.md) |
+| DB / API 設計 | [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md) / [`docs/API_DESIGN.md`](docs/API_DESIGN.md) |
+| Expo / TypeScript スタイル | [`docs/EXPO_TYPESCRIPT_CONVENTIONS.md`](docs/EXPO_TYPESCRIPT_CONVENTIONS.md) |
+
+## Expo の参考
+
+- [Expo documentation](https://docs.expo.dev/)
+- [Expo Router](https://docs.expo.dev/router/introduction)

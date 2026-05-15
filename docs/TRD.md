@@ -2,7 +2,7 @@
 
 **目的**: PRD で定義した「何を作るか」を受けて、「どう作るか」をエンジニアが実装できるレベルで定義する文書。
 
-本リポジトリでは `docs/PRD.md`、`docs/FEATURE_REQUIREMENTS.md` と本書を**技術判断の参照元**とする。API 詳細は [`docs/API_DESIGN.md`](./API_DESIGN.md)、DB 詳細は [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md) に集約する（現状はプレースホルダ。追記予定）。Notion 等は補助リンクとして残す。
+本リポジトリでは `docs/PRD.md`、`docs/FEATURE_REQUIREMENTS.md` と本書を**技術判断の参照元**とする。API 詳細は [`docs/API_DESIGN.md`](./API_DESIGN.md)、DB 詳細は [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md) に集約し、**実装されたスキーマは `supabase/migrations/` と必ず一致させる**。Notion 等は補助リンクとして残す。
 
 ---
 
@@ -23,7 +23,7 @@
 
 ### アーキテクチャ方針
 
-- （例：既存の RESTful API を拡張する）— **未定。追記する。**
+- クライアントは **Supabase（Auth + PostgREST + RLS）** を主な BaaS として利用する。独自 REST は必要最小限（Edge Functions 等は要件次第）。
 
 ### 技術スタック
 
@@ -56,7 +56,16 @@
 
 ### 特記事項
 
-- （未定）
+- **Push 通知（F-10 など）**: **`expo-notifications`** を利用する。**Expo Go では Push の検証が限定的**なため、実機での本番相当の挙動確認は **EAS Build**（development / preview ビルド）を前提とする。更新日リマインドのローカル検証は、同 API の**スケジュール通知**で代替可能。FCM / APNs のクレデンシャルは **EAS プロジェクト**側で管理し、アプリに秘密を埋め込まない。
+
+### ローカル開発（Supabase CLI・マイグレーション）
+
+作業コマンドの手元手順は [`README.md`](../README.md) を正とする。ここでは方針のみ。
+
+1. `supabase start` でローカルスタックを起動（Docker 必須）。
+2. スキーマ変更は **`supabase/migrations/*.sql`** にのみ加え、**`docs/DATABASE_DESIGN.md`** と意図が食い違わないようにする。
+3. 変更の検証は `supabase db reset`（ローカル DB をマイグレーションから再構築）で行う。
+4. 本番・Staging への適用フロー（`db push` / CI / 手動）はプロジェクト運用が固まり次第、本節に追記する。
 
 ---
 
@@ -83,7 +92,7 @@
 
 ## 4. データベース設計
 
-**リポジトリ上の正:** [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md)（現状プレースホルダ。スキーマ確定後に追記し、`supabase/migrations` と整合させる）
+**リポジトリ上の正:** [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md)（スキーマ草案）。**実装の正**は `supabase/migrations/`。変更時は両方を同期する。
 
 補助: [DB 設計（Notion）](https://www.notion.so/DB-34829a9d481180af930cff32915c3126?pvs=21)
 
