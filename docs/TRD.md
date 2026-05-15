@@ -56,6 +56,30 @@
 | Docker | Supabase のローカル開発環境の統一（Supabase CLI が Docker 前提） |
 | Supabase CLI | ローカルで Supabase を起動・マイグレーション管理 |
 
+### フロントエンド（Expo）— クリーンアーキテクチャ
+
+**モバイルアプリ（Expo）はクリーンアーキテクチャの考え方で構成する**（依存は常に**内側へ**：UI やインフラはドメイン・ユースケースに依存し、逆はない）。
+
+| 層 | 責務 | 例（SubTrack） |
+| --- | --- | --- |
+| **domain** | ビジネスルール・純粋関数・型。React / Supabase に依存しない | 月額換算、`paused` を合計から除外、入力値の妥当性 |
+| **application** | ユースケース（1 操作の流れ）。ポートのみに依存 | 「プリセットから登録」「今日使ったを記録」「ダッシュボード用集計の実行」 |
+| **ports** | ユースケースが必要とする抽象（インターフェース） | `SubscriptionRepository`、`AuthSessionPort`、`FxRatePort` |
+| **infrastructure** | ポートの実装。外部 I/O | Supabase クライアント、`fetch` で Edge Functions、AsyncStorage 等 |
+| **presentation** | 画面・フック・expo-router | `app/` のルートは薄く、表示と入力、ユースケース呼び出し |
+
+**ディレクトリの目安**（導入時に `src/` 等で名前を揃える。既存の `app/` はルート中心でよい）:
+
+- `domain/` … エンティティ・値オブジェクト・ドメイン関数
+- `application/` … ユースケース（1 ファイル 1 流れ程度）
+- `ports/` … リポジトリ・サービスインターフェース
+- `infrastructure/` … `supabase/` 等のアダプタ、DTO ↔ domain のマッパー
+- `app/`（または `presentation/`）… UI・ルーティング
+
+**サーバー側**: Postgres の RLS・ビュー・SQL 関数は引き続き「サーバー上のドメイン境界」として使う。Edge Functions は **infrastructure の延長**（`docs/API_DESIGN.md`）。
+
+**段階的導入**: ルールが薄い CRUD ・単一トグルの保存だけは **画面近くに簡略実装してよい**。**分岐・金額・通知条件が増える処理から**層を分ける。新規の複雑な機能は **原則クリーンの層に沿う**。
+
 ### 特記事項
 
 - **Push 通知（F-10 など）**: **`expo-notifications`** を利用する。**Expo Go では Push の検証が限定的**なため、実機での本番相当の挙動確認は **EAS Build**（development / preview ビルド）を前提とする。更新日リマインドのローカル検証は、同 API の**スケジュール通知**で代替可能。FCM / APNs のクレデンシャルは **EAS プロジェクト**側で管理し、アプリに秘密を埋め込まない。**ユーザーがアプリを開かない日でもサーバーから確実に送る**要件が固まった場合は、**Edge Function + スケジュール等**の併用を `docs/API_DESIGN.md` で設計する。

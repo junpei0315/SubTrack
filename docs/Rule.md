@@ -102,6 +102,7 @@ chmod +x scripts/setup-hooks .githooks/pre-push   # 初回のみ（実行権限�
 ## コーディング規約
 
 - **Expo / TypeScript**: [EXPO_TYPESCRIPT_CONVENTIONS.md](./EXPO_TYPESCRIPT_CONVENTIONS.md)
+- **Expo アプリの層構造（クリーンアーキテクチャ）**: [TRD.md](./TRD.md) §1「フロントエンド（Expo）— クリーンアーキテクチャ」を参照する。
 
 ---
 
