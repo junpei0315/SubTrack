@@ -11,6 +11,11 @@ alwaysApply: true
 
 | 内容 | パス |
 |------|------|
+| **プロダクト要件（何を・誰のために・なぜ）** | `docs/PRD.md` |
+| **機能要件（F-01〜F-14・画面・ルール）** | `docs/FEATURE_REQUIREMENTS.md` |
+| **技術要件（どう作るか・スタック・全体参照）** | `docs/TRD.md` |
+| **API 設計**（プレースホルダ可） | `docs/API_DESIGN.md` |
+| **DB 設計**（プレースホルダ可） | `docs/DATABASE_DESIGN.md` |
 | チーム開発ルール（Git・コミット・PR・禁止事項など） | `docs/Rule.md` |
 | Expo / TS の命名・スタイル | `docs/EXPO_TYPESCRIPT_CONVENTIONS.md` |
 | PR 本文のひな形 | `.github/pull_request_template.md`（GitHub が自動挿入）／補助 `docs/PR_TEMPLATE.md` |
