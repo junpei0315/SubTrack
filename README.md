@@ -62,6 +62,8 @@
 
 ### マイグレーション（概要）
 
+**Supabase の Table Editor 等でテーブルを作らない。** スキーマは **`supabase/migrations/`** の SQL のみで管理する（原則・例外は [`docs/Rule.md`](docs/Rule.md)「データベーススキーマ」）。
+
 スキーマの一次情報は [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md)。SQL の正は `supabase/migrations/` に置く。
 
 ```bash
@@ -73,6 +75,18 @@ supabase db reset
 ```
 
 運用の補足は [`docs/TRD.md`](docs/TRD.md) を参照。
+
+### Edge Functions（任意）
+
+**為替のプロキシ・Webhook・サーバー起点の通知など**で使う可能性がある。**ソースは `supabase/functions/` に置き、仕様は [`docs/API_DESIGN.md`](docs/API_DESIGN.md) に書く。**
+
+```bash
+supabase functions new my_function
+supabase functions serve
+# デプロイ: supabase functions deploy my_function
+```
+
+詳細は [Supabase Edge Functions](https://supabase.com/docs/guides/functions) を参照。
 
 ## 品質チェック（ローカル）
 

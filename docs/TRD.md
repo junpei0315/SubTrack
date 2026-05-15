@@ -23,7 +23,8 @@
 
 ### アーキテクチャ方針
 
-- クライアントは **Supabase（Auth + PostgREST + RLS）** を主な BaaS として利用する。独自 REST は必要最小限（Edge Functions 等は要件次第）。
+- クライアントは **Supabase（Auth + PostgREST + RLS）** を主な BaaS とする。**Rails / Go 等の自前アプリサーバーは置かない**方針で進める。
+- **秘密情報を隠した HTTP 処理**（外部 API キー、Webhook 受信、軽いサーバー側オーケストレーション）が必要になった場合は **Supabase Edge Functions**（Deno 上の TypeScript）で補う。用途・URL・認証の詳細は [`docs/API_DESIGN.md`](./API_DESIGN.md) に集約する。
 
 ### 技術スタック
 
@@ -39,7 +40,8 @@
 
 | 技術 | 用途 |
 | --- | --- |
-| Supabase | 認証・REST API 自動生成・Edge Functions |
+| Supabase（PostgREST） | 認証済みクライアントからの CRUD・RLS 前提のデータアクセス |
+| Supabase Edge Functions | 上記だけでは危険／不十分な処理（例: **F-13** 為替 API のプロキシとキャッシュ、**F-10** のサーバー起点通知が必要になった場合の補助、Webhook）。Deno + TypeScript |
 
 #### DB
 
@@ -56,9 +58,12 @@
 
 ### 特記事項
 
-- **Push 通知（F-10 など）**: **`expo-notifications`** を利用する。**Expo Go では Push の検証が限定的**なため、実機での本番相当の挙動確認は **EAS Build**（development / preview ビルド）を前提とする。更新日リマインドのローカル検証は、同 API の**スケジュール通知**で代替可能。FCM / APNs のクレデンシャルは **EAS プロジェクト**側で管理し、アプリに秘密を埋め込まない。
+- **Push 通知（F-10 など）**: **`expo-notifications`** を利用する。**Expo Go では Push の検証が限定的**なため、実機での本番相当の挙動確認は **EAS Build**（development / preview ビルド）を前提とする。更新日リマインドのローカル検証は、同 API の**スケジュール通知**で代替可能。FCM / APNs のクレデンシャルは **EAS プロジェクト**側で管理し、アプリに秘密を埋め込まない。**ユーザーがアプリを開かない日でもサーバーから確実に送る**要件が固まった場合は、**Edge Function + スケジュール等**の併用を `docs/API_DESIGN.md` で設計する。
+- **Edge Functions**: **常時必須ではない。** 採用時は `supabase/functions/` をリポジトリで管理し、**エンドポイント仕様・認証方針を `docs/API_DESIGN.md` に追記**する。ローカルは `supabase functions serve`、デプロイは `supabase functions deploy`（[公式: Edge Functions](https://supabase.com/docs/guides/functions)）。
 
 ### ローカル開発（Supabase CLI・マイグレーション）
+
+**Supabase ダッシュボードの Table Editor 等でのスキーマ変更は原則禁止**（本番・Staging に限らず、チームで再現できる形を最優先）。詳細・例外は [`docs/Rule.md`](./Rule.md) の「データベーススキーマ（Supabase）」。
 
 作業コマンドの手元手順は [`README.md`](../README.md) を正とする。ここでは方針のみ。
 
@@ -74,17 +79,19 @@
 > コンポーネント間の関係・データの流れを記述する。
 
 ```
-（例）
-[フロントエンド] → API Gateway → [バックエンド] → [DB]
-                                      ↓
-                                 [外部サービス]
+[Expo アプリ] ── JWT ──▶ [Supabase Auth + PostgREST + RLS] ──▶ [PostgreSQL]
+      │                          ▲
+      │    （秘密が要るHTTP・Webhook・スケジュール処理）
+      └──────────────────────────┘──▶ [Edge Functions] ──▶ 外部 API 等
 ```
+
+※ データの正は引き続き **Postgres + マイグレーション**。Edge Functions は「DBをGUIで触る」代替ではない（[`docs/Rule.md`](./Rule.md)）。
 
 ---
 
 ## 3. API 設計
 
-**リポジトリ上の正:** [`docs/API_DESIGN.md`](./API_DESIGN.md)（現状プレースホルダ。仕様確定後に追記する）
+**リポジトリ上の正:** [`docs/API_DESIGN.md`](./API_DESIGN.md)。**PostgREST** と**採用する Edge Functions** の URL・契約をここに書く（現状はプレースホルダ含む）。
 
 補助: [API 設計（Notion）](https://www.notion.so/API-34829a9d481180528847f32d2552d630?pvs=21)
 
@@ -92,7 +99,7 @@
 
 ## 4. データベース設計
 
-**リポジトリ上の正:** [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md)（スキーマ草案）。**実装の正**は `supabase/migrations/`。変更時は両方を同期する。
+**リポジトリ上の正:** [`docs/DATABASE_DESIGN.md`](./DATABASE_DESIGN.md)（スキーマ草案）。**実装の正**は `supabase/migrations/`。変更時は両方を同期する。**スキーマの変更は Supabase UI 上のエディタでは行わず**、マイグレーションと PR で行う（原則・例外は [`docs/Rule.md`](./Rule.md)）。
 
 補助: [DB 設計（Notion）](https://www.notion.so/DB-34829a9d481180af930cff32915c3126?pvs=21)
 

@@ -17,6 +17,7 @@
 ## レビュー観点
 重点的に見てほしい点があれば
 - 例: ○○の設計、△△のエラーハンドリング
+- DB 変更がある場合: [`docs/Rule.md`](docs/Rule.md) に沿い、**Supabase UI ではなく** `supabase/migrations/` と `docs/DATABASE_DESIGN.md` が更新されているか
 
 ## 確認内容
 マージしてよいか判断するための材料

@@ -14,7 +14,7 @@ alwaysApply: true
 | **プロダクト要件（何を・誰のために・なぜ）** | `docs/PRD.md` |
 | **機能要件（F-01〜F-14・画面・ルール）** | `docs/FEATURE_REQUIREMENTS.md` |
 | **技術要件（どう作るか・スタック・全体参照）** | `docs/TRD.md` |
-| **API 設計**（プレースホルダ可） | `docs/API_DESIGN.md` |
+| **API 設計**（PostgREST / **Edge Functions**） | `docs/API_DESIGN.md` |
 | **DB 設計**（プレースホルダ可） | `docs/DATABASE_DESIGN.md` |
 | チーム開発ルール（Git・コミット・PR・禁止事項など） | `docs/Rule.md` |
 | Expo / TS の命名・スタイル | `docs/EXPO_TYPESCRIPT_CONVENTIONS.md` |
@@ -46,6 +46,11 @@ alwaysApply: true
 
 - 機密をコミットしない。必要な環境変数名のみ `.env.example` 等に記載。ログ・スクショにトークンを載せない。
 - `package-lock.json` をコミットし、依存変更は PR で説明。
+
+## データベース（Supabase）
+
+- **Supabase ダッシュボードの Table Editor / SQL Editor 等でスキーマ（テーブル・列・インデックス・RLS 等）を直接変更しない（原則禁止）。** 変更は **`supabase/migrations/`** に SQL を足し PR で行う。設計書は **`docs/DATABASE_DESIGN.md`**。
+- 例外（本番緊急のみ）と追認手順は **`docs/Rule.md`**「データベーススキーマ（Supabase）」に従う。
 
 ## 禁止（コード・コミット・PR 共通）
 
