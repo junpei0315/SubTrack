@@ -1,8 +1,11 @@
 # API 設計（API Design）
 
-> **状態**: プレースホルダ。エンドポイント・リクエスト/レスポンス・エラーコードは後続で追記する。
+本書を API 仕様の**リポジトリ上の正**とする。`docs/TRD.md` §3 から参照する。
 
-本書を API 仕様の**リポジトリ上の正**とする。`docs/TRD.md` §3 から参照する。Supabase の自動 API（PostgREST）とカスタム Edge Functions など、提供形態が決まり次第この文書に整理する。
+**提供形態は二系統**ある。
+
+1. **Supabase PostgREST** — テーブルに対する自動 REST（**RLS が認可**）。主に Expo から `@supabase/supabase-js` 経由。
+2. **Supabase Edge Functions** — HTTP エンドポイントとして追加する**サーバーサイド処理**（Deno + TypeScript）。**常時必須ではない**。必要になった関数だけ `docs/API_DESIGN.md` に追記する。
 
 ---
 
@@ -20,38 +23,82 @@
 
 | 項目 | 内容 |
 | --- | --- |
-| ベース URL / 環境 | （未定） |
-| 認証方式 | （例: Bearer / Supabase JWT）— （未定） |
-| API バージョニング | （未定） |
-| 共通レスポンス形式 | （未定） |
+| データ API | Supabase Project URL + `/rest/v1/...`（PostgREST）。認証は通常 **Supabase JWT（anon + ユーザーセッション）** |
+| Edge Functions | `{SUPABASE_URL}/functions/v1/{function_name}`（デプロイ後に確定。ローカルは CLI の `serve` 出力に従う） |
+| API バージョニング | （未定。PostgREST はスキーマで調整、Edge はパス設計で調整） |
+| 共通レスポンス形式 | PostgREST: 既定 JSON。Edge: **各関数で JSON を明示**（エラー形も揃える） |
 
 ---
 
-## エンドポイント一覧
+## PostgREST（自動 REST）
 
-| メソッド | パス | 概要 | 関連機能 ID |
-| --- | --- | --- | --- |
-| （未定） |  |  |  |
+- アクセス可能なテーブル・ビュー・RPC は **`docs/DATABASE_DESIGN.md`** および **`supabase/migrations/`** と一致させる。
+- **RLS だけでは表現しにくい認可**（例: 匿名向け読み取り）がある場合は、この節に表で書く。
+
+### 主要リソース（予定）
+
+| リソース（例） | メソッド概要 | 関連機能 ID |
+| --- | --- | --- |
+| （未定） | （未定） |  |
 
 ---
 
-## 認証・認可
+## Edge Functions
 
-- （未定）
+### 役割（いつ使うか）
+
+| 用途 | PostgREST だけで難しい理由 | SubTrack での想定 |
+| --- | --- | --- |
+| 外部 API の**秘密鍵**を隠す | クライアントに埋め込むと漏洩 | **F-13** 為替レート取得・キャッシュ |
+| **Webhook** の受け口 | 署名検証・生ボディ処理 | 将来の外部連携 |
+| **スケジュールに近いサーバー処理** | クライアントはオフラインになりうる | **F-10** をサーバー起点にする場合（要設計） |
+
+**まずは RLS + SQL（ビュー・関数）+ クライアント**で足りるか検討し、上記に該当するときだけ Edge を増やす。
+
+### 実装・配置
+
+| 項目 | 方針 |
+| --- | --- |
+| ランタイム | Supabase 既定（Deno） |
+| ソース | リポジトリ `supabase/functions/{function_name}/`（**Git で管理**） |
+| ローカル | `supabase functions serve`（[ローカル開発](https://supabase.com/docs/guides/functions/local-development)） |
+| デプロイ | `supabase functions deploy {function_name}` |
+| シークレット | `supabase secrets set ...` で設定。**service_role をクライアントに渡さない** |
+
+### 認証・セキュリティ
+
+- ユーザー向け処理: **Authorization: Bearer &lt;ユーザーの access token&gt;** を検証し、必要なら Supabase クライアントで `auth.getUser()` 相当を行う。
+- **公開してはいけないキー**（為替 API、FCM サーバーキー等）は Edge Function の環境変数のみに置く。
+- 各関数の **JWT 検証の要否**（`verify_jwt`）は関数ごとに決め、`README` または下表に明記する。
+
+### エンドポイント一覧（Edge）
+
+| 関数ディレクトリ名 | メソッド | パス（相対） | 概要 | 関連機能 |
+| --- | --- | --- | --- | --- |
+| （未実装） |  | `/functions/v1/...` |  |  |
+
+---
+
+## 認証・認可（全体）
+
+- **モバイル → Supabase データ**: Auth セッション + RLS。
+- **モバイル → Edge**: 関数ごとにトークン必須か、サービス間かを上表で固定する。
 
 ---
 
 ## エラー仕様
 
-| HTTP ステータス / コード | 意味 | クライアントの扱い |
+| 区分 | HTTP / 形式 | クライアントの扱い |
 | --- | --- | --- |
-| （未定） |  |  |
+| PostgREST | Supabase 既定 + PostgreSQL エラー | 共通ハンドリングを定義（未定） |
+| Edge Functions | **各関数で JSON エラー形を統一**（例: `{ "error": "code", "message": "..." }`） | 同上 |
 
 ---
 
 ## OpenAPI / 型定義
 
-- OpenAPI ファイルのパス、または生成手順: （未定）
+- PostgREST: （OpenAPI 生成の利用の有無は未定）
+- Edge: 関数が増えたら **paths をこの文書または別 yaml に列挙**する
 
 ---
 
@@ -59,4 +106,5 @@
 
 | 日付 | 変更内容 |
 | --- | --- |
+| 2026-05-15 | Edge Functions の採用方針・PostgREST との住み分けを追記 |
 | （追記） |  |

@@ -75,6 +75,7 @@ type: 説明
 - 機能仕様の遵守
 - 不要なファイルやコメントの除去
 - セキュリティ（認証情報・トークンの扱い、XSS、不正なデータ混入の防止など）
+- **DB 変更を含む PR**: **`supabase/migrations/`** と **`docs/DATABASE_DESIGN.md`** が整合しているか。**Supabase UI だけ**でスキーマを変えていないか（原則禁止・詳細は上記「データベーススキーマ」）
 
 ### レビュー・マージ後の運用
 
@@ -101,6 +102,8 @@ chmod +x scripts/setup-hooks .githooks/pre-push   # 初回のみ（実行権限�
 ## コーディング規約
 
 - **Expo / TypeScript**: [EXPO_TYPESCRIPT_CONVENTIONS.md](./EXPO_TYPESCRIPT_CONVENTIONS.md)
+- **Expo アプリの層構造（クリーンアーキテクチャ）**: [TRD.md](./TRD.md) §1「フロントエンド（Expo）— クリーンアーキテクチャ」を参照する。
+- **リポジトリのディレクトリ・`components` / `hooks`（採用方針）**: [ARCHITECTURE_GUIDE.md](./ARCHITECTURE_GUIDE.md)
 
 ---
 
@@ -109,6 +112,27 @@ chmod +x scripts/setup-hooks .githooks/pre-push   # 初回のみ（実行権限�
 - API キー・トークン・パスワードなど機密値を含むファイルはコミットしない（`.gitignore` を運用どおり維持する）
 - 必要な環境変数の名前だけを `.env.example` などサンプルに載せ、値は載せない
 - ログ・クラッシュレポート・スクリーンショットにトークンや個人情報が写り込まないよう注意する
+
+---
+
+## データベーススキーマ（Supabase）
+
+スキーマの**唯一の運用ルート**は次とする。`docs/TRD.md`・`README.md` の手順と矛盾させない。
+
+### 原則（必須）
+
+- **Supabase のダッシュボード上**で、**本番・Staging 等の共有環境に対して**、**テーブル作成・カラム追加・インデックス・RLS・ポリシー変更などのスキーマ変更を行わない**（**Table Editor**、**SQL Editor での直接実行**、**Schema の GUI 操作**などを含む）。
+- すべてのスキーマ変更は **`supabase/migrations/` に SQL を追加**し、**プルリクエストでレビュー**したうえで適用する。
+- 設計の意図は **`docs/DATABASE_DESIGN.md`** と突き合わせ、差分がある場合は**ドキュメント側も同じ PR で更新**する。
+
+### 例外（最小限）
+
+- **本番障害対応などやむを得ない緊急時**だけ、ダッシュボードや SQL で一時対応してよい。
+- その場合も**速やかに**同等内容の **マイグレーションファイルを追加**し、**`docs/DATABASE_DESIGN.md` を同期**した PR を出して**追認**する（ローカルで `supabase db reset` が通り、他メンバーが再現できる状態に戻す）。
+
+### ローカル開発
+
+- `supabase start` した**ローカル**の DB だけを触る場合でも、**再現性のため**やはりマイグレーションで変更し、`db reset` で検証する（ローカル限定の「手組みだけ」も原則避ける）。
 
 ---
 
@@ -130,6 +154,7 @@ chmod +x scripts/setup-hooks .githooks/pre-push   # 初回のみ（実行権限�
 
 - ファイル名・変数名に日本語を使用しない
 - ファイル名・変数名に特殊文字（`: !@#$%^&*()+=[]{}|;:'",<>/?`）を使用しない
+- **Supabase ダッシュボード上で共有環境の DB スキーマを直接変更しない**（**原則禁止**。Table Editor・SQL Editor によるテーブル/RLS 操作など。手順・例外は同ドキュメント内**「データベーススキーマ（Supabase）」**を参照）
 - **AI ツール表記**（`Made with Cursor`、`Made-with: Cursor`、`Co-Authored-By` 等）を**コード・コミット・PR のいずれにも含めない**（co-working 時も同様）
   - 必要なら `commit-msg` フックを別途追加して自動拒否できる（本リポジトリでは未設定の場合あり）
 
