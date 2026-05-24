@@ -3,12 +3,13 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-// 共通モーダル用ルート。確認ダイアログ等の汎用モーダルが必要になったら src/shared/ui から呼ぶ想定。
-export default function ModalScreen() {
+// TODO: src/features/dashboard/screens/DashboardScreen.tsx を実装して差し替える
+// 関連機能: F-05（月額・年額合計） / F-06（ジャンル別内訳） / F-07（支出推移） / F-11（未使用アラート）
+export default function HomeRoute() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Modal</ThemedText>
-      <ThemedText>共通モーダル（未実装）</ThemedText>
+      <ThemedText type="title">Home</ThemedText>
+      <ThemedText>ダッシュボード（未実装）</ThemedText>
     </ThemedView>
   );
 }
