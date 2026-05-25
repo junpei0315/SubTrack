@@ -3,12 +3,13 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-// 共通モーダル用ルート。確認ダイアログ等の汎用モーダルが必要になったら src/shared/ui から呼ぶ想定。
-export default function ModalScreen() {
+// TODO: src/features/subscriptions/screens/SubscriptionNewScreen.tsx を実装して差し替える
+// 関連機能: F-02（カスタム新規追加）
+export default function SubscriptionNewRoute() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Modal</ThemedText>
-      <ThemedText>共通モーダル（未実装）</ThemedText>
+      <ThemedText type="title">New Subscription</ThemedText>
+      <ThemedText>新規登録フォーム（未実装）</ThemedText>
     </ThemedView>
   );
 }

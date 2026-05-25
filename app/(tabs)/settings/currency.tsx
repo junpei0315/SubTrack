@@ -3,12 +3,13 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
-// 共通モーダル用ルート。確認ダイアログ等の汎用モーダルが必要になったら src/shared/ui から呼ぶ想定。
-export default function ModalScreen() {
+// TODO: src/features/settings/screens/CurrencySettingScreen.tsx を実装して差し替える
+// 関連機能: F-13（通貨・表示形式の設定）
+export default function CurrencySettingsRoute() {
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">Modal</ThemedText>
-      <ThemedText>共通モーダル（未実装）</ThemedText>
+      <ThemedText type="title">Currency</ThemedText>
+      <ThemedText>通貨設定（未実装）</ThemedText>
     </ThemedView>
   );
 }
