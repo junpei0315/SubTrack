@@ -1,44 +1,40 @@
 -- ============================================================================
 -- SubTrack マイグレーション SQL
 -- Supabase (PostgreSQL) ローカル環境向け
--- 作成日: 2026-05-24
--- 
--- このスクリプトは、ER図と仕様に基づいた初期スキーマを作成します。
--- テーブルは依存関係に従って親から順に作成されます。
 -- ============================================================================
 
 -- ============================================================================
--- 1. 親マスタテーブル（依存関係なし）
+-- 1. 親マスタテーブル
 -- ============================================================================
 
--- CYCLES テーブル：サブスク周期の管理（月額、年額など）
+-- CYCLES テーブル：サブスク周期の管理
 CREATE TABLE CYCLES (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL
+    name VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- CATEGORIES テーブル：サービスのジャンル分類
 CREATE TABLE CATEGORIES (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    color_code VARCHAR(7) NOT NULL
+    color_code VARCHAR(7) NOT NULL,
+    icon_name VARCHAR(100)
 );
 
 -- ============================================================================
 -- 2. PROFILES テーブル：ユーザー認証と基本情報
 -- ============================================================================
--- Supabase認証システム（auth.users）と連携
--- on delete cascade により、ユーザー削除時に自動で関連レコードが削除される
 
 CREATE TABLE PROFILES (
     id UUID PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
     email VARCHAR(255) NOT NULL,
-    display_currency VARCHAR(3) DEFAULT 'JPY' NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+    display_currency VARCHAR(8) DEFAULT 'JPY' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE
 );
 
 -- ============================================================================
--- 3. SERVICES テーブル：提供されるサービス（アプリ、SaaS等）
+-- 3. SERVICES テーブル：提供されるサービス
 -- ============================================================================
 
 CREATE TABLE SERVICES (
@@ -56,10 +52,10 @@ CREATE TABLE SERVICES (
 CREATE TABLE PLANS (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_id UUID NOT NULL REFERENCES SERVICES(id) ON DELETE CASCADE,
-    name VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
     price NUMERIC(12, 2) NOT NULL,
-    currency VARCHAR(3),
-    cycle_id INTEGER REFERENCES CYCLES(id) ON DELETE SET NULL
+    currency VARCHAR(3) DEFAULT 'JPY' NOT NULL,
+    cycle_id INTEGER NOT NULL REFERENCES CYCLES(id) ON DELETE RESTRICT
 );
 
 -- ============================================================================
@@ -71,9 +67,10 @@ CREATE TABLE SUBSCRIPTIONS (
     user_id UUID NOT NULL REFERENCES PROFILES(id) ON DELETE CASCADE,
     plan_id UUID NOT NULL REFERENCES PLANS(id) ON DELETE RESTRICT,
     next_billing_date DATE NOT NULL,
-    status VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'active' NOT NULL,
     memo TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE
 );
 
 -- ============================================================================
@@ -83,7 +80,7 @@ CREATE TABLE SUBSCRIPTIONS (
 CREATE TABLE NOTIFICATION_SETTINGS (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     subscription_id UUID NOT NULL REFERENCES SUBSCRIPTIONS(id) ON DELETE CASCADE,
-    notify_days_before INTEGER
+    notify_days_before INTEGER NOT NULL
 );
 
 -- ============================================================================
@@ -95,45 +92,34 @@ CREATE TABLE USAGE_LOGS (
     user_id UUID NOT NULL REFERENCES PROFILES(id) ON DELETE CASCADE,
     subscription_id UUID NOT NULL REFERENCES SUBSCRIPTIONS(id) ON DELETE CASCADE,
     used_date DATE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    CONSTRAINT unique_subscription_use UNIQUE(subscription_id, used_date)
 );
 
 -- ============================================================================
--- インデックス定義（クエリパフォーマンス向上）
+-- インデックス定義
 -- ============================================================================
 
--- SUBSCRIPTIONS テーブルのインデックス
 CREATE INDEX idx_subscriptions_user_id ON SUBSCRIPTIONS(user_id);
 CREATE INDEX idx_subscriptions_plan_id ON SUBSCRIPTIONS(plan_id);
 CREATE INDEX idx_subscriptions_next_billing_date ON SUBSCRIPTIONS(next_billing_date);
-
--- NOTIFICATION_SETTINGS テーブルのインデックス
 CREATE INDEX idx_notification_settings_subscription_id ON NOTIFICATION_SETTINGS(subscription_id);
-
--- USAGE_LOGS テーブルのインデックス
 CREATE INDEX idx_usage_logs_user_id ON USAGE_LOGS(user_id);
 CREATE INDEX idx_usage_logs_subscription_id ON USAGE_LOGS(subscription_id);
 CREATE INDEX idx_usage_logs_used_date ON USAGE_LOGS(used_date);
-
--- SERVICES テーブルのインデックス
 CREATE INDEX idx_services_category_id ON SERVICES(category_id);
-
--- PLANS テーブルのインデックス
 CREATE INDEX idx_plans_service_id ON PLANS(service_id);
 CREATE INDEX idx_plans_cycle_id ON PLANS(cycle_id);
 
 -- ============================================================================
--- Row Level Security (RLS) ポリシー（認証関連）
+-- Row Level Security (RLS) ポリシー
 -- ============================================================================
--- ユーザーは自分のプロフィール・サブスク情報のみアクセス可能
 
 ALTER TABLE PROFILES ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view their own profile" ON PROFILES
-    FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can view their own profile" ON PROFILES FOR SELECT USING (auth.uid() = id);
 
 ALTER TABLE SUBSCRIPTIONS ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view their own subscriptions" ON SUBSCRIPTIONS
-    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view their own subscriptions" ON SUBSCRIPTIONS FOR SELECT USING (auth.uid() = user_id);
 
 ALTER TABLE NOTIFICATION_SETTINGS ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage notifications for their subscriptions" ON NOTIFICATION_SETTINGS
@@ -146,9 +132,4 @@ CREATE POLICY "Users can manage notifications for their subscriptions" ON NOTIFI
     );
 
 ALTER TABLE USAGE_LOGS ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view their own usage logs" ON USAGE_LOGS
-    FOR SELECT USING (auth.uid() = user_id);
-
--- ============================================================================
--- マイグレーション完了
--- ============================================================================
+CREATE POLICY "Users can view their own usage logs" ON USAGE_LOGS FOR SELECT USING (auth.uid() = user_id);
