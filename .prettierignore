@@ -1,0 +1,26 @@
+# Dependencies / lock files
+node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+dist
+build
+.next
+coverage
+
+# Expo / RN
+.expo
+android
+ios
+expo-env.d.ts
+
+# Supabase local data
+supabase/.branches
+supabase/.temp
+
+# Misc
+.git
+*.min.js
+*.min.css

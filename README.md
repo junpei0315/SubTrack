@@ -90,6 +90,50 @@ supabase functions serve
 
 詳細は [Supabase Edge Functions](https://supabase.com/docs/guides/functions) を参照。
 
+## コードスタイル / フォーマット
+
+チーム全体で表記ゆれを抑えるため、フォーマッタとリンタを統一しています。
+
+### 使用ツール
+
+| ツール | 役割 | 設定ファイル |
+| --- | --- | --- |
+| [Prettier](https://prettier.io/) | コード整形（インデント・クォート・行幅など） | [`.prettierrc`](.prettierrc) / [`.prettierignore`](.prettierignore) |
+| [ESLint](https://eslint.org/) | 静的解析（未使用変数 / import / React Hooks 等） | [`eslint.config.js`](eslint.config.js) |
+| [EditorConfig](https://editorconfig.org/) | エディタ横断のインデント・改行・文字コード統一 | [`.editorconfig`](.editorconfig) |
+| `eslint-config-prettier` | ESLint と Prettier のルール衝突を回避 | `eslint.config.js` 内 |
+| `eslint-plugin-import` | `import` 文の順序・重複検知 | `eslint.config.js` 内 |
+
+### 推奨 VS Code / Cursor 拡張
+
+ワークスペースを開くと推奨拡張として案内されます（[`.vscode/extensions.json`](.vscode/extensions.json)）。
+
+- [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)（`esbenp.prettier-vscode`）
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)（`dbaeumer.vscode-eslint`）
+- [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)（`EditorConfig.EditorConfig`）
+- [Expo Tools](https://marketplace.visualstudio.com/items?itemName=expo.vscode-expo-tools)（`expo.vscode-expo-tools`）
+
+[`.vscode/settings.json`](.vscode/settings.json) で **保存時の Prettier 整形・ESLint 自動修正・改行 LF 統一** を有効化しています。エディタ標準の整形ではなく Prettier が走るようにしてください。
+
+### 実行コマンド
+
+```bash
+# Prettier で整形（書き換える）
+npm run format
+
+# Prettier の整形差分を検知のみ（CI / pre-push 向け）
+npm run format:check
+
+# ESLint
+npm run lint        # 解析のみ
+npm run lint:fix    # 自動修正
+
+# 型チェック
+npm run typecheck
+```
+
+特定ファイルだけ整形したい場合は `npx prettier --write <path>` を直接使ってもよいです。
+
 ## 品質チェック（ローカル）
 
 CI と同じコマンド。
