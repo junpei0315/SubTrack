@@ -4,11 +4,11 @@
 
 ## 前提
 
-| 項目 | バージョン・備考 |
-| --- | --- |
-| Node.js | **22**（[CI](.github/workflows/ci.yml) と揃える） |
-| パッケージマネージャ | npm（`package-lock.json` 使用） |
-| Docker | ローカル Supabase 利用時に必要（[Supabase CLI](https://supabase.com/docs/guides/cli) 前提） |
+| 項目                 | バージョン・備考                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| Node.js              | **22**（[CI](.github/workflows/ci.yml) と揃える）                                           |
+| パッケージマネージャ | npm（`package-lock.json` 使用）                                                             |
+| Docker               | ローカル Supabase 利用時に必要（[Supabase CLI](https://supabase.com/docs/guides/cli) 前提） |
 
 ## クイックスタート
 
@@ -96,13 +96,13 @@ supabase functions serve
 
 ### 使用ツール
 
-| ツール | 役割 | 設定ファイル |
-| --- | --- | --- |
-| [Prettier](https://prettier.io/) | コード整形（インデント・クォート・行幅など） | [`.prettierrc`](.prettierrc) / [`.prettierignore`](.prettierignore) |
-| [ESLint](https://eslint.org/) | 静的解析（未使用変数 / import / React Hooks 等） | [`eslint.config.js`](eslint.config.js) |
-| [EditorConfig](https://editorconfig.org/) | エディタ横断のインデント・改行・文字コード統一 | [`.editorconfig`](.editorconfig) |
-| `eslint-config-prettier` | ESLint と Prettier のルール衝突を回避 | `eslint.config.js` 内 |
-| `eslint-plugin-import` | `import` 文の順序・重複検知 | `eslint.config.js` 内 |
+| ツール                                    | 役割                                             | 設定ファイル                                                        |
+| ----------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| [Prettier](https://prettier.io/)          | コード整形（インデント・クォート・行幅など）     | [`.prettierrc`](.prettierrc) / [`.prettierignore`](.prettierignore) |
+| [ESLint](https://eslint.org/)             | 静的解析（未使用変数 / import / React Hooks 等） | [`eslint.config.js`](eslint.config.js)                              |
+| [EditorConfig](https://editorconfig.org/) | エディタ横断のインデント・改行・文字コード統一   | [`.editorconfig`](.editorconfig)                                    |
+| `eslint-config-prettier`                  | ESLint と Prettier のルール衝突を回避            | `eslint.config.js` 内                                               |
+| `eslint-plugin-import`                    | `import` 文の順序・重複検知                      | `eslint.config.js` 内                                               |
 
 ### 推奨 VS Code / Cursor 拡張
 
@@ -145,16 +145,16 @@ npm run typecheck
 
 ## ドキュメント
 
-| 内容 | パス |
-| --- | --- |
-| チーム開発（ブランチ・コミット・PR） | [`docs/Rule.md`](docs/Rule.md) |
-| プロダクト要件 | [`docs/PRD.md`](docs/PRD.md) |
-| 技術・ローカル方針の詳細 | [`docs/TRD.md`](docs/TRD.md) |
-| 機能 F-01〜F-14 | [`docs/FEATURE_REQUIREMENTS.md`](docs/FEATURE_REQUIREMENTS.md) |
-| DB / API 設計 | [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md) / [`docs/API_DESIGN.md`](docs/API_DESIGN.md) |
-| **DB マイグレーション手順** | [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) |
-| **アプリのディレクトリ・採用方針** | [`docs/ARCHITECTURE_GUIDE.md`](docs/ARCHITECTURE_GUIDE.md) |
-| Expo / TypeScript スタイル | [`docs/EXPO_TYPESCRIPT_CONVENTIONS.md`](docs/EXPO_TYPESCRIPT_CONVENTIONS.md) |
+| 内容                                 | パス                                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| チーム開発（ブランチ・コミット・PR） | [`docs/Rule.md`](docs/Rule.md)                                                                    |
+| プロダクト要件                       | [`docs/PRD.md`](docs/PRD.md)                                                                      |
+| 技術・ローカル方針の詳細             | [`docs/TRD.md`](docs/TRD.md)                                                                      |
+| 機能 F-01〜F-14                      | [`docs/FEATURE_REQUIREMENTS.md`](docs/FEATURE_REQUIREMENTS.md)                                    |
+| DB / API 設計                        | [`docs/DATABASE_DESIGN.md`](docs/DATABASE_DESIGN.md) / [`docs/API_DESIGN.md`](docs/API_DESIGN.md) |
+| **DB マイグレーション手順**          | [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md)                                                        |
+| **アプリのディレクトリ・採用方針**   | [`docs/ARCHITECTURE_GUIDE.md`](docs/ARCHITECTURE_GUIDE.md)                                        |
+| Expo / TypeScript スタイル           | [`docs/EXPO_TYPESCRIPT_CONVENTIONS.md`](docs/EXPO_TYPESCRIPT_CONVENTIONS.md)                      |
 
 ## Expo の参考
 
