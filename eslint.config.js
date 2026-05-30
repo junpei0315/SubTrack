@@ -10,11 +10,7 @@ module.exports = defineConfig([
       'import/order': [
         'warn',
         {
-          groups: [
-            ['builtin', 'external'],
-            'internal',
-            ['parent', 'sibling', 'index'],
-          ],
+          groups: [['builtin', 'external'], 'internal', ['parent', 'sibling', 'index']],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
@@ -25,14 +21,6 @@ module.exports = defineConfig([
   },
   prettierConfig,
   {
-    ignores: [
-      'dist/*',
-      'node_modules/*',
-      '.expo/*',
-      'build/*',
-      'coverage/*',
-      'android/*',
-      'ios/*',
-    ],
+    ignores: ['dist/*', 'node_modules/*', '.expo/*', 'build/*', 'coverage/*', 'android/*', 'ios/*'],
   },
 ]);
