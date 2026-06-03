@@ -22,6 +22,7 @@ function buildMockSubscriptions(year: number, month: number): Subscription[] {
         cycle: 'monthly',
       },
       nextBillingDate: new Date(year, month - 1, 5),
+      startDate: new Date(2021, 8, 24),
       status: 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -45,6 +46,7 @@ function buildMockSubscriptions(year: number, month: number): Subscription[] {
         cycle: 'monthly',
       },
       nextBillingDate: new Date(year, month - 1, 12),
+      startDate: new Date(2022, 2, 1),
       status: 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -65,9 +67,10 @@ function buildMockSubscriptions(year: number, month: number): Subscription[] {
         name: 'All Apps',
         price: 6248,
         currency: 'JPY',
-        cycle: 'monthly',
+        cycle: 'yearly',
       },
       nextBillingDate: new Date(year, month - 1, 20),
+      startDate: new Date(2020, 5, 15),
       status: 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -91,6 +94,7 @@ function buildMockSubscriptions(year: number, month: number): Subscription[] {
         cycle: 'monthly',
       },
       nextBillingDate: new Date(year, month - 1, 25),
+      startDate: new Date(2023, 10, 1),
       status: 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -101,5 +105,10 @@ function buildMockSubscriptions(year: number, month: number): Subscription[] {
 export const subscriptionRepositoryMock: SubscriptionRepository = {
   async findByBillingMonth(year: number, month: number): Promise<Subscription[]> {
     return buildMockSubscriptions(year, month);
+  },
+  async findById(id: string): Promise<Subscription | null> {
+    const now = new Date();
+    const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
+    return all.find((sub) => sub.id === id) ?? null;
   },
 };

@@ -1,4 +1,2 @@
-/**
- * Infrastructure: Supabase client adapters, mappers, and other I/O.
- */
-export {};
+export { supabase } from './client';
+export { subscriptionRepositorySupabase } from './subscriptionRepositorySupabase';

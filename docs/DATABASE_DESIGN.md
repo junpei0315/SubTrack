@@ -65,6 +65,7 @@ erDiagram
         uuid id PK
         uuid user_id FK "profiles 参照"
         uuid plan_id FK "plans 参照"
+        date start_date "契約の最初の請求日 (NOT NULL)"
         date next_billing_date "次回更新日 (NOT NULL)"
         varchar status "active / paused 等"
         text memo "解約リンクなど"
@@ -224,16 +225,17 @@ erDiagram
 
 ### `subscriptions`
 
-| カラム名          | 型          | NULL | デフォルト          | 説明                             |
-| ----------------- | ----------- | ---- | ------------------- | -------------------------------- |
-| id                | uuid        | NO   | `gen_random_uuid()` | PK                               |
-| user_id           | uuid        | NO   | —                   | FK → `profiles.id`（RLS 対象）   |
-| plan_id           | uuid        | NO   | —                   | FK → `plans.id`                  |
-| next_billing_date | date        | NO   | —                   | **F-10** 通知の基準日            |
-| status            | varchar(24) | NO   | `'active'`          | **F-03**: `active` / `paused` 等 |
-| memo              | text        | YES  | —                   | 解約 URL・メモ                   |
-| created_at        | timestamptz | NO   | `now()`             |                                  |
-| updated_at        | timestamptz | YES  | —                   |                                  |
+| カラム名          | 型          | NULL | デフォルト          | 説明                                                  |
+| ----------------- | ----------- | ---- | ------------------- | ----------------------------------------------------- |
+| id                | uuid        | NO   | `gen_random_uuid()` | PK                                                    |
+| user_id           | uuid        | NO   | —                   | FK → `profiles.id`（RLS 対象）                        |
+| plan_id           | uuid        | NO   | —                   | FK → `plans.id`                                       |
+| start_date        | date        | NO   | —                   | 契約の最初の請求日（不変）。**F-09** 利用頻度計算など |
+| next_billing_date | date        | NO   | —                   | **F-10** 通知の基準日。請求ごとに更新                 |
+| status            | varchar(24) | NO   | `'active'`          | **F-03**: `active` / `paused` 等                      |
+| memo              | text        | YES  | —                   | 解約 URL・メモ                                        |
+| created_at        | timestamptz | NO   | `now()`             |                                                       |
+| updated_at        | timestamptz | YES  | —                   |                                                       |
 
 **インデックス**
 
@@ -301,5 +303,6 @@ erDiagram
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |
