@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
@@ -10,7 +10,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Line, Polyline, Rect } from 'react-native-svg';
 
+import { ThemedText } from '@/components/themed-text';
+import { Colors } from '@/constants/theme';
+
 const AnimatedPolyline = Animated.createAnimatedComponent(Polyline);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedView = Animated.createAnimatedComponent(View);
 
 const ICON_SIZE = 240;
@@ -23,14 +27,29 @@ const DOT_Y = 176;
 const DOT_XS = [90, 120, 150] as const;
 const DOT_FILLS = ['#E53935', 'rgba(229,57,53,0.45)', 'rgba(229,57,53,0.2)'] as const;
 
+const TIMING = {
+  peakStart: 1000,
+  peakDuration: 250,
+  dotsStart: 1200,
+  dotStagger: 180,
+  dotDuration: 280,
+  wordmarkStart: 2300,
+  wordmarkDuration: 550,
+  holdAfterWordmark: 1600,
+} as const;
+
+const SPLASH_DURATION =
+  TIMING.wordmarkStart + TIMING.wordmarkDuration + TIMING.holdAfterWordmark;
+
 const COLORS = {
   iconBackground: '#111111',
   border: '#C0392B',
   line: '#E53935',
   accent: '#E53935',
-  subtitle: '#666666',
   baseline: '#2A2A2A',
 } as const;
+
+const SPLASH_TEXT_COLOR = Colors.dark.text;
 
 interface SubTrackAnimatedLogoProps {
   showWordmark?: boolean;
@@ -42,16 +61,24 @@ export function SubTrackAnimatedLogo({
   onAnimationComplete,
 }: SubTrackAnimatedLogoProps) {
   const lineProgress = useSharedValue(0);
+  const peakOpacity = useSharedValue(0);
+  const dot0Opacity = useSharedValue(0);
+  const dot1Opacity = useSharedValue(0);
+  const dot2Opacity = useSharedValue(0);
   const wordmarkOpacity = useSharedValue(0);
   const wordmarkTranslateY = useSharedValue(12);
   const onCompleteRef = useRef(onAnimationComplete);
-  const [phase, setPhase] = useState(0);
 
   onCompleteRef.current = onAnimationComplete;
 
   useEffect(() => {
-    setPhase(0);
+    const dots = [dot0Opacity, dot1Opacity, dot2Opacity] as const;
+
     lineProgress.value = 0;
+    peakOpacity.value = 0;
+    dots.forEach((opacity) => {
+      opacity.value = 0;
+    });
     wordmarkOpacity.value = 0;
     wordmarkTranslateY.value = 12;
 
@@ -60,25 +87,62 @@ export function SubTrackAnimatedLogo({
       withTiming(1, { duration: 900, easing: Easing.bezier(0.4, 0, 0.2, 1) })
     );
 
-    const timers = [
-      setTimeout(() => setPhase(1), 1000),
-      setTimeout(() => setPhase(2), 1200),
-      setTimeout(() => setPhase(3), 1380),
-      setTimeout(() => setPhase(4), 1560),
-      setTimeout(() => {
-        setPhase(5);
-        wordmarkOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) });
-        wordmarkTranslateY.value = withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) });
-      }, 1700),
-      setTimeout(() => onCompleteRef.current?.(), 2700),
-    ];
+    peakOpacity.value = withDelay(
+      TIMING.peakStart,
+      withTiming(1, { duration: TIMING.peakDuration, easing: Easing.out(Easing.ease) })
+    );
 
-    return () => timers.forEach(clearTimeout);
-  }, [lineProgress, wordmarkOpacity, wordmarkTranslateY]);
+    dots.forEach((opacity, index) => {
+      opacity.value = withDelay(
+        TIMING.dotsStart + index * TIMING.dotStagger,
+        withTiming(1, { duration: TIMING.dotDuration, easing: Easing.out(Easing.ease) })
+      );
+    });
+
+    wordmarkOpacity.value = withDelay(
+      TIMING.wordmarkStart,
+      withTiming(1, { duration: TIMING.wordmarkDuration, easing: Easing.out(Easing.ease) })
+    );
+
+    wordmarkTranslateY.value = withDelay(
+      TIMING.wordmarkStart,
+      withTiming(0, { duration: TIMING.wordmarkDuration, easing: Easing.out(Easing.cubic) })
+    );
+
+    const completeTimer = setTimeout(() => onCompleteRef.current?.(), SPLASH_DURATION);
+
+    return () => clearTimeout(completeTimer);
+  }, [
+    dot0Opacity,
+    dot1Opacity,
+    dot2Opacity,
+    lineProgress,
+    peakOpacity,
+    wordmarkOpacity,
+    wordmarkTranslateY,
+  ]);
 
   const animatedLineProps = useAnimatedProps(() => ({
     strokeDashoffset: GRAPH_PATH_LENGTH * (1 - lineProgress.value),
   }));
+
+  const animatedPeakProps = useAnimatedProps(() => ({
+    opacity: peakOpacity.value,
+  }));
+
+  const animatedDot0Props = useAnimatedProps(() => ({
+    opacity: dot0Opacity.value,
+  }));
+
+  const animatedDot1Props = useAnimatedProps(() => ({
+    opacity: dot1Opacity.value,
+  }));
+
+  const animatedDot2Props = useAnimatedProps(() => ({
+    opacity: dot2Opacity.value,
+  }));
+
+  const animatedDotPropsList = [animatedDot0Props, animatedDot1Props, animatedDot2Props] as const;
 
   const wordmarkStyle = useAnimatedStyle(() => ({
     opacity: wordmarkOpacity.value,
@@ -112,12 +176,12 @@ export function SubTrackAnimatedLogo({
           strokeDasharray={GRAPH_PATH_LENGTH}
           animatedProps={animatedLineProps}
         />
-        <Circle
+        <AnimatedCircle
           cx={PEAK_X}
           cy={PEAK_Y}
           r={10}
           fill="white"
-          opacity={phase >= 1 ? 1 : 0}
+          animatedProps={animatedPeakProps}
         />
         <Line
           x1={36}
@@ -128,23 +192,25 @@ export function SubTrackAnimatedLogo({
           strokeWidth={1.5}
         />
         {DOT_XS.map((cx, index) => (
-          <Circle
+          <AnimatedCircle
             key={cx}
             cx={cx}
             cy={DOT_Y}
             r={11}
             fill={DOT_FILLS[index]}
-            opacity={phase >= index + 2 ? 1 : 0}
+            animatedProps={animatedDotPropsList[index]}
           />
         ))}
       </Svg>
 
       {showWordmark ? (
         <AnimatedView style={[styles.wordmarkContainer, wordmarkStyle]}>
-          <Text style={styles.wordmark}>
+          <ThemedText type="title" lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
             Sub<Text style={styles.wordmarkAccent}>Track</Text>
-          </Text>
-          <Text style={styles.subtitle}>Track Your Subscriptions</Text>
+          </ThemedText>
+          <ThemedText lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
+            Track Your Subscriptions
+          </ThemedText>
         </AnimatedView>
       ) : null}
     </View>
@@ -160,20 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  wordmark: {
-    fontSize: 44,
-    fontWeight: '900',
-    letterSpacing: -1.5,
-    color: '#FFFFFF',
-  },
   wordmarkAccent: {
     color: COLORS.accent,
-  },
-  subtitle: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.subtitle,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
   },
 });
