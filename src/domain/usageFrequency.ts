@@ -3,17 +3,18 @@
  *
  * データモデル前提: usage_logs は「その日使ったか」の日単位 ON/OFF（used_date のユニーク）。
  * 利用"時間"は取得できないため、指標は「利用回数（日数）」と「1 回あたりコスト」で表現する。
- * ヒートマップは選択中の 1 か月をカレンダー（日曜始まり）として描画する。
+ * ヒートマップは GitHub 風に、複数月ぶんの連続した日を週カラム（日曜始まり）で描画する。
  */
 
 import { formatLocalDate } from './localDate';
 
 const DAYS_IN_WEEK = 7;
+export const DEFAULT_MONTHS_TO_SHOW = 3;
 
 export interface UsageHeatmapCell {
   date: Date;
-  /** 表示中の月に属する日か（月外はプレースホルダ） */
-  inMonth: boolean;
+  /** 表示範囲に含まれる日か（範囲外はプレースホルダ） */
+  inRange: boolean;
   /** その日に利用記録があるか */
   used: boolean;
   isToday: boolean;
@@ -24,19 +25,30 @@ export interface UsageHeatmapCell {
 /** 1 列 = 1 週間。index 0..6 が日曜〜土曜。 */
 export type UsageHeatmapWeek = UsageHeatmapCell[];
 
-export interface MonthUsageView {
+export interface HeatmapMonthLabel {
+  /** ラベルを表示する週カラムの index */
+  weekIndex: number;
+  /** 例: 6月 */
+  label: string;
+}
+
+export interface RangeUsageView {
   /** 古い週 → 新しい週の順に並んだ週カラム */
   weeks: UsageHeatmapWeek[];
-  /** ヘッダー表示用ラベル（例: 2026年6月） */
-  monthLabel: string;
-  year: number;
-  /** 1-12 */
-  month: number;
-  /** この月の利用回数（日数） */
-  usesInMonth: number;
-  /** 1 回あたりコスト（円）。0 回なら null */
+  /** 週カラム上部に出す月ラベル */
+  monthLabels: HeatmapMonthLabel[];
+  /** ヘッダー表示用ラベル（例: 2026年4月 〜 6月） */
+  rangeLabel: string;
+  /** 表示範囲の末尾の月（ナビ基準）。1-12 */
+  anchorYear: number;
+  anchorMonth: number;
+  /** 末尾の月が今月か（次の月へ進めないようにする判定に使う） */
+  isAnchorCurrentMonth: boolean;
+  /** 「今月」の利用回数（日数） */
+  usesThisMonth: number;
+  /** 1 回あたりコスト（円）。今月 0 回なら null */
   costPerUseYen: number | null;
-  /** この月に今日が含まれ、かつ今日利用済みか */
+  /** 今日すでに利用記録があるか */
   isUsedToday: boolean;
   /** 利用記録がまだ存在しない */
   isAccumulating: boolean;
@@ -63,10 +75,6 @@ export function formatCostPerUseYen(yen: number): string {
   return `¥${yen.toLocaleString('ja-JP')}`;
 }
 
-export function formatMonthLabel(year: number, month: number): string {
-  return `${year}年${month}月`;
-}
-
 /** 指定年月（month は 1-12）の利用回数を数える。 */
 export function countUsesInMonth(
   usedDateKeys: ReadonlySet<string>,
@@ -84,24 +92,24 @@ export function countUsesInMonth(
 }
 
 /**
- * 指定年月のカレンダーヒートマップ（週カラム配列）を作る純粋関数。
- * 月初週の前・月末週の後ろは inMonth=false のプレースホルダで埋める。
+ * [rangeStart, rangeEnd] を覆う連続ヒートマップ（週カラム配列）を作る純粋関数。
+ * 範囲外（グリッド端の埋め）は inRange=false のプレースホルダにする。
  */
-export function buildMonthHeatmapWeeks(
+export function buildRangeHeatmapWeeks(
   usedDateKeys: ReadonlySet<string>,
-  year: number,
-  month: number,
+  rangeStart: Date,
+  rangeEnd: Date,
   today: Date
 ): UsageHeatmapWeek[] {
   const todayKey = formatLocalDate(today);
+  const startKey = formatLocalDate(rangeStart);
+  const endKey = formatLocalDate(rangeEnd);
 
-  const firstOfMonth = new Date(year, month - 1, 1);
-  const gridStart = new Date(firstOfMonth);
-  gridStart.setDate(1 - firstOfMonth.getDay());
+  const gridStart = new Date(rangeStart);
+  gridStart.setDate(rangeStart.getDate() - rangeStart.getDay());
 
-  const lastOfMonth = new Date(year, month, 0);
-  const gridEnd = new Date(lastOfMonth);
-  gridEnd.setDate(lastOfMonth.getDate() + (6 - lastOfMonth.getDay()));
+  const gridEnd = new Date(rangeEnd);
+  gridEnd.setDate(rangeEnd.getDate() + (6 - rangeEnd.getDay()));
 
   const weeks: UsageHeatmapWeek[] = [];
   const cursor = new Date(gridStart);
@@ -110,12 +118,12 @@ export function buildMonthHeatmapWeeks(
     const week: UsageHeatmapWeek = [];
     for (let d = 0; d < DAYS_IN_WEEK; d++) {
       const key = formatLocalDate(cursor);
-      const inMonth = cursor.getMonth() === month - 1;
+      const inRange = key >= startKey && key <= endKey;
       week.push({
         date: new Date(cursor),
-        inMonth,
-        used: inMonth && usedDateKeys.has(key),
-        isToday: inMonth && key === todayKey,
+        inRange,
+        used: inRange && usedDateKeys.has(key),
+        isToday: key === todayKey,
         isFuture: key > todayKey,
       });
       cursor.setDate(cursor.getDate() + 1);
@@ -125,27 +133,61 @@ export function buildMonthHeatmapWeeks(
   return weeks;
 }
 
+function buildMonthLabels(weeks: UsageHeatmapWeek[]): HeatmapMonthLabel[] {
+  const labels: HeatmapMonthLabel[] = [];
+  let lastMonth = -1;
+
+  weeks.forEach((week, weekIndex) => {
+    const firstInRange = week.find((cell) => cell.inRange);
+    if (!firstInRange) {
+      return;
+    }
+    const month = firstInRange.date.getMonth() + 1;
+    if (month !== lastMonth) {
+      labels.push({ weekIndex, label: `${month}月` });
+      lastMonth = month;
+    }
+  });
+
+  return labels;
+}
+
 /**
- * 指定年月の表示用ビューを組み立てる純粋関数（実データ連携でも使える）。
+ * 末尾の月（anchor）から monthsToShow ヶ月ぶんを表示する範囲ビューを組み立てる純粋関数。
+ * 指標（利用回数・コスト）は常に「今日の属する月」を集計する。
  */
-export function buildMonthUsageView(
+export function buildRangeUsageView(
   usedDateKeys: ReadonlySet<string>,
   monthlyPriceYen: number,
-  year: number,
-  month: number,
+  anchorYear: number,
+  anchorMonth: number,
+  monthsToShow: number = DEFAULT_MONTHS_TO_SHOW,
   today: Date = new Date()
-): MonthUsageView {
-  const usesInMonth = countUsesInMonth(usedDateKeys, year, month);
-  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
+): RangeUsageView {
+  const rangeStart = new Date(anchorYear, anchorMonth - monthsToShow, 1);
+  const rangeEnd = new Date(anchorYear, anchorMonth, 0);
+
+  const weeks = buildRangeHeatmapWeeks(usedDateKeys, rangeStart, rangeEnd, today);
+
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth() + 1;
+  const usesThisMonth = countUsesInMonth(usedDateKeys, todayYear, todayMonth);
+
+  const rangeLabel =
+    rangeStart.getFullYear() === rangeEnd.getFullYear()
+      ? `${rangeStart.getFullYear()}年${rangeStart.getMonth() + 1}月 〜 ${rangeEnd.getMonth() + 1}月`
+      : `${rangeStart.getFullYear()}年${rangeStart.getMonth() + 1}月 〜 ${rangeEnd.getFullYear()}年${rangeEnd.getMonth() + 1}月`;
 
   return {
-    weeks: buildMonthHeatmapWeeks(usedDateKeys, year, month, today),
-    monthLabel: formatMonthLabel(year, month),
-    year,
-    month,
-    usesInMonth,
-    costPerUseYen: computeCostPerUseYen(monthlyPriceYen, usesInMonth),
-    isUsedToday: isCurrentMonth && usedDateKeys.has(formatLocalDate(today)),
+    weeks,
+    monthLabels: buildMonthLabels(weeks),
+    rangeLabel,
+    anchorYear,
+    anchorMonth,
+    isAnchorCurrentMonth: anchorYear === todayYear && anchorMonth === todayMonth,
+    usesThisMonth,
+    costPerUseYen: computeCostPerUseYen(monthlyPriceYen, usesThisMonth),
+    isUsedToday: usedDateKeys.has(formatLocalDate(today)),
     isAccumulating: usedDateKeys.size === 0,
   };
 }
@@ -155,7 +197,7 @@ export function buildMonthUsageView(
  */
 export function createMockUsedDateKeys(
   today: Date = new Date(),
-  days: number = 140
+  days: number = 200
 ): ReadonlySet<string> {
   const usedDateKeys = new Set<string>();
 

@@ -1,19 +1,28 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import {
+  LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
+} from 'react-native';
 
 import { formatLocalDate } from '@/src/domain/localDate';
 import {
-  buildMonthUsageView,
+  buildRangeUsageView,
   computeCostPerUseYen,
   formatCostPerUseYen,
   formatUseCount,
+  DEFAULT_MONTHS_TO_SHOW,
 } from '@/src/domain/usageFrequency';
 
 interface UsageFrequencyTrackerProps {
   usedDateKeys: ReadonlySet<string>;
   monthlyPriceYen: number;
   today?: Date;
+  monthsToShow?: number;
   onRecordUsagePress?: () => void;
   onUndoUsagePress?: () => void;
   title?: string;
@@ -30,9 +39,10 @@ const STAT_LABEL_COLOR = '#9aa0a6';
 const NAV_DISABLED_COLOR = 'rgba(255, 255, 255, 0.2)';
 const PLACEHOLDER = '—';
 
-const CELL_SIZE = 14;
 const CELL_GAP = 4;
 const CELL_RADIUS = 3;
+const MIN_CELL_SIZE = 10;
+const MAX_CELL_SIZE = 20;
 // 日曜始まりの行に対応するラベル（月・水・金のみ表示）
 const WEEKDAY_LABELS = ['', '月', '', '水', '', '金', ''];
 
@@ -40,6 +50,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   usedDateKeys,
   monthlyPriceYen,
   today: todayProp,
+  monthsToShow = DEFAULT_MONTHS_TO_SHOW,
   onRecordUsagePress,
   onUndoUsagePress,
   title = '利用状況トラッカー',
@@ -48,45 +59,54 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   const today = useMemo(() => todayProp ?? new Date(), [todayProp]);
   const todayKey = formatLocalDate(today);
 
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth() + 1);
+  const [anchorYear, setAnchorYear] = useState(today.getFullYear());
+  const [anchorMonth, setAnchorMonth] = useState(today.getMonth() + 1);
   const [usedToday, setUsedToday] = useState(usedDateKeys.has(todayKey));
+  const [gridWidth, setGridWidth] = useState(0);
 
   useEffect(() => {
     setUsedToday(usedDateKeys.has(todayKey));
   }, [usedDateKeys, todayKey]);
 
-  const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth() + 1;
-
   const view = useMemo(
-    () => buildMonthUsageView(usedDateKeys, monthlyPriceYen, viewYear, viewMonth, today),
-    [usedDateKeys, monthlyPriceYen, viewYear, viewMonth, today]
+    () =>
+      buildRangeUsageView(usedDateKeys, monthlyPriceYen, anchorYear, anchorMonth, monthsToShow, today),
+    [usedDateKeys, monthlyPriceYen, anchorYear, anchorMonth, monthsToShow, today]
   );
 
-  const usesDelta = isCurrentMonth ? (usedToday ? 1 : 0) - (view.isUsedToday ? 1 : 0) : 0;
-  const usesInMonth = view.usesInMonth + usesDelta;
-  const costPerUseYen = computeCostPerUseYen(monthlyPriceYen, usesInMonth);
+  const weekCount = view.weeks.length;
+  const cellSize = useMemo(() => {
+    if (gridWidth <= 0 || weekCount <= 0) {
+      return MAX_CELL_SIZE;
+    }
+    const raw = (gridWidth - CELL_GAP * (weekCount - 1)) / weekCount;
+    return Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, Math.floor(raw)));
+  }, [gridWidth, weekCount]);
 
-  const usesLabel = view.isAccumulating ? PLACEHOLDER : formatUseCount(usesInMonth);
+  const usesDelta = (usedToday ? 1 : 0) - (view.isUsedToday ? 1 : 0);
+  const usesThisMonth = view.usesThisMonth + usesDelta;
+  const costPerUseYen = computeCostPerUseYen(monthlyPriceYen, usesThisMonth);
+
+  const usesLabel = view.isAccumulating ? PLACEHOLDER : formatUseCount(usesThisMonth);
   const costPerUseLabel = view.isAccumulating
     ? PLACEHOLDER
     : costPerUseYen != null
       ? formatCostPerUseYen(costPerUseYen)
       : '未利用';
 
-  const goPrevMonth = () => {
-    const prev = new Date(viewYear, viewMonth - 2, 1);
-    setViewYear(prev.getFullYear());
-    setViewMonth(prev.getMonth() + 1);
+  const goPrev = () => {
+    const prev = new Date(anchorYear, anchorMonth - 2, 1);
+    setAnchorYear(prev.getFullYear());
+    setAnchorMonth(prev.getMonth() + 1);
   };
 
-  const goNextMonth = () => {
-    if (isCurrentMonth) {
+  const goNext = () => {
+    if (view.isAnchorCurrentMonth) {
       return;
     }
-    const next = new Date(viewYear, viewMonth, 1);
-    setViewYear(next.getFullYear());
-    setViewMonth(next.getMonth() + 1);
+    const next = new Date(anchorYear, anchorMonth, 1);
+    setAnchorYear(next.getFullYear());
+    setAnchorMonth(next.getMonth() + 1);
   };
 
   const handleRecord = () => {
@@ -99,29 +119,32 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
     onUndoUsagePress?.();
   };
 
+  const onWeeksLayout = (event: LayoutChangeEvent) => {
+    setGridWidth(event.nativeEvent.layout.width);
+  };
+
+  const cellStyle = { width: cellSize, height: cellSize };
+  const weekColumnStyle = { gap: CELL_GAP };
+
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <View style={styles.card}>
         <View style={styles.header}>
-          <Pressable
-            onPress={goPrevMonth}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="前の月">
+          <Pressable onPress={goPrev} hitSlop={8} accessibilityRole="button" accessibilityLabel="前の期間">
             <MaterialIcons name="chevron-left" size={26} color={TEXT_COLOR} />
           </Pressable>
-          <Text style={styles.monthLabel}>{view.monthLabel}</Text>
+          <Text style={styles.rangeLabel}>{view.rangeLabel}</Text>
           <Pressable
-            onPress={goNextMonth}
-            disabled={isCurrentMonth}
+            onPress={goNext}
+            disabled={view.isAnchorCurrentMonth}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="次の月">
+            accessibilityLabel="次の期間">
             <MaterialIcons
               name="chevron-right"
               size={26}
-              color={isCurrentMonth ? NAV_DISABLED_COLOR : TEXT_COLOR}
+              color={view.isAnchorCurrentMonth ? NAV_DISABLED_COLOR : TEXT_COLOR}
             />
           </Pressable>
         </View>
@@ -129,42 +152,57 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
         <View style={styles.heatmapRow}>
           <View style={styles.weekdayLabels}>
             {WEEKDAY_LABELS.map((label, index) => (
-              <View key={index} style={styles.weekdayLabelCell}>
-                <Text style={styles.weekdayLabelText}>{label}</Text>
+              <View key={index} style={[styles.weekdayLabelCell, { height: cellSize }]}>
+                <Text style={[styles.weekdayLabelText, { lineHeight: cellSize }]}>{label}</Text>
               </View>
             ))}
           </View>
-          <View style={styles.weeks}>
-            {view.weeks.map((week, weekIndex) => (
-              <View key={weekIndex} style={styles.weekColumn}>
-                {week.map((cell, dayIndex) => {
-                  if (!cell.inMonth) {
-                    return <View key={dayIndex} style={[styles.cell, styles.cellOutside]} />;
-                  }
-                  const isUsed = cell.isToday ? usedToday : cell.used;
-                  return (
-                    <View
-                      key={dayIndex}
-                      style={[
-                        styles.cell,
-                        cell.isFuture
-                          ? styles.cellFuture
-                          : isUsed
-                            ? styles.cellUsed
-                            : styles.cellEmpty,
-                        cell.isToday && styles.cellToday,
-                      ]}
-                    />
-                  );
-                })}
-              </View>
-            ))}
+          <View style={styles.weeksArea}>
+            <View style={[styles.monthLabelRow, { height: 14 }]}>
+              {view.monthLabels.map((monthLabel) => (
+                <Text
+                  key={`${monthLabel.weekIndex}-${monthLabel.label}`}
+                  style={[
+                    styles.monthLabelText,
+                    { left: monthLabel.weekIndex * (cellSize + CELL_GAP) },
+                  ]}>
+                  {monthLabel.label}
+                </Text>
+              ))}
+            </View>
+            <View style={styles.weeks} onLayout={onWeeksLayout}>
+              {view.weeks.map((week, weekIndex) => (
+                <View key={weekIndex} style={weekColumnStyle}>
+                  {week.map((cell, dayIndex) => {
+                    if (!cell.inRange) {
+                      return <View key={dayIndex} style={[styles.cell, cellStyle, styles.cellOutside]} />;
+                    }
+                    const isUsed = cell.isToday ? usedToday : cell.used;
+                    return (
+                      <View
+                        key={dayIndex}
+                        style={[
+                          styles.cell,
+                          cellStyle,
+                          cell.isFuture
+                            ? styles.cellFuture
+                            : isUsed
+                              ? styles.cellUsed
+                              : styles.cellEmpty,
+                          cell.isToday && styles.cellToday,
+                        ]}
+                      />
+                    );
+                  })}
+                </View>
+              ))}
+            </View>
           </View>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>{isCurrentMonth ? '今月' : 'この月'}の利用回数</Text>
+            <Text style={styles.statLabel}>今月の利用回数</Text>
             <Text style={styles.statValue}>{usesLabel}</Text>
           </View>
           <View style={styles.statBlock}>
@@ -174,32 +212,30 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
         </View>
       </View>
 
-      {isCurrentMonth ? (
-        usedToday ? (
-          <View style={styles.recordedRow}>
-            <View style={styles.recordedStatus}>
-              <MaterialIcons name="check-circle" size={20} color={ACCENT_COLOR} />
-              <Text style={styles.recordedText}>今日は利用済み</Text>
-            </View>
-            <Pressable
-              onPress={handleUndo}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel="今日の利用記録を取り消す">
-              <Text style={styles.undoText}>取り消す</Text>
-            </Pressable>
+      {usedToday ? (
+        <View style={styles.recordedRow}>
+          <View style={styles.recordedStatus}>
+            <MaterialIcons name="check-circle" size={20} color={ACCENT_COLOR} />
+            <Text style={styles.recordedText}>今日は利用済み</Text>
           </View>
-        ) : (
           <Pressable
-            style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
-            onPress={handleRecord}
+            onPress={handleUndo}
+            hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="今日使った？">
-            <MaterialIcons name="auto-awesome" size={22} color={TEXT_COLOR} />
-            <Text style={styles.ctaLabel}>今日使った？</Text>
+            accessibilityLabel="今日の利用記録を取り消す">
+            <Text style={styles.undoText}>取り消す</Text>
           </Pressable>
-        )
-      ) : null}
+        </View>
+      ) : (
+        <Pressable
+          style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+          onPress={handleRecord}
+          accessibilityRole="button"
+          accessibilityLabel="今日使った？">
+          <MaterialIcons name="auto-awesome" size={22} color={TEXT_COLOR} />
+          <Text style={styles.ctaLabel}>今日使った？</Text>
+        </Pressable>
+      )}
     </View>
   );
 };
@@ -221,45 +257,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    gap: 20,
+    gap: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  monthLabel: {
+  rangeLabel: {
     color: TEXT_COLOR,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   heatmapRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     gap: 6,
   },
   weekdayLabels: {
     gap: CELL_GAP,
+    justifyContent: 'flex-end',
+    paddingBottom: 0,
   },
   weekdayLabelCell: {
-    height: CELL_SIZE,
     justifyContent: 'center',
   },
   weekdayLabelText: {
     color: STAT_LABEL_COLOR,
     fontSize: 9,
-    lineHeight: CELL_SIZE,
+  },
+  weeksArea: {
+    flex: 1,
+  },
+  monthLabelRow: {
+    position: 'relative',
+  },
+  monthLabelText: {
+    position: 'absolute',
+    color: STAT_LABEL_COLOR,
+    fontSize: 10,
+    fontWeight: '600',
   },
   weeks: {
     flexDirection: 'row',
-    gap: CELL_GAP,
-  },
-  weekColumn: {
-    gap: CELL_GAP,
+    justifyContent: 'space-between',
   },
   cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
     borderRadius: CELL_RADIUS,
   },
   cellOutside: {
