@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
@@ -8,7 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
 import type { Subscription } from '@/src/domain/subscription';
-import { createMockUsageFrequencySnapshot } from '@/src/domain/usageFrequency';
+import { createMockUsedDateKeys } from '@/src/domain/usageFrequency';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
 // TODO: src/features/subscriptions/screens/SubscriptionDetailScreen.tsx を実装して差し替える
@@ -18,6 +18,8 @@ export default function SubscriptionDetailRoute() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // TODO: F-08 usage_logs から取得した利用日に差し替える
+  const usedDateKeys = useMemo(() => createMockUsedDateKeys(), []);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,9 +95,13 @@ export default function SubscriptionDetailRoute() {
           startDate={subscription.startDate}
         />
         <UsageFrequencyTracker
-          snapshot={createMockUsageFrequencySnapshot(subscription.plan.price)}
+          usedDateKeys={usedDateKeys}
+          monthlyPriceYen={subscription.plan.price}
           onRecordUsagePress={() => {
             // TODO: F-08 recordUsageToday 連携
+          }}
+          onUndoUsagePress={() => {
+            // TODO: F-08 利用記録の取り消し連携
           }}
         />
       </ScrollView>

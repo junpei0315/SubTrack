@@ -1,86 +1,211 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { formatLocalDate } from '@/src/domain/localDate';
 import {
-  formatAverageUsageHours,
-  formatCostPerHourYen,
-  type UsageFrequencySnapshot,
+  buildMonthUsageView,
+  computeCostPerUseYen,
+  formatCostPerUseYen,
+  formatUseCount,
 } from '@/src/domain/usageFrequency';
 
 interface UsageFrequencyTrackerProps {
-  snapshot: UsageFrequencySnapshot;
+  usedDateKeys: ReadonlySet<string>;
+  monthlyPriceYen: number;
+  today?: Date;
   onRecordUsagePress?: () => void;
+  onUndoUsagePress?: () => void;
   title?: string;
   style?: ViewStyle;
 }
 
-const BAR_MAX_HEIGHT = 88;
 const ACCENT_COLOR = '#ff3a5e';
 const TEXT_COLOR = '#ffffff';
 const SECTION_TITLE_COLOR = '#9aa0a6';
 const CARD_BG = '#1c1c1e';
-const BAR_INACTIVE = '#3a3a3c';
+const CELL_EMPTY = '#2c2c2e';
+const CELL_FUTURE = 'rgba(255, 255, 255, 0.03)';
 const STAT_LABEL_COLOR = '#9aa0a6';
+const NAV_DISABLED_COLOR = 'rgba(255, 255, 255, 0.2)';
 const PLACEHOLDER = '—';
 
+const CELL_SIZE = 30;
+const CELL_GAP = 4;
+const CELL_RADIUS = 6;
+const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
+
 export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
-  snapshot,
+  usedDateKeys,
+  monthlyPriceYen,
+  today: todayProp,
   onRecordUsagePress,
+  onUndoUsagePress,
   title = '利用状況トラッカー',
   style,
 }) => {
-  const averageHoursLabel = snapshot.isAccumulating
-    ? PLACEHOLDER
-    : snapshot.averageHoursPerMonth != null
-      ? formatAverageUsageHours(snapshot.averageHoursPerMonth)
-      : PLACEHOLDER;
+  const today = useMemo(() => todayProp ?? new Date(), [todayProp]);
+  const todayKey = formatLocalDate(today);
 
-  const costPerHourLabel = snapshot.isAccumulating
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth() + 1);
+  const [usedToday, setUsedToday] = useState(usedDateKeys.has(todayKey));
+
+  useEffect(() => {
+    setUsedToday(usedDateKeys.has(todayKey));
+  }, [usedDateKeys, todayKey]);
+
+  const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth() + 1;
+
+  const view = useMemo(
+    () => buildMonthUsageView(usedDateKeys, monthlyPriceYen, viewYear, viewMonth, today),
+    [usedDateKeys, monthlyPriceYen, viewYear, viewMonth, today]
+  );
+
+  const usesDelta = isCurrentMonth ? (usedToday ? 1 : 0) - (view.isUsedToday ? 1 : 0) : 0;
+  const usesInMonth = view.usesInMonth + usesDelta;
+  const costPerUseYen = computeCostPerUseYen(monthlyPriceYen, usesInMonth);
+
+  const usesLabel = view.isAccumulating ? PLACEHOLDER : formatUseCount(usesInMonth);
+  const costPerUseLabel = view.isAccumulating
     ? PLACEHOLDER
-    : snapshot.costPerHourYen != null
-      ? formatCostPerHourYen(snapshot.costPerHourYen)
-      : PLACEHOLDER;
+    : costPerUseYen != null
+      ? formatCostPerUseYen(costPerUseYen)
+      : '未利用';
+
+  const goPrevMonth = () => {
+    const prev = new Date(viewYear, viewMonth - 2, 1);
+    setViewYear(prev.getFullYear());
+    setViewMonth(prev.getMonth() + 1);
+  };
+
+  const goNextMonth = () => {
+    if (isCurrentMonth) {
+      return;
+    }
+    const next = new Date(viewYear, viewMonth, 1);
+    setViewYear(next.getFullYear());
+    setViewMonth(next.getMonth() + 1);
+  };
+
+  const handleRecord = () => {
+    setUsedToday(true);
+    onRecordUsagePress?.();
+  };
+
+  const handleUndo = () => {
+    setUsedToday(false);
+    onUndoUsagePress?.();
+  };
 
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <View style={styles.card}>
-        <View style={styles.chartRow}>
-          {snapshot.bars.map((bar, index) => (
-            <View key={index} style={styles.barColumn}>
-              <View
-                style={[
-                  styles.bar,
-                  {
-                    height: Math.max(8, bar.normalizedHeight * BAR_MAX_HEIGHT),
-                    backgroundColor: bar.isHighlighted ? ACCENT_COLOR : BAR_INACTIVE,
-                  },
-                  bar.isHighlighted && styles.barHighlighted,
-                ]}
-              />
+        <View style={styles.header}>
+          <Pressable
+            onPress={goPrevMonth}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="前の月">
+            <MaterialIcons name="chevron-left" size={26} color={TEXT_COLOR} />
+          </Pressable>
+          <Text style={styles.monthLabel}>{view.monthLabel}</Text>
+          <Pressable
+            onPress={goNextMonth}
+            disabled={isCurrentMonth}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="次の月">
+            <MaterialIcons
+              name="chevron-right"
+              size={26}
+              color={isCurrentMonth ? NAV_DISABLED_COLOR : TEXT_COLOR}
+            />
+          </Pressable>
+        </View>
+
+        <View style={styles.weekdayRow}>
+          {WEEKDAY_LABELS.map((label) => (
+            <View key={label} style={styles.weekdayCell}>
+              <Text style={styles.weekdayText}>{label}</Text>
             </View>
           ))}
         </View>
+
+        <View style={styles.grid}>
+          {view.weeks.map((week, weekIndex) => (
+            <View key={weekIndex} style={styles.weekRow}>
+              {week.map((cell, dayIndex) => {
+                if (!cell.inMonth) {
+                  return <View key={dayIndex} style={[styles.cell, styles.cellOutside]} />;
+                }
+                const isUsed = cell.isToday ? usedToday : cell.used;
+                return (
+                  <View
+                    key={dayIndex}
+                    style={[
+                      styles.cell,
+                      cell.isFuture
+                        ? styles.cellFuture
+                        : isUsed
+                          ? styles.cellUsed
+                          : styles.cellEmpty,
+                      cell.isToday && styles.cellToday,
+                    ]}>
+                    <Text
+                      style={[
+                        styles.cellText,
+                        cell.isFuture && styles.cellTextFuture,
+                        isUsed && styles.cellTextUsed,
+                      ]}>
+                      {cell.date.getDate()}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+        </View>
+
         <View style={styles.statsRow}>
           <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>平均利用時間</Text>
-            <Text style={styles.statValue}>{averageHoursLabel}</Text>
+            <Text style={styles.statLabel}>{isCurrentMonth ? '今月' : 'この月'}の利用回数</Text>
+            <Text style={styles.statValue}>{usesLabel}</Text>
           </View>
           <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>1時間あたりのコスト</Text>
-            <Text style={styles.statValue}>{costPerHourLabel}</Text>
+            <Text style={styles.statLabel}>1回あたりのコスト</Text>
+            <Text style={styles.statValue}>{costPerUseLabel}</Text>
           </View>
         </View>
       </View>
-      <Pressable
-        style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
-        onPress={onRecordUsagePress}
-        accessibilityRole="button"
-        accessibilityLabel="今日使った？">
-        <MaterialIcons name="auto-awesome" size={22} color={TEXT_COLOR} />
-        <Text style={styles.ctaLabel}>今日使った？</Text>
-      </Pressable>
+
+      {isCurrentMonth ? (
+        usedToday ? (
+          <View style={styles.recordedRow}>
+            <View style={styles.recordedStatus}>
+              <MaterialIcons name="check-circle" size={20} color={ACCENT_COLOR} />
+              <Text style={styles.recordedText}>今日は利用済み</Text>
+            </View>
+            <Pressable
+              onPress={handleUndo}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="今日の利用記録を取り消す">
+              <Text style={styles.undoText}>取り消す</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+            onPress={handleRecord}
+            accessibilityRole="button"
+            accessibilityLabel="今日使った？">
+            <MaterialIcons name="auto-awesome" size={22} color={TEXT_COLOR} />
+            <Text style={styles.ctaLabel}>今日使った？</Text>
+          </Pressable>
+        )
+      ) : null}
     </View>
   );
 };
@@ -100,40 +225,79 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_BG,
     borderRadius: 16,
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 20,
-    gap: 24,
+    gap: 16,
   },
-  chartRow: {
+  header: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: BAR_MAX_HEIGHT,
-    gap: 8,
-  },
-  barColumn: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: BAR_MAX_HEIGHT,
+    justifyContent: 'space-between',
   },
-  bar: {
-    width: '100%',
-    maxWidth: 36,
-    borderRadius: 6,
-    minHeight: 8,
+  monthLabel: {
+    color: TEXT_COLOR,
+    fontSize: 16,
+    fontWeight: '700',
   },
-  barHighlighted: {
-    shadowColor: ACCENT_COLOR,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.85,
-    shadowRadius: 10,
-    elevation: 8,
+  weekdayRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  weekdayCell: {
+    width: CELL_SIZE,
+    alignItems: 'center',
+  },
+  weekdayText: {
+    color: STAT_LABEL_COLOR,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  grid: {
+    gap: CELL_GAP,
+  },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cell: {
+    width: CELL_SIZE,
+    height: CELL_SIZE,
+    borderRadius: CELL_RADIUS,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cellOutside: {
+    backgroundColor: 'transparent',
+  },
+  cellEmpty: {
+    backgroundColor: CELL_EMPTY,
+  },
+  cellUsed: {
+    backgroundColor: ACCENT_COLOR,
+  },
+  cellFuture: {
+    backgroundColor: CELL_FUTURE,
+  },
+  cellToday: {
+    borderWidth: 1.5,
+    borderColor: TEXT_COLOR,
+  },
+  cellText: {
+    color: STAT_LABEL_COLOR,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  cellTextUsed: {
+    color: TEXT_COLOR,
+  },
+  cellTextFuture: {
+    color: NAV_DISABLED_COLOR,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 16,
+    marginTop: 4,
   },
   statBlock: {
     flex: 1,
@@ -167,5 +331,32 @@ const styles = StyleSheet.create({
     color: TEXT_COLOR,
     fontSize: 17,
     fontWeight: '700',
+  },
+  recordedRow: {
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 58, 94, 0.5)',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  recordedStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  recordedText: {
+    color: TEXT_COLOR,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  undoText: {
+    color: STAT_LABEL_COLOR,
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });
