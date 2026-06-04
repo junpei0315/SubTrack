@@ -31,9 +31,14 @@ export default function SubscriptionDetailRoute() {
         if (isMounted) {
           setSubscription(result);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          setErrorMessage('請求情報の取得に失敗しました');
+          const detail =
+            __DEV__ && error instanceof Error ? `\n（${error.message}）` : '';
+          setErrorMessage(`請求情報の取得に失敗しました${detail}`);
+        }
+        if (__DEV__) {
+          console.error('[SubscriptionDetail] load failed', error);
         }
       } finally {
         if (isMounted) {
