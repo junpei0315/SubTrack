@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   LayoutChangeEvent,
   Pressable,
@@ -8,6 +8,12 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { formatLocalDate } from '@/src/domain/localDate';
 import {
@@ -64,9 +70,31 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   const [usedToday, setUsedToday] = useState(usedDateKeys.has(todayKey));
   const [gridWidth, setGridWidth] = useState(0);
 
+  const slideX = useSharedValue(0);
+  const slideOpacity = useSharedValue(1);
+  const slideDirection = useRef(0);
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
     setUsedToday(usedDateKeys.has(todayKey));
   }, [usedDateKeys, todayKey]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    const offset = 28 * slideDirection.current;
+    slideX.value = offset;
+    slideOpacity.value = 0;
+    slideX.value = withTiming(0, { duration: 260, easing: Easing.out(Easing.cubic) });
+    slideOpacity.value = withTiming(1, { duration: 260, easing: Easing.out(Easing.ease) });
+  }, [anchorYear, anchorMonth, slideX, slideOpacity]);
+
+  const heatmapAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: slideX.value }],
+    opacity: slideOpacity.value,
+  }));
 
   const view = useMemo(
     () =>
@@ -95,6 +123,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
       : '未利用';
 
   const goPrev = () => {
+    slideDirection.current = -1;
     const prev = new Date(anchorYear, anchorMonth - 2, 1);
     setAnchorYear(prev.getFullYear());
     setAnchorMonth(prev.getMonth() + 1);
@@ -104,6 +133,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
     if (view.isAnchorCurrentMonth) {
       return;
     }
+    slideDirection.current = 1;
     const next = new Date(anchorYear, anchorMonth, 1);
     setAnchorYear(next.getFullYear());
     setAnchorMonth(next.getMonth() + 1);
@@ -149,7 +179,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
           </Pressable>
         </View>
 
-        <View style={styles.heatmapRow}>
+        <Animated.View style={[styles.heatmapRow, heatmapAnimatedStyle]}>
           <View style={styles.weekdayLabels}>
             {WEEKDAY_LABELS.map((label, index) => (
               <View key={index} style={[styles.weekdayLabelCell, { height: cellSize }]}>
@@ -198,7 +228,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
               ))}
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         <View style={styles.statsRow}>
           <View style={styles.statBlock}>
