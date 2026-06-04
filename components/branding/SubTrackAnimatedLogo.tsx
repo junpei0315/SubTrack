@@ -50,6 +50,7 @@ const COLORS = {
 } as const;
 
 const SPLASH_TEXT_COLOR = Colors.dark.text;
+const SPLASH_SUBTITLE_COLOR = Colors.dark.icon;
 
 interface SubTrackAnimatedLogoProps {
   showWordmark?: boolean;
@@ -208,7 +209,7 @@ export function SubTrackAnimatedLogo({
           <ThemedText type="title" lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
             Sub<Text style={styles.wordmarkAccent}>Track</Text>
           </ThemedText>
-          <ThemedText lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
+          <ThemedText lightColor={SPLASH_SUBTITLE_COLOR} darkColor={SPLASH_SUBTITLE_COLOR}>
             Track Your Subscriptions
           </ThemedText>
         </AnimatedView>
