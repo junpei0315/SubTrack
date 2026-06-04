@@ -295,6 +295,7 @@ erDiagram
 
 - `profiles`: 原則として「自分の行のみ `select` / `update`」（`auth.uid() = id`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
+- `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
 - マスタ（`categories`, `cycles`, `services`, `plans`）: 参照は全ユーザー可、更新はサービスロールのみ、等 — **確定後にポリシーを追記**
 
 ---
@@ -303,6 +304,7 @@ erDiagram
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |

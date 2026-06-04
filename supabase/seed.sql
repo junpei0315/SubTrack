@@ -195,3 +195,17 @@ CREATE POLICY "dev_anon_read_subscriptions"
     FOR SELECT
     TO anon, authenticated
     USING (true);
+
+-- --------------------------------------------------------------------------
+-- 5. 利用ログ（usage_logs）の確認用ダミーデータ
+--    Netflix（...001）に直近 90 日のうち決定的なパターンで利用日を入れる。
+--    利用状況トラッカー（F-09）のヒートマップ確認用。
+-- --------------------------------------------------------------------------
+INSERT INTO usage_logs (user_id, subscription_id, used_date)
+SELECT
+    '11111111-1111-1111-1111-111111111111',
+    '22222222-2222-2222-2222-222222222001',
+    (CURRENT_DATE - offset_days)
+FROM generate_series(0, 89) AS offset_days
+WHERE ((offset_days * 7 + 3) % 11) + (CASE WHEN offset_days < 21 THEN 1 ELSE 0 END) < 5
+ON CONFLICT (subscription_id, used_date) DO NOTHING;

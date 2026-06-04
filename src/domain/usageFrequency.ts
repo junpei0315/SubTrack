@@ -194,25 +194,3 @@ export function buildRangeUsageView(
     isAccumulating: usedDateKeys.size === 0,
   };
 }
-
-/**
- * F-08 連携前のモック。直近 days 日ぶんの利用日を決定的なパターンで生成する。
- */
-export function createMockUsedDateKeys(
-  today: Date = new Date(),
-  days: number = 200
-): ReadonlySet<string> {
-  const usedDateKeys = new Set<string>();
-
-  for (let i = 0; i < days; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const seed = (i * 7 + 3) % 11;
-    const recentBoost = i < 21 ? 1 : 0;
-    if (seed + recentBoost < 5) {
-      usedDateKeys.add(formatLocalDate(date));
-    }
-  }
-
-  return usedDateKeys;
-}
