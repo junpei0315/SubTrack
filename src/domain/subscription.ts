@@ -26,6 +26,7 @@ export interface Subscription {
   service: Service;
   plan: Plan;
   nextBillingDate: Date;
+  startDate: Date;
   status: 'active' | 'paused' | 'cancelled';
   createdAt: Date;
   updatedAt: Date;
