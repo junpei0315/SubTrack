@@ -35,7 +35,7 @@ interface UsageFrequencyTrackerProps {
   style?: ViewStyle;
 }
 
-const ACCENT_COLOR = '#ff3a5e';
+const ACCENT_COLOR = '#DC052D';
 const TEXT_COLOR = '#ffffff';
 const SECTION_TITLE_COLOR = '#9aa0a6';
 const CARD_BG = '#1c1c1e';
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 58, 94, 0.5)',
+    borderColor: 'rgba(220, 5, 45, 0.5)',
     paddingVertical: 16,
     paddingHorizontal: 20,
   },
