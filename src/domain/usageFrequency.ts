@@ -22,7 +22,7 @@ export interface UsageHeatmapCell {
   isFuture: boolean;
 }
 
-/** 1 列 = 1 週間。index 0..6 が日曜〜土曜。 */
+/** 1 列 = 1 週間。index 0..6 が月曜〜日曜。 */
 export type UsageHeatmapWeek = UsageHeatmapCell[];
 
 export interface HeatmapMonthLabel {
@@ -105,11 +105,14 @@ export function buildRangeHeatmapWeeks(
   const startKey = formatLocalDate(rangeStart);
   const endKey = formatLocalDate(rangeEnd);
 
+  // 月曜始まり: Mon=0 ... Sun=6
+  const mondayIndex = (date: Date) => (date.getDay() + 6) % 7;
+
   const gridStart = new Date(rangeStart);
-  gridStart.setDate(rangeStart.getDate() - rangeStart.getDay());
+  gridStart.setDate(rangeStart.getDate() - mondayIndex(rangeStart));
 
   const gridEnd = new Date(rangeEnd);
-  gridEnd.setDate(rangeEnd.getDate() + (6 - rangeEnd.getDay()));
+  gridEnd.setDate(rangeEnd.getDate() + (6 - mondayIndex(rangeEnd)));
 
   const weeks: UsageHeatmapWeek[] = [];
   const cursor = new Date(gridStart);

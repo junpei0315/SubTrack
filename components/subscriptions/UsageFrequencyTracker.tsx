@@ -49,8 +49,8 @@ const CELL_GAP = 4;
 const CELL_RADIUS = 3;
 const MIN_CELL_SIZE = 10;
 const MAX_CELL_SIZE = 20;
-// 日曜始まりの行に対応するラベル（月・水・金のみ表示）
-const WEEKDAY_LABELS = ['', '月', '', '水', '', '金', ''];
+// 月曜始まりの行に対応するラベル（月・水・金のみ表示）
+const WEEKDAY_LABELS = ['月', '', '水', '', '金', '', ''];
 
 export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   usedDateKeys,
