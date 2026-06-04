@@ -30,10 +30,11 @@ const STAT_LABEL_COLOR = '#9aa0a6';
 const NAV_DISABLED_COLOR = 'rgba(255, 255, 255, 0.2)';
 const PLACEHOLDER = '—';
 
-const CELL_SIZE = 30;
+const CELL_SIZE = 14;
 const CELL_GAP = 4;
-const CELL_RADIUS = 6;
-const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
+const CELL_RADIUS = 3;
+// 日曜始まりの行に対応するラベル（月・水・金のみ表示）
+const WEEKDAY_LABELS = ['', '月', '', '水', '', '金', ''];
 
 export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   usedDateKeys,
@@ -125,47 +126,40 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
           </Pressable>
         </View>
 
-        <View style={styles.weekdayRow}>
-          {WEEKDAY_LABELS.map((label) => (
-            <View key={label} style={styles.weekdayCell}>
-              <Text style={styles.weekdayText}>{label}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.grid}>
-          {view.weeks.map((week, weekIndex) => (
-            <View key={weekIndex} style={styles.weekRow}>
-              {week.map((cell, dayIndex) => {
-                if (!cell.inMonth) {
-                  return <View key={dayIndex} style={[styles.cell, styles.cellOutside]} />;
-                }
-                const isUsed = cell.isToday ? usedToday : cell.used;
-                return (
-                  <View
-                    key={dayIndex}
-                    style={[
-                      styles.cell,
-                      cell.isFuture
-                        ? styles.cellFuture
-                        : isUsed
-                          ? styles.cellUsed
-                          : styles.cellEmpty,
-                      cell.isToday && styles.cellToday,
-                    ]}>
-                    <Text
+        <View style={styles.heatmapRow}>
+          <View style={styles.weekdayLabels}>
+            {WEEKDAY_LABELS.map((label, index) => (
+              <View key={index} style={styles.weekdayLabelCell}>
+                <Text style={styles.weekdayLabelText}>{label}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.weeks}>
+            {view.weeks.map((week, weekIndex) => (
+              <View key={weekIndex} style={styles.weekColumn}>
+                {week.map((cell, dayIndex) => {
+                  if (!cell.inMonth) {
+                    return <View key={dayIndex} style={[styles.cell, styles.cellOutside]} />;
+                  }
+                  const isUsed = cell.isToday ? usedToday : cell.used;
+                  return (
+                    <View
+                      key={dayIndex}
                       style={[
-                        styles.cellText,
-                        cell.isFuture && styles.cellTextFuture,
-                        isUsed && styles.cellTextUsed,
-                      ]}>
-                      {cell.date.getDate()}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
-          ))}
+                        styles.cell,
+                        cell.isFuture
+                          ? styles.cellFuture
+                          : isUsed
+                            ? styles.cellUsed
+                            : styles.cellEmpty,
+                        cell.isToday && styles.cellToday,
+                      ]}
+                    />
+                  );
+                })}
+              </View>
+            ))}
+          </View>
         </View>
 
         <View style={styles.statsRow}>
@@ -227,7 +221,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    gap: 16,
+    gap: 20,
   },
   header: {
     flexDirection: 'row',
@@ -239,32 +233,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  weekdayRow: {
+  heatmapRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 6,
   },
-  weekdayCell: {
-    width: CELL_SIZE,
-    alignItems: 'center',
-  },
-  weekdayText: {
-    color: STAT_LABEL_COLOR,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  grid: {
+  weekdayLabels: {
     gap: CELL_GAP,
   },
-  weekRow: {
+  weekdayLabelCell: {
+    height: CELL_SIZE,
+    justifyContent: 'center',
+  },
+  weekdayLabelText: {
+    color: STAT_LABEL_COLOR,
+    fontSize: 9,
+    lineHeight: CELL_SIZE,
+  },
+  weeks: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: CELL_GAP,
+  },
+  weekColumn: {
+    gap: CELL_GAP,
   },
   cell: {
     width: CELL_SIZE,
     height: CELL_SIZE,
     borderRadius: CELL_RADIUS,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   cellOutside: {
     backgroundColor: 'transparent',
@@ -282,22 +278,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: TEXT_COLOR,
   },
-  cellText: {
-    color: STAT_LABEL_COLOR,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  cellTextUsed: {
-    color: TEXT_COLOR,
-  },
-  cellTextFuture: {
-    color: NAV_DISABLED_COLOR,
-  },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 16,
-    marginTop: 4,
   },
   statBlock: {
     flex: 1,
