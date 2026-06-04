@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
+import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
 import type { Subscription } from '@/src/domain/subscription';
+import { createMockUsageFrequencySnapshot } from '@/src/domain/usageFrequency';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
 // TODO: src/features/subscriptions/screens/SubscriptionDetailScreen.tsx を実装して差し替える
@@ -84,6 +86,12 @@ export default function SubscriptionDetailRoute() {
           cycle={subscription.plan.cycle}
           nextBillingDate={subscription.nextBillingDate}
           startDate={subscription.startDate}
+        />
+        <UsageFrequencyTracker
+          snapshot={createMockUsageFrequencySnapshot(subscription.plan.price)}
+          onRecordUsagePress={() => {
+            // TODO: F-08 recordUsageToday 連携
+          }}
         />
       </ScrollView>
     </ThemedView>
