@@ -295,7 +295,14 @@ erDiagram
 
 - `profiles`: 原則として「自分の行のみ `select` / `update`」（`auth.uid() = id`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
-- マスタ（`categories`, `cycles`, `services`, `plans`）: 参照は全ユーザー可、更新はサービスロールのみ、等 — **確定後にポリシーを追記**
+- マスタ（`categories`, `cycles`, `services`, `plans`）: **`select` は全ユーザー可**（`USING (true)`）。更新はサービスロールのみ（ポリシー未作成のためクライアントからは不可）
+
+### `next_billing_date` の自動繰り上げ（DB 関数・cron）
+
+- `calc_next_billing_date(start_date, cycle, today)`: 契約開始日とサイクルから「今日以降の最初の請求日」を算出する純粋関数
+- `refresh_due_billing_dates()`: `status = active` かつ `next_billing_date < 今日（JST）` の契約を一括更新。戻り値は更新件数
+- `pg_cron` ジョブ `refresh-due-billing-dates`: 毎日 JST 0:10（UTC 15:10）に `refresh_due_billing_dates()` を実行
+- 開始日を起点に周期を加算するため、毎月の請求日（例: 15 日）を維持し、月末 clamp によるドリフトを防ぐ
 
 ---
 
@@ -303,6 +310,7 @@ erDiagram
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-05 | マスタテーブルの `select` RLS ポリシー追加。`next_billing_date` 自動繰り上げ関数・pg_cron を追加 |
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |
