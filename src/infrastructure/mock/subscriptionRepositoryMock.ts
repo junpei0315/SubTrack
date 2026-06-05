@@ -103,6 +103,10 @@ function buildMockSubscriptions(year: number, month: number): Subscription[] {
 }
 
 export const subscriptionRepositoryMock: SubscriptionRepository = {
+  async findAll(): Promise<Subscription[]> {
+    const now = new Date();
+    return buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
+  },
   async findByBillingMonth(year: number, month: number): Promise<Subscription[]> {
     return buildMockSubscriptions(year, month);
   },
