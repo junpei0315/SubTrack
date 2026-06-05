@@ -1,17 +1,50 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 
+import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-// 認証導入までは (tabs) を初期表示にする。AuthProvider 導入後は (auth) へのリダイレクトを (tabs)/_layout に任せる想定。
 export const unstable_settings = {
   anchor: '(tabs)',
 };
+
+// 認証状態に応じて (auth) / (tabs) のどちらを表示すべきかを制御する。
+function useProtectedRoute(): void {
+  const { session, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!session && !inAuthGroup) {
+      router.replace('/(auth)/sign-in');
+    } else if (session && inAuthGroup) {
+      router.replace('/(tabs)/home');
+    }
+  }, [session, isLoading, segments, router]);
+}
+
+function RootNavigator() {
+  useProtectedRoute();
+
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      <Stack.Screen name="+not-found" options={{ title: 'Not Found' }} />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -19,18 +52,15 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={styles.root}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          <Stack.Screen name="+not-found" options={{ title: 'Not Found' }} />
-        </Stack>
-        {!isSplashDone ? (
-          <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
-        ) : null}
-      </View>
-      <StatusBar style={isSplashDone ? 'auto' : 'light'} />
+      <AuthProvider>
+        <View style={styles.root}>
+          <RootNavigator />
+          {!isSplashDone ? (
+            <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
+          ) : null}
+        </View>
+        <StatusBar style={isSplashDone ? 'auto' : 'light'} />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
