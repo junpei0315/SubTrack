@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getMonthlySubscriptions } from '@/src/application/getMonthlySubscriptions';
 import type { Subscription } from '@/src/domain/subscription';
-import { subscriptionRepositoryMock } from '@/src/infrastructure/mock/subscriptionRepositoryMock';
+import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
 export function useCalendarSubscriptions() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -10,7 +10,7 @@ export function useCalendarSubscriptions() {
 
   const loadSubscriptions = useCallback(async (date: Date) => {
     const subs = await getMonthlySubscriptions(
-      subscriptionRepositoryMock,
+      subscriptionRepositorySupabase,
       date.getFullYear(),
       date.getMonth() + 1
     );
