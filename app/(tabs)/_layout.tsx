@@ -2,44 +2,34 @@ import { Tabs } from 'expo-router';
 import { ChartColumn, CreditCard, House } from 'lucide-react-native';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Footer } from '@/components/navigation/Footer';
 
 export const unstable_settings = {
   initialRouteName: 'home',
 };
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}
-    >
+    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <Footer {...props} />}>
       <Tabs.Screen
         name="home"
         options={{
           title: 'ホーム',
-          tabBarIcon: ({ color }) => <House size={28} color={color} />,
+          tabBarIcon: ({ color, size }) => <House size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="subscriptions"
         options={{
           title: 'サブスクリプション',
-          tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
+          tabBarIcon: ({ color, size }) => <CreditCard size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="analytics"
         options={{
           title: '分析',
-          tabBarIcon: ({ color }) => <ChartColumn size={28} color={color} />,
+          tabBarIcon: ({ color, size }) => <ChartColumn size={size} color={color} />,
         }}
       />
       <Tabs.Screen name="settings" options={{ href: null }} />
