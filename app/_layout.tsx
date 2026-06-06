@@ -13,6 +13,20 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+const AUTH_ROUTE_NAMES = new Set(['sign-in', 'sign-up']);
+
+/**
+ * 現在のルートが認証画面かどうか。
+ * Web ではグループ名が URL に出ないため `/sign-up` は segments が `['sign-up']` になる。
+ * `segments[0] === '(auth)'` だけでは判定漏れする。
+ */
+function isAuthRoute(segments: string[]): boolean {
+  if (segments[0] === '(auth)') {
+    return true;
+  }
+  return AUTH_ROUTE_NAMES.has(segments[0] ?? '');
+}
+
 // 認証状態に応じて (auth) / (tabs) のどちらを表示すべきかを制御する。
 function useProtectedRoute(): void {
   const { session, isLoading } = useAuth();
@@ -23,18 +37,24 @@ function useProtectedRoute(): void {
     if (isLoading) {
       return;
     }
-    const inAuthGroup = segments[0] === '(auth)';
+    const onAuthScreen = isAuthRoute(segments);
 
-    if (!session && !inAuthGroup) {
+    if (!session && !onAuthScreen) {
       router.replace('/(auth)/sign-in');
-    } else if (session && inAuthGroup) {
+    } else if (session && onAuthScreen) {
       router.replace('/(tabs)/home');
     }
   }, [session, isLoading, segments, router]);
 }
 
 function RootNavigator() {
+  const { isLoading } = useAuth();
   useProtectedRoute();
+
+  // セッション復元中は (tabs) をマウントしない（未ログイン時の home フラッシュ防止）。
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <Stack>
