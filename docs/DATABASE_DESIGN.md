@@ -149,6 +149,8 @@ erDiagram
 | --------------- | ------ | ------- | ---- |
 | `profiles_pkey` | id     | PRIMARY | —    |
 
+**自動作成**: `auth.users` への INSERT を契機に `public.handle_new_user()` トリガが `profiles` 行（`id` / `email`）を作成する。メール認証・Google OAuth いずれの登録でも適用される（マイグレーション: `20260605160000_create_profile_on_signup.sql`）。
+
 ---
 
 ### `categories`
