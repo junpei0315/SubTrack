@@ -67,7 +67,7 @@ erDiagram
         uuid plan_id FK "plans 参照"
         date start_date "契約の最初の請求日 (NOT NULL)"
         date next_billing_date "次回更新日 (NOT NULL)"
-        varchar status "active / paused 等"
+        varchar status "active / paused / cancelled"
         text memo "解約リンクなど"
         timestamp created_at "default: now()"
         timestamp updated_at
@@ -148,6 +148,8 @@ erDiagram
 | インデックス名  | カラム | 種別    | 目的 |
 | --------------- | ------ | ------- | ---- |
 | `profiles_pkey` | id     | PRIMARY | —    |
+
+**自動作成**: `auth.users` への INSERT を契機に `public.handle_new_user()` トリガが `profiles` 行（`id` / `email`）を作成する。メール認証・Google OAuth いずれの登録でも適用される（マイグレーション: `20260605160000_create_profile_on_signup.sql`）。
 
 ---
 
@@ -232,7 +234,7 @@ erDiagram
 | plan_id           | uuid        | NO   | —                   | FK → `plans.id`                                       |
 | start_date        | date        | NO   | —                   | 契約の最初の請求日（不変）。**F-09** 利用頻度計算など |
 | next_billing_date | date        | NO   | —                   | **F-10** 通知の基準日。請求ごとに更新                 |
-| status            | varchar(24) | NO   | `'active'`          | **F-03**: `active` / `paused` 等                      |
+| status            | varchar(50) | NO   | `'active'`          | **F-03**: `active` / `paused` / `cancelled` のいずれか（CHECK 制約で限定） |
 | memo              | text        | YES  | —                   | 解約 URL・メモ                                        |
 | created_at        | timestamptz | NO   | `now()`             |                                                       |
 | updated_at        | timestamptz | YES  | —                   |                                                       |
@@ -305,6 +307,7 @@ erDiagram
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
 | 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
+| 2026-06-05 | `subscriptions.status` に CHECK 制約を追加（`active` / `paused` / `cancelled` に限定）|
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |
