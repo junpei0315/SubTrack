@@ -304,6 +304,7 @@ erDiagram
 
 - `profiles`: 原則として「自分の行のみ `select` / `update`」（`auth.uid() = id`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
+- `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
 - マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。INSERT / UPDATE / DELETE はアプリから行わない（マイグレーションで管理）
 
 ---
@@ -314,6 +315,7 @@ erDiagram
 | ---------- | ------------------------------------------------------------------------------------ |
 | 2026-06-06 | プリセットマスタ投入: `services.logo_key` 追加、categories 17 ジャンル、RLS（マスタ SELECT 可）、Notion 由来の services 53 件 / plans 210 件を投入、migration `20260606120000` / `20260606120100` |
 | 2026-06-05 | `subscriptions.status` に CHECK 制約を追加（`active` / `paused` / `cancelled` に限定）|
+| 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |

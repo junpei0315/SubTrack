@@ -53,7 +53,7 @@ const Row: React.FC<RowProps> = ({ label, value, valueAccent = false }) => {
 
 const Divider: React.FC = () => <View style={styles.divider} />;
 
-const ACCENT_COLOR = '#ff3a5e';
+const ACCENT_COLOR = '#DC052D';
 const TEXT_COLOR = '#ffffff';
 const SECTION_TITLE_COLOR = '#9aa0a6';
 const CARD_BG = '#1c1c1e';
