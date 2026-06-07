@@ -1,0 +1,211 @@
+service_slug,service_name,category_id,category_label,plan_name,price,currency,cycle
+netflix,Netflix,2,動画配信,広告つきスタンダード,890,JPY,monthly
+netflix,Netflix,2,動画配信,スタンダード,1590,JPY,monthly
+netflix,Netflix,2,動画配信,プレミアム,2290,JPY,monthly
+spotify,Spotify,3,音楽,Standard,1080,JPY,monthly
+spotify,Spotify,3,音楽,Student,580,JPY,monthly
+spotify,Spotify,3,音楽,Duo,1480,JPY,monthly
+spotify,Spotify,3,音楽,Family,1880,JPY,monthly
+hulu,Hulu,2,動画配信,月額,1026,JPY,monthly
+amazonprime,Amazon Prime Video,2,動画配信,プライム（月間）,600,JPY,monthly
+amazonprime,Amazon Prime Video,2,動画配信,プライム（年間）,5900,JPY,yearly
+amazonprime,Amazon Prime Video,2,動画配信,Prime Student（月間）,300,JPY,monthly
+amazonprime,Amazon Prime Video,2,動画配信,Prime Student（年間）,2950,JPY,yearly
+unext,U-NEXT,2,動画配信,月額利用料,2189,JPY,monthly
+disneyplus,Disney+,2,動画配信,スタンダード（月額）,1250,JPY,monthly
+disneyplus,Disney+,2,動画配信,プレミアム（月額）,1670,JPY,monthly
+disneyplus,Disney+,2,動画配信,スタンダード（年額）,12500,JPY,yearly
+disneyplus,Disney+,2,動画配信,プレミアム（年額）,16700,JPY,yearly
+dazn,DAZN,2,動画配信,DAZNスタンダード（月額更新）,4200,JPY,monthly
+dazn,DAZN,2,動画配信,DAZNスタンダード（年額前払い）,32000,JPY,yearly
+dazn,DAZN,2,動画配信,DAZNスタンダード（年額分割払い）,3200,JPY,monthly
+dazn,DAZN,2,動画配信,DAZNサッカー（年額分割払い）,2600,JPY,monthly
+dazn,DAZN,2,動画配信,DAZNグローバル（月額更新）,980,JPY,monthly
+dazn,DAZN,2,動画配信,DAZNベースボール（年額前払い）,27600,JPY,yearly
+dazn,DAZN,2,動画配信,DAZNベースボール（年額分割払い）,2300,JPY,monthly
+dazn,DAZN,2,動画配信,ABEMA de DAZN学割（月額更新）,1600,JPY,monthly
+dazn,DAZN,2,動画配信,ABEMA de DAZN学割（年額前払い）,16000,JPY,yearly
+abema,ABEMA,2,動画配信,広告つきABEMAプレミアム,680,JPY,monthly
+abema,ABEMA,2,動画配信,ABEMAプレミアム,1180,JPY,monthly
+abema,ABEMA,2,動画配信,広告つきABEMAプレミアム｜Disney+スタンダード,1640,JPY,monthly
+abema,ABEMA,2,動画配信,ABEMAプレミアム｜Disney+スタンダード,1860,JPY,monthly
+abema,ABEMA,2,動画配信,広告つきABEMAプレミアム｜Disney+プレミアム,2000,JPY,monthly
+abema,ABEMA,2,動画配信,ABEMAプレミアム｜Disney+プレミアム,2190,JPY,monthly
+youtube,YouTube Premium,2,動画配信,個人,1280,JPY,monthly
+youtube,YouTube Premium,2,動画配信,ファミリー,2280,JPY,monthly
+youtube,YouTube Premium,2,動画配信,学生,780,JPY,monthly
+youtube,YouTube Premium,2,動画配信,Premium Lite,780,JPY,monthly
+youtubemusic,YouTube Music,3,音楽,個人（月額）,1080,JPY,monthly
+youtubemusic,YouTube Music,3,音楽,個人（年額）,10800,JPY,yearly
+youtubemusic,YouTube Music,3,音楽,ファミリー,1680,JPY,monthly
+youtubemusic,YouTube Music,3,音楽,学生,580,JPY,monthly
+applemusic,Apple Music,3,音楽,個人,1080,JPY,monthly
+applemusic,Apple Music,3,音楽,ファミリー,1680,JPY,monthly
+applemusic,Apple Music,3,音楽,学生,580,JPY,monthly
+LINE MUSIC,LINE MUSIC,3,音楽,一般,1080,JPY,monthly
+LINE MUSIC,LINE MUSIC,3,音楽,一般（LINE STORE限定）,980,JPY,monthly
+LINE MUSIC,LINE MUSIC,3,音楽,学生,580,JPY,monthly
+LINE MUSIC,LINE MUSIC,3,音楽,学生（LINE STORE限定）,480,JPY,monthly
+LINE MUSIC,LINE MUSIC,3,音楽,ファミリー,1680,JPY,monthly
+chatgpt,ChatGPT,1,AI,無料版,0,JPY,monthly
+chatgpt,ChatGPT,1,AI,Go,1400,JPY,monthly
+chatgpt,ChatGPT,1,AI,Plus,3000,JPY,monthly
+chatgpt,ChatGPT,1,AI,Pro,16800,JPY,monthly
+chatgpt,ChatGPT,1,AI,ビジネス,3050,JPY,monthly
+claude,Claude,1,AI,無料,0,USD,monthly
+claude,Claude,1,AI,Pro,20,USD,monthly
+claude,Claude,1,AI,Max,100,USD,monthly
+Gemini,Gemini,1,AI,無料,0,JPY,monthly
+Gemini,Gemini,1,AI,Google AI Plus,1200,JPY,monthly
+Gemini,Gemini,1,AI,Google AI Pro,2900,JPY,monthly
+Gemini,Gemini,1,AI,Google AI Ultra,14500,JPY,monthly
+cursor,Cursor,1,AI,Hobby（月払い）,0,USD,monthly
+cursor,Cursor,1,AI,個人（月払い）,20,USD,monthly
+cursor,Cursor,1,AI,Teams（月払い）,40,USD,monthly
+cursor,Cursor,1,AI,Hobby（年払い）,0,USD,yearly
+cursor,Cursor,1,AI,個人（年払い・月あたり）,16,USD,yearly
+cursor,Cursor,1,AI,Teams（年払い・月あたり）,32,USD,yearly
+github,GitHub,15,開発,Team（月払い）,4,USD,monthly
+github,GitHub,15,開発,Enterprise（月払い）,21,USD,monthly
+github,GitHub,15,開発,Team（年払い）,48,USD,yearly
+github,GitHub,15,開発,Enterprise（年払い）,252,USD,yearly
+notion,Notion,11,ビジネス,プラス（月払い）,2000,JPY,monthly
+notion,Notion,11,ビジネス,ビジネス（月払い）,3800,JPY,monthly
+notion,Notion,11,ビジネス,プラス（年払い・月あたり）,1650,JPY,yearly
+notion,Notion,11,ビジネス,ビジネス（年払い・月あたり）,3150,JPY,yearly
+slack,Slack,11,ビジネス,プロ（年払い・月あたり）,925,JPY,yearly
+slack,Slack,11,ビジネス,プロ（月払い）,1920,JPY,monthly
+Figma,Figma,14,デザイン,プロフェッショナル フルシート（月払い）,3000,JPY,monthly
+Figma,Figma,14,デザイン,プロフェッショナル Devシート（月払い）,2250,JPY,monthly
+Figma,Figma,14,デザイン,プロフェッショナル コラボシート（月払い）,750,JPY,monthly
+Figma,Figma,14,デザイン,プロフェッショナル フルシート（年払い・月あたり）,2400,JPY,yearly
+Figma,Figma,14,デザイン,プロフェッショナル Devシート（年払い・月あたり）,1800,JPY,yearly
+Figma,Figma,14,デザイン,プロフェッショナル コラボシート（年払い・月あたり）,450,JPY,yearly
+Figma,Figma,14,デザイン,ビジネス フルシート,8300,JPY,monthly
+Figma,Figma,14,デザイン,ビジネス Devシート,3750,JPY,monthly
+Figma,Figma,14,デザイン,ビジネス コラボシート,750,JPY,monthly
+Figma,Figma,14,デザイン,エンタープライズ フルシート,13600,JPY,monthly
+Figma,Figma,14,デザイン,エンタープライズ Devシート,5250,JPY,monthly
+Figma,Figma,14,デザイン,エンタープライズ コラボシート,750,JPY,monthly
+canva,Canva,14,デザイン,プロ,8300,JPY,yearly
+canva,Canva,14,デザイン,ビジネス,18800,JPY,yearly
+deepl,DeepL,1,AI,Individual（月払い）,1380,JPY,monthly
+deepl,DeepL,1,AI,Team（月払い）,4500,JPY,monthly
+deepl,DeepL,1,AI,Business（月払い）,9000,JPY,monthly
+deepl,DeepL,1,AI,Individual（年払い・月あたり）,1150,JPY,yearly
+deepl,DeepL,1,AI,Team（年払い・月あたり）,3750,JPY,yearly
+deepl,DeepL,1,AI,Business（年払い・月あたり）,7500,JPY,yearly
+dropbox,Dropbox,8,ストレージ,Plus（月払い）,1500,JPY,monthly
+dropbox,Dropbox,8,ストレージ,Professional（月払い）,2400,JPY,monthly
+dropbox,Dropbox,8,ストレージ,Standard（月払い）,1800,JPY,monthly
+dropbox,Dropbox,8,ストレージ,Advanced（月払い）,2800,JPY,monthly
+dropbox,Dropbox,8,ストレージ,Plus（年払い・月あたり）,1200,JPY,yearly
+dropbox,Dropbox,8,ストレージ,Professional（年払い・月あたり）,2000,JPY,yearly
+dropbox,Dropbox,8,ストレージ,Standard（年払い・月あたり）,1500,JPY,yearly
+dropbox,Dropbox,8,ストレージ,Advanced（年払い・月あたり）,2400,JPY,yearly
+googleone,Google One,8,ストレージ,Basic（月払い）,290,JPY,monthly
+googleone,Google One,8,ストレージ,Google AI Plus 200GB（月払い）,1200,JPY,monthly
+googleone,Google One,8,ストレージ,Google AI Plus 2TB（月払い）,1450,JPY,monthly
+googleone,Google One,8,ストレージ,Google AI Pro 5TB（月払い）,2900,JPY,monthly
+googleone,Google One,8,ストレージ,Basic（年払い）,2900,JPY,yearly
+googleone,Google One,8,ストレージ,Google AI Plus 200GB（年払い）,12000,JPY,yearly
+googleone,Google One,8,ストレージ,Google AI Plus 2TB（年払い）,14500,JPY,yearly
+googleone,Google One,8,ストレージ,Google AI Pro 5TB（年払い）,29000,JPY,yearly
+icloud,iCloud+,8,ストレージ,50GB,150,JPY,monthly
+icloud,iCloud+,8,ストレージ,200GB,450,JPY,monthly
+icloud,iCloud+,8,ストレージ,2TB,1500,JPY,monthly
+goodnotes,GoodNotes,11,ビジネス,年額,1350,JPY,yearly
+apple,Apple One,17,その他,個人,1200,JPY,monthly
+apple,Apple One,17,その他,ファミリー,1980,JPY,monthly
+AppleCare+,AppleCare+,17,その他,iPhone（2年間）,19800,JPY,yearly
+AppleCare+,AppleCare+,17,その他,Mac（3年間）,15400,JPY,yearly
+AppleCare+,AppleCare+,17,その他,ディスプレイ（3年間）,23400,JPY,yearly
+AppleCare+,AppleCare+,17,その他,iPad（2年間）,10800,JPY,yearly
+AppleCare+,AppleCare+,17,その他,Watch（2年間）,7400,JPY,yearly
+AppleCare+,AppleCare+,17,その他,Vision（2年間）,68800,JPY,yearly
+AppleCare+,AppleCare+,17,その他,ヘッドフォン（2年間）,4600,JPY,yearly
+AppleCare+,AppleCare+,17,その他,TV（3年間）,4200,JPY,yearly
+AppleCare+,AppleCare+,17,その他,HomePod（2年間）,2200,JPY,yearly
+simeji,Simeji,16,ユーティリティ,月額プラン,400,JPY,monthly
+simeji,Simeji,16,ユーティリティ,年額プラン,2400,JPY,yearly
+nintendo,Nintendo Switch Online,4,ゲーム,個人プラン（月額）,306,JPY,monthly
+nintendo,Nintendo Switch Online,4,ゲーム,個人プラン（3ヶ月）,815,JPY,monthly
+nintendo,Nintendo Switch Online,4,ゲーム,個人プラン（年額）,2400,JPY,yearly
+nintendo,Nintendo Switch Online,4,ゲーム,個人プラン+追加パック（年額）,4900,JPY,yearly
+nintendo,Nintendo Switch Online,4,ゲーム,ファミリープラン（年額）,4500,JPY,yearly
+nintendo,Nintendo Switch Online,4,ゲーム,ファミリープラン+追加パック（年額）,8900,JPY,yearly
+playstation,PlayStation Plus,4,ゲーム,プレミアム（月額）,1550,JPY,monthly
+playstation,PlayStation Plus,4,ゲーム,プレミアム（3ヶ月）,4300,JPY,monthly
+playstation,PlayStation Plus,4,ゲーム,プレミアム（年額）,13900,JPY,yearly
+playstation,PlayStation Plus,4,ゲーム,エクストラ（月額）,1300,JPY,monthly
+playstation,PlayStation Plus,4,ゲーム,エクストラ（3ヶ月）,3600,JPY,monthly
+playstation,PlayStation Plus,4,ゲーム,エクストラ（年額）,11700,JPY,yearly
+playstation,PlayStation Plus,4,ゲーム,エッセンシャル（月額）,850,JPY,monthly
+playstation,PlayStation Plus,4,ゲーム,エッセンシャル（3ヶ月）,2150,JPY,monthly
+playstation,PlayStation Plus,4,ゲーム,エッセンシャル（年額）,6800,JPY,yearly
+kindle,Kindle Unlimited,6,電子書籍,月額,980,JPY,monthly
+audible,Audible,6,電子書籍,月額,1500,JPY,monthly
+dマガジン,dマガジン,6,電子書籍,月額,580,JPY,monthly
+コミックシーモア,コミックシーモア,6,電子書籍,読み放題フル,1480,JPY,monthly
+pixiv,pixivプレミアム,14,デザイン,プレミアム,590,JPY,monthly
+x,X,10,SNS,ベーシック（月額）,368,JPY,monthly
+x,X,10,SNS,ベーシック（年額）,3916,JPY,yearly
+x,X,10,SNS,プレミアム（月額）,980,JPY,monthly
+x,X,10,SNS,プレミアム（年額）,10280,JPY,yearly
+x,X,10,SNS,プレミアムプラス（月額）,6080,JPY,monthly
+x,X,10,SNS,プレミアムプラス（年額）,60040,JPY,yearly
+pairs,Pairs,7,マッチングアプリ,男性有料会員（1カ月）,4100,JPY,monthly
+pairs,Pairs,7,マッチングアプリ,男性有料会員（3カ月）,9100,JPY,monthly
+pairs,Pairs,7,マッチングアプリ,男性有料会員（6カ月）,14200,JPY,monthly
+pairs,Pairs,7,マッチングアプリ,男性有料会員（12カ月）,20100,JPY,yearly
+with,with,7,マッチングアプリ,有料プラン（1カ月）,4160,JPY,monthly
+with,with,7,マッチングアプリ,有料プラン（3カ月）,10400,JPY,monthly
+with,with,7,マッチングアプリ,有料プラン（6カ月）,15360,JPY,monthly
+with,with,7,マッチングアプリ,有料プラン（12カ月）,25400,JPY,yearly
+tapple,タップル,7,マッチングアプリ,シンプルプラン web版（1カ月）,3700,JPY,monthly
+tapple,タップル,7,マッチングアプリ,シンプルプラン web版（3カ月）,9300,JPY,monthly
+tapple,タップル,7,マッチングアプリ,シンプルプラン web版（6カ月）,13200,JPY,monthly
+tapple,タップル,7,マッチングアプリ,シンプルプラン web版（12カ月）,18200,JPY,yearly
+tapple,タップル,7,マッチングアプリ,シンプルプラン iOS/Android版（1カ月）,4900,JPY,monthly
+tapple,タップル,7,マッチングアプリ,シンプルプラン iOS/Android版（3カ月）,11200,JPY,monthly
+tapple,タップル,7,マッチングアプリ,シンプルプラン iOS/Android版（6カ月）,16800,JPY,monthly
+tapple,タップル,7,マッチングアプリ,シンプルプラン iOS/Android版（12カ月）,23400,JPY,yearly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 女性（1カ月）,3100,JPY,monthly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 女性（3カ月）,7600,JPY,monthly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 女性（6カ月）,12000,JPY,monthly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 女性（12カ月）,16800,JPY,yearly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 男性（1カ月）,7500,JPY,monthly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 男性（3カ月）,18000,JPY,monthly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 男性（6カ月）,25800,JPY,monthly
+tapple,タップル,7,マッチングアプリ,スタンダードプラン 男性（12カ月）,44800,JPY,yearly
+tinder,Tinder,7,マッチングアプリ,Tinder Plus（1カ月）,1200,JPY,monthly
+tinder,Tinder,7,マッチングアプリ,Tinder Plus（6カ月）,8300,JPY,monthly
+tinder,Tinder,7,マッチングアプリ,Tinder Plus（12カ月）,11000,JPY,yearly
+tinder,Tinder,7,マッチングアプリ,Tinder Gold（1カ月）,3400,JPY,monthly
+tinder,Tinder,7,マッチングアプリ,Tinder Gold（6カ月）,12600,JPY,monthly
+tinder,Tinder,7,マッチングアプリ,Tinder Gold（12カ月）,16800,JPY,yearly
+tinder,Tinder,7,マッチングアプリ,Tinder Platinum（1カ月）,4300,JPY,monthly
+tinder,Tinder,7,マッチングアプリ,Tinder Platinum（6カ月）,15800,JPY,monthly
+tinder,Tinder,7,マッチングアプリ,Tinder Platinum（12カ月）,21800,JPY,yearly
+duolingo,Duolingo,9,学習,Super（年額・月あたり）,650,JPY,yearly
+duolingo,Duolingo,9,学習,Super（月額）,1200,JPY,monthly
+duolingo,Duolingo,9,学習,Max（年額・月あたり）,1600,JPY,yearly
+duolingo,Duolingo,9,学習,Max（月額）,2500,JPY,monthly
+progate,Progate,9,学習,無料プラン,0,JPY,monthly
+progate,Progate,9,学習,プラスプラン,990,JPY,monthly
+progate,Progate,9,学習,プロプラン,2490,JPY,monthly
+udemy,Udemy,9,学習,個人向け定額プラン,2292,JPY,monthly
+udemy,Udemy,9,学習,チームプラン,3167,JPY,monthly
+anytimefitness.co,エニタイムフィットネス,5,フィットネス,月会費（店舗により異なる）,0,JPY,monthly
+chocozap,chocoZAP,5,フィットネス,月額（税込）,3278,JPY,monthly
+nosh,nosh,12,飲食,10食プラン,6206,JPY,monthly
+nosh,nosh,12,飲食,8食プラン,5157,JPY,monthly
+nosh,nosh,12,飲食,6食プラン,4318,JPY,monthly
+sukiya,すき家,12,飲食,SUKIPASS,200,JPY,monthly
+cocacola,Coke ON,16,ユーティリティ,おトクプランMAX,3300,JPY,monthly
+cocacola,Coke ON,16,ユーティリティ,おトクプラン20,2320,JPY,monthly
+luup,LUUP,13,モビリティ,月額,980,JPY,monthly
+uber,Uber One,12,飲食,月額,498,JPY,monthly
+uber,Uber One,12,飲食,年額,3998,JPY,yearly
+goinc,GO,13,モビリティ,GO PASS,3980,JPY,monthly
+chargespot,ChargeSPOT,16,ユーティリティ,CHARGESPOT Pass（月額固定）,2340,JPY,monthly
