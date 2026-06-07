@@ -2,12 +2,13 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useDevAuthReady } from '@/hooks/useDevAuthReady';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -69,6 +70,15 @@ function RootNavigator() {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [isSplashDone, setIsSplashDone] = useState(false);
+  const isDevAuthReady = useDevAuthReady();
+
+  if (!isDevAuthReady) {
+    return (
+      <View style={styles.bootstrapping}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -88,5 +98,11 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  bootstrapping: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
   },
 });
