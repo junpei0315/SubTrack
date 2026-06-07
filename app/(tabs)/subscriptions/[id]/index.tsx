@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
+import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
+import { useSubscriptionUsage } from '@/components/subscriptions/useSubscriptionUsage';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
@@ -17,6 +19,11 @@ export default function SubscriptionDetailRoute() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { usedDateKeys, recordToday, undoToday } = useSubscriptionUsage({
+    subscriptionId: id ?? '',
+    userId: subscription?.userId ?? '',
+  });
+
   useEffect(() => {
     let isMounted = true;
 
@@ -29,9 +36,14 @@ export default function SubscriptionDetailRoute() {
         if (isMounted) {
           setSubscription(result);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          setErrorMessage('請求情報の取得に失敗しました');
+          const detail =
+            __DEV__ && error instanceof Error ? `\n（${error.message}）` : '';
+          setErrorMessage(`請求情報の取得に失敗しました${detail}`);
+        }
+        if (__DEV__) {
+          console.error('[SubscriptionDetail] load failed', error);
         }
       } finally {
         if (isMounted) {
@@ -84,6 +96,16 @@ export default function SubscriptionDetailRoute() {
           cycle={subscription.plan.cycle}
           nextBillingDate={subscription.nextBillingDate}
           startDate={subscription.startDate}
+        />
+        <UsageFrequencyTracker
+          usedDateKeys={usedDateKeys}
+          monthlyPriceYen={subscription.plan.price}
+          onRecordUsagePress={() => {
+            void recordToday();
+          }}
+          onUndoUsagePress={() => {
+            void undoToday();
+          }}
         />
       </ScrollView>
     </ThemedView>

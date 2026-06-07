@@ -1,50 +1,98 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { SubscriptionListItem } from '@/components/subscriptions/SubscriptionListItem';
+import { useSubscriptionList } from '@/components/subscriptions/useSubscriptionList';
+import type { Subscription } from '@/src/domain/subscription';
 
-const DEV_SUBSCRIPTIONS = [
-  { id: '55555555-0000-0000-0000-000000000001', name: 'Netflix' },
-  { id: '55555555-0000-0000-0000-000000000002', name: 'Amazon Prime Video' },
-  { id: '55555555-0000-0000-0000-000000000003', name: 'DAZN' },
-] as const;
-
-// TODO: src/features/subscriptions/screens/SubscriptionListScreen.tsx を実装して差し替える
-// 関連機能: 一覧表示 / F-04（削除導線） / F-08（使ったボタン）
 export default function SubscriptionListRoute() {
+  const router = useRouter();
+  const { subscriptions, isLoading, errorMessage, reload } = useSubscriptionList();
+
+  const handlePress = useCallback(
+    (subscription: Subscription) => {
+      router.push(`/subscriptions/${subscription.id}`);
+    },
+    [router]
+  );
+
+  if (isLoading && subscriptions.length === 0) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator color="#ff3a5e" />
+      </View>
+    );
+  }
+
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Subscriptions</ThemedText>
-      <ThemedText>サブスク一覧（未実装）</ThemedText>
-      {__DEV__ ? (
-        <ThemedView style={styles.devLinks}>
-          <ThemedText type="subtitle">開発用（本番テストデータ）</ThemedText>
-          {DEV_SUBSCRIPTIONS.map((item) => (
-            <Link key={item.id} href={`/subscriptions/${item.id}`} style={styles.link}>
-              <ThemedText type="link">{item.name}</ThemedText>
-            </Link>
-          ))}
-        </ThemedView>
-      ) : null}
-    </ThemedView>
+    <View style={styles.container}>
+      <FlatList
+        data={subscriptions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <SubscriptionListItem subscription={item} onPress={handlePress} />
+        )}
+        contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor="#ff3a5e" />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyWrapper}>
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : (
+              <>
+                <Text style={styles.emptyTitle}>登録中のサブスクはありません</Text>
+                <Text style={styles.emptyHint}>＋ボタンからサブスクを登録しましょう</Text>
+              </>
+            )}
+          </View>
+        }
+      />
+    </View>
   );
 }
+
+const BACKGROUND_COLOR = '#0f0f0f';
+const TEXT_COLOR = '#ffffff';
+const SUBTLE_COLOR = '#9aa0a6';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: BACKGROUND_COLOR,
+  },
+  centered: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  listContent: {
     padding: 16,
-    gap: 8,
+    flexGrow: 1,
   },
-  devLinks: {
-    marginTop: 24,
+  separator: {
+    height: 12,
+  },
+  emptyWrapper: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
     gap: 8,
   },
-  link: {
-    paddingVertical: 4,
+  emptyTitle: {
+    color: TEXT_COLOR,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  emptyHint: {
+    color: SUBTLE_COLOR,
+    fontSize: 13,
+  },
+  errorText: {
+    color: '#ff3a5e',
+    fontSize: 14,
   },
 });

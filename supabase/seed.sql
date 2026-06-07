@@ -2,14 +2,17 @@
 -- SubTrack ローカル開発用シードデータ
 -- 適用タイミング: `supabase db reset` のみ（リモートには自動適用されない）
 --
--- テストユーザー（将来の認証実装用）:
+-- マスタ（categories / cycles / services / plans）は migration で投入済み。
+-- 本ファイルは開発用ユーザーとサンプル契約のみ。
+--
+-- テストユーザー:
 --   Email   : dev@subtrack.local
 --   Password: password123
 --
 -- 請求情報コンポーネント確認用 URL（Expo Web 例）:
 --   /subscriptions/22222222-2222-2222-2222-222222222001  Netflix（毎月）
 --   /subscriptions/22222222-2222-2222-2222-222222222002  Spotify（毎月）
---   /subscriptions/22222222-2222-2222-2222-222222222003  Adobe（毎年）
+--   /subscriptions/22222222-2222-2222-2222-222222222003  Canva Pro（毎月）
 --   /subscriptions/22222222-2222-2222-2222-222222222004  ChatGPT Plus（毎月）
 -- ============================================================================
 
@@ -77,71 +80,8 @@ VALUES ('11111111-1111-1111-1111-111111111111', 'dev@subtrack.local', 'JPY')
 ON CONFLICT (id) DO NOTHING;
 
 -- --------------------------------------------------------------------------
--- 2. マスタデータ（cycles / categories / services / plans）
--- --------------------------------------------------------------------------
-INSERT INTO cycles (name) VALUES
-    ('monthly'),
-    ('yearly'),
-    ('weekly')
-ON CONFLICT (name) DO NOTHING;
-
-INSERT INTO categories (id, name, color_code, icon_name) VALUES
-    (1, '動画配信', '#ff3a5e', 'play-circle'),
-    (2, '音楽', '#1db954', 'music'),
-    (3, 'デザイン', '#ff0000', 'palette'),
-    (4, 'AI', '#10a37f', 'message-circle')
-ON CONFLICT (id) DO NOTHING;
-
-SELECT setval(
-    pg_get_serial_sequence('categories', 'id'),
-    (SELECT COALESCE(MAX(id), 1) FROM categories)
-);
-
-INSERT INTO services (id, name, category_id, icon_name) VALUES
-    ('33333333-3333-3333-3333-333333333001', 'Netflix', 1, 'play-circle'),
-    ('33333333-3333-3333-3333-333333333002', 'Spotify', 2, 'music'),
-    ('33333333-3333-3333-3333-333333333003', 'Adobe Creative Cloud', 3, 'palette'),
-    ('33333333-3333-3333-3333-333333333004', 'ChatGPT Plus', 4, 'message-circle')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO plans (id, service_id, name, price, currency, cycle_id) VALUES
-    (
-        '44444444-4444-4444-4444-444444444001',
-        '33333333-3333-3333-3333-333333333001',
-        'Premium',
-        1490,
-        'JPY',
-        (SELECT id FROM cycles WHERE name = 'monthly')
-    ),
-    (
-        '44444444-4444-4444-4444-444444444002',
-        '33333333-3333-3333-3333-333333333002',
-        'Premium',
-        1180,
-        'JPY',
-        (SELECT id FROM cycles WHERE name = 'monthly')
-    ),
-    (
-        '44444444-4444-4444-4444-444444444003',
-        '33333333-3333-3333-3333-333333333003',
-        'All Apps',
-        6248,
-        'JPY',
-        (SELECT id FROM cycles WHERE name = 'yearly')
-    ),
-    (
-        '44444444-4444-4444-4444-444444444004',
-        '33333333-3333-3333-3333-333333333004',
-        'Plus',
-        2000,
-        'JPY',
-        (SELECT id FROM cycles WHERE name = 'monthly')
-    )
-ON CONFLICT (id) DO NOTHING;
-
--- --------------------------------------------------------------------------
--- 3. サブスク契約（start_date / next_billing_date）
---    next_billing_date は当月内の日付にしてカレンダー確認にも使えるようにする
+-- 2. サンプル契約（プリセット plans を参照）
+--    plan_id は migration 20260606120100_seed_preset_services_plans.sql の UUID
 -- --------------------------------------------------------------------------
 INSERT INTO subscriptions (
     id,
@@ -154,7 +94,7 @@ INSERT INTO subscriptions (
     (
         '22222222-2222-2222-2222-222222222001',
         '11111111-1111-1111-1111-111111111111',
-        '44444444-4444-4444-4444-444444444001',
+        'b2000001-0001-4001-8001-000000000003',
         '2021-09-24',
         (date_trunc('month', CURRENT_DATE) + interval '4 days')::date,
         'active'
@@ -162,7 +102,7 @@ INSERT INTO subscriptions (
     (
         '22222222-2222-2222-2222-222222222002',
         '11111111-1111-1111-1111-111111111111',
-        '44444444-4444-4444-4444-444444444002',
+        'b2000001-0001-4001-8001-000000000004',
         '2022-03-01',
         (date_trunc('month', CURRENT_DATE) + interval '11 days')::date,
         'active'
@@ -170,7 +110,7 @@ INSERT INTO subscriptions (
     (
         '22222222-2222-2222-2222-222222222003',
         '11111111-1111-1111-1111-111111111111',
-        '44444444-4444-4444-4444-444444444003',
+        'b2000001-0001-4001-8001-000000000089',
         '2020-06-15',
         (date_trunc('month', CURRENT_DATE) + interval '19 days')::date,
         'active'
@@ -178,7 +118,7 @@ INSERT INTO subscriptions (
     (
         '22222222-2222-2222-2222-222222222004',
         '11111111-1111-1111-1111-111111111111',
-        '44444444-4444-4444-4444-444444444004',
+        'b2000001-0001-4001-8001-000000000051',
         '2023-11-01',
         (date_trunc('month', CURRENT_DATE) + interval '24 days')::date,
         'active'
@@ -195,3 +135,17 @@ CREATE POLICY "dev_anon_read_subscriptions"
     FOR SELECT
     TO anon, authenticated
     USING (true);
+
+-- --------------------------------------------------------------------------
+-- 5. 利用ログ（usage_logs）の確認用ダミーデータ
+--    Netflix（...001）に直近 90 日のうち決定的なパターンで利用日を入れる。
+--    利用状況トラッカー（F-09）のヒートマップ確認用。
+-- --------------------------------------------------------------------------
+INSERT INTO usage_logs (user_id, subscription_id, used_date)
+SELECT
+    '11111111-1111-1111-1111-111111111111',
+    '22222222-2222-2222-2222-222222222001',
+    (CURRENT_DATE - offset_days)
+FROM generate_series(0, 89) AS offset_days
+WHERE ((offset_days * 7 + 3) % 11) + (CASE WHEN offset_days < 21 THEN 1 ELSE 0 END) < 5
+ON CONFLICT (subscription_id, used_date) DO NOTHING;

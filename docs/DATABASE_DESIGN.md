@@ -48,7 +48,8 @@ erDiagram
         uuid id PK
         varchar name "サービス名 (NOT NULL)"
         int category_id FK "categories 参照"
-        varchar logo_uri "ロゴ画像 URL（優先）"
+        varchar logo_key "同梱ロゴ識別子 assets/services/{logo_key}.jpeg"
+        varchar logo_uri "ロゴ画像 URL（外部URL用・任意）"
         varchar icon_name "画像がない場合の UI アイコン名"
     }
 
@@ -67,7 +68,7 @@ erDiagram
         uuid plan_id FK "plans 参照"
         date start_date "契約の最初の請求日 (NOT NULL)"
         date next_billing_date "次回更新日 (NOT NULL)"
-        varchar status "active / paused 等"
+        varchar status "active / paused / cancelled"
         text memo "解約リンクなど"
         timestamp created_at "default: now()"
         timestamp updated_at
@@ -97,7 +98,9 @@ erDiagram
     SUBSCRIPTIONS ||--o{ USAGE_LOGS : "利用履歴"
 ```
 
-**補足**: 旧メモにあった `notify_timing` は **`notification_settings`** へ分離。ユーザー固有アイコンがマスタに要る場合は別途検討（現状は `services` の `logo_uri` / `icon_name` で表現）。
+**補足**: 旧メモにあった `notify_timing` は **`notification_settings`** へ分離。プリセットサービスのロゴは **`services.logo_key`** で `assets/services/` の同梱画像と紐づける（`logo_uri` は外部 URL 用）。ユーザー固有アイコンがマスタに要る場合は別途検討。
+
+**プリセットマスタ**: `categories` / `cycles` / `services` / `plans` の初期データは **`supabase/migrations/`** で管理する（`seed.sql` はローカル開発用ユーザー・サンプル契約のみ）。出典は Notion「主要サブスク一覧」を正とし（**services 53 件 / plans 210 件**）、内容は [`docs/preset-services-template.csv`](./preset-services-template.csv) に出力（各値は要レビュー）。`cycle` は **`monthly` / `yearly` / `weekly`** のみで、3ヶ月・期間保証などはプラン名に期間を併記し近い `cycle` へ丸める。ロゴは 53 件中 47 件が同梱画像（`logo_key`）にマッチ、未同梱の 6 件（`LINE MUSIC` / `Gemini` / `Figma` / `AppleCare+` / `dマガジン` / `コミックシーモア`）は `logo_key=NULL`、外部 URL があるものは `logo_uri` にフォールバック。生成は [`scripts/generate-preset-seed.js`](../scripts/generate-preset-seed.js)。
 
 ---
 
@@ -149,6 +152,8 @@ erDiagram
 | --------------- | ------ | ------- | ---- |
 | `profiles_pkey` | id     | PRIMARY | —    |
 
+**自動作成**: `auth.users` への INSERT を契機に `public.handle_new_user()` トリガが `profiles` 行（`id` / `email`）を作成する。メール認証・Google OAuth いずれの登録でも適用される（マイグレーション: `20260605160000_create_profile_on_signup.sql`）。
+
 ---
 
 ### `categories`
@@ -165,6 +170,8 @@ erDiagram
 | インデックス名    | カラム | 種別    | 目的 |
 | ----------------- | ------ | ------- | ---- |
 | `categories_pkey` | id     | PRIMARY | —    |
+
+**ジャンル対応**: `id` 1〜17 は [`src/domain/genre.ts`](../src/domain/genre.ts) の `GENRE_IDS` 順（`ai`, `video`, `music`, … `other`）と対応。`name` は日本語ラベル（画面表示用）。
 
 ---
 
@@ -186,20 +193,22 @@ erDiagram
 
 ### `services`（旧 Master_Services）
 
-| カラム名    | 型            | NULL | デフォルト          | 説明                           |
-| ----------- | ------------- | ---- | ------------------- | ------------------------------ |
-| id          | uuid          | NO   | `gen_random_uuid()` | PK                             |
-| name        | varchar(255)  | NO   | —                   | 例: Netflix, Spotify           |
-| category_id | int           | NO   | —                   | FK → `categories.id`           |
-| logo_uri    | varchar(2048) | YES  | —                   | ロゴ画像 URL（優先表示）       |
-| icon_name   | varchar(128)  | YES  | —                   | 画像がない場合の UI アイコン名 |
+| カラム名    | 型            | NULL | デフォルト          | 説明                                              |
+| ----------- | ------------- | ---- | ------------------- | ------------------------------------------------- |
+| id          | uuid          | NO   | `gen_random_uuid()` | PK                                                |
+| name        | varchar(255)  | NO   | —                   | 例: Netflix, Spotify                              |
+| category_id | int           | NO   | —                   | FK → `categories.id`                              |
+| logo_key    | varchar(100)  | YES  | —                   | 同梱ロゴ `assets/services/{logo_key}.jpeg` の識別子 |
+| logo_uri    | varchar(2048) | YES  | —                   | 外部ロゴ URL（任意）                              |
+| icon_name   | varchar(128)  | YES  | —                   | 画像がない場合の UI アイコン名                    |
 
 **インデックス**
 
-| インデックス名  | カラム      | 種別    | 目的             |
-| --------------- | ----------- | ------- | ---------------- |
-| `services_pkey` | id          | PRIMARY | —                |
-| （任意）        | category_id | INDEX   | ジャンルフィルタ |
+| インデックス名        | カラム      | 種別    | 目的                         |
+| --------------------- | ----------- | ------- | ---------------------------- |
+| `services_pkey`       | id          | PRIMARY | —                            |
+| `services_logo_key_key` | logo_key  | UNIQUE  | プリセット slug の一意（NULL 除く） |
+| （任意）              | category_id | INDEX   | ジャンルフィルタ             |
 
 ---
 
@@ -232,7 +241,7 @@ erDiagram
 | plan_id           | uuid        | NO   | —                   | FK → `plans.id`                                       |
 | start_date        | date        | NO   | —                   | 契約の最初の請求日（不変）。**F-09** 利用頻度計算など |
 | next_billing_date | date        | NO   | —                   | **F-10** 通知の基準日。請求ごとに更新                 |
-| status            | varchar(24) | NO   | `'active'`          | **F-03**: `active` / `paused` 等                      |
+| status            | varchar(50) | NO   | `'active'`          | **F-03**: `active` / `paused` / `cancelled` のいずれか（CHECK 制約で限定） |
 | memo              | text        | YES  | —                   | 解約 URL・メモ                                        |
 | created_at        | timestamptz | NO   | `now()`             |                                                       |
 | updated_at        | timestamptz | YES  | —                   |                                                       |
@@ -295,7 +304,8 @@ erDiagram
 
 - `profiles`: 原則として「自分の行のみ `select` / `update`」（`auth.uid() = id`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
-- マスタ（`categories`, `cycles`, `services`, `plans`）: **`select` は全ユーザー可**（`USING (true)`）。更新はサービスロールのみ（ポリシー未作成のためクライアントからは不可）
+- `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
+- マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。INSERT / UPDATE / DELETE はアプリから行わない（マイグレーションで管理）
 
 ### `next_billing_date` の自動繰り上げ（DB 関数・cron）
 
@@ -310,7 +320,10 @@ erDiagram
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-06 | プリセットマスタ投入: `services.logo_key` 追加、categories 17 ジャンル、RLS（マスタ SELECT 可）、Notion 由来の services 53 件 / plans 210 件を投入、migration `20260606120000` / `20260606120100` |
+| 2026-06-05 | `subscriptions.status` に CHECK 制約を追加（`active` / `paused` / `cancelled` に限定）|
 | 2026-06-05 | マスタテーブルの `select` RLS ポリシー追加。`next_billing_date` 自動繰り上げ関数・pg_cron を追加 |
+| 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import {
-  ensureDevSession,
-  isDevAutoSignInEnabled,
-} from '@/src/infrastructure/supabase/ensureDevSession';
+import { ensureDevSession, isDevAutoSignInEnabled } from '@/src/infrastructure/supabase/ensureDevSession';
 
+/**
+ * 開発時のみ seed ユーザーでサインインしてから画面を描画する。
+ */
 export function useDevAuthReady(): boolean {
-  const [isReady, setIsReady] = useState(() => !isDevAutoSignInEnabled());
+  const [isReady, setIsReady] = useState(!isDevAutoSignInEnabled());
 
   useEffect(() => {
     if (!isDevAutoSignInEnabled()) {
@@ -15,15 +15,11 @@ export function useDevAuthReady(): boolean {
 
     let isMounted = true;
 
-    void ensureDevSession()
-      .catch((error: unknown) => {
-        console.error('[useDevAuthReady] dev auto sign-in failed', error);
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsReady(true);
-        }
-      });
+    void ensureDevSession().finally(() => {
+      if (isMounted) {
+        setIsReady(true);
+      }
+    });
 
     return () => {
       isMounted = false;
