@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# SubTrack の CodeRabbit 設定。レビューは日本語で行う。
+# 正とするドキュメント: docs/Rule.md / docs/TRD.md / docs/ARCHITECTURE_GUIDE.md /
+# docs/EXPO_TYPESCRIPT_CONVENTIONS.md / docs/DATABASE_DESIGN.md
+language: "ja-JP"
+early_access: false
+tone_instructions: "日本語で、簡潔かつ具体的にレビューする。指摘は重要度（blocking / nit）を明示し、必要に応じて修正案や該当ドキュメントへの参照を添える。"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  changed_files_summary: true
+  sequence_diagrams: true
+  suggested_labels: true
+  suggested_reviewers: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "develop"
+      - "main"
+  # レビュー不要なファイルは除外（ロックファイル・バイナリ・画像アセット）
+  path_filters:
+    - "!**/package-lock.json"
+    - "!assets/**"
+    - "!**/*.png"
+    - "!**/*.jpeg"
+    - "!**/*.jpg"
+    - "!**/*.gif"
+    - "!**/*.ico"
+  path_instructions:
+    - path: "**/*.{ts,tsx}"
+      instructions: |
+        - 命名・スタイルは docs/EXPO_TYPESCRIPT_CONVENTIONS.md に従う（コンポーネント=PascalCase、変数/関数=camelCase、フックは use で開始、真偽を返す関数は is/has/can 接頭辞）。
+        - 識別子・ファイル名に日本語や絵文字を使わない（docs/Rule.md 禁止事項）。
+        - コメントやコミット/PR に AI ツール表記（Made with Cursor、Co-Authored-By 等）を含めない。
+        - 自明なだけのコメント（処理をなぞるだけ）を増やさない。意図・トレードオフ・制約を説明するコメントのみ可とする。
+    - path: "src/**"
+      instructions: |
+        - クリーンアーキテクチャ（docs/TRD.md §1 / docs/ARCHITECTURE_GUIDE.md）の層分けを厳守しているか確認する。
+        - domain: ルールと純粋関数のみ。React / @supabase/supabase-js に依存していないか確認する。
+        - application: ユースケース。ports（インターフェース）のみを呼び、具象（infrastructure）に直接依存していないか確認する。
+        - ports: リポジトリ等の抽象インターフェース。
+        - infrastructure: Supabase / fetch(Edge) / ストレージの具象実装とマッピング。createClient の import は原則この層に閉じているか確認する。
+        - 金額換算・paused の扱い・検証ロジックなどのドメインルールが presentation や infrastructure にべた書きされていないか確認する。
+    - path: "app/**"
+      instructions: |
+        - presentation 層（画面・フック）。ドメインルールのべた書きを避け、ユースケースまたは domain 関数を呼んでいるか確認する。
+        - Expo Router の規約に沿ったルーティングか確認する。
+    - path: "supabase/migrations/**"
+      instructions: |
+        - スキーマ変更（テーブル・列・インデックス・RLS・ポリシー）はこのマイグレーションでのみ行う。Supabase ダッシュボードでの直接変更を前提にした記述がないか確認する。
+        - RLS ポリシーの妥当性（auth.uid() による本人限定、マスタの SELECT 範囲など）を docs/DATABASE_DESIGN.md と矛盾しないか確認する。
+        - 破壊的変更（DROP / TRUNCATE / 列削除）があれば必ず指摘する。
+        - 変更時は docs/DATABASE_DESIGN.md（テーブル一覧・変更履歴）の更新が必要かを確認する。
+    - path: "**/*.sql"
+      instructions: |
+        - DROP / TRUNCATE などデータを失う可能性のある文があれば必ず指摘する。
+    - path: "docs/**.md"
+      instructions: |
+        - 記述の明確さ・正確さ・完全性を確認する。古い API や廃止された挙動への参照があれば指摘する。
+        - 設計変更時に関連ドキュメント間（PRD / FEATURE_REQUIREMENTS / TRD / API_DESIGN / DATABASE_DESIGN）で矛盾が生じていないか確認する。
+
+chat:
+  auto_reply: true
