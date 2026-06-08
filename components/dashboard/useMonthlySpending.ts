@@ -12,10 +12,12 @@ export function useMonthlySpending() {
   const [period, setPeriod] = useState<SpendingPeriod>('month');
   const [total, setTotal] = useState<MonthlyBillingTotal>(EMPTY_TOTAL);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const loadMonthlyTotal = useCallback(async () => {
     const now = new Date();
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       const result = await getMonthlyBillingTotal(
         subscriptionRepositorySupabase,
@@ -23,16 +25,23 @@ export function useMonthlySpending() {
         now.getMonth() + 1
       );
       setTotal(result);
+    } catch {
+      setTotal(EMPTY_TOTAL);
+      setErrorMessage('合計支出の取得に失敗しました');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // 年間集計は未実装のため、当面は月間のみ取得する。
     if (period === 'month') {
       void loadMonthlyTotal();
+      return;
     }
+    // 年間集計は未実装。月間データを残したままだと誤情報になるためリセットする。
+    setTotal(EMPTY_TOTAL);
+    setErrorMessage(null);
+    setIsLoading(false);
   }, [period, loadMonthlyTotal]);
 
   return {
@@ -40,5 +49,6 @@ export function useMonthlySpending() {
     setPeriod,
     total,
     isLoading,
+    errorMessage,
   };
 }

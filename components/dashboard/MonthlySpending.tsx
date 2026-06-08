@@ -11,12 +11,13 @@ const PERIOD_OPTIONS: { value: SpendingPeriod; label: string }[] = [
 ];
 
 export const MonthlySpending: React.FC = () => {
-  const { period, setPeriod, total, isLoading } = useMonthlySpending();
+  const { period, setPeriod, total, isLoading, errorMessage } = useMonthlySpending();
+  const titleText = period === 'month' ? '今月の合計支出' : '今年の合計支出';
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>今月の合計支出</Text>
+        <Text style={styles.title}>{titleText}</Text>
         <View style={styles.toggle}>
           {PERIOD_OPTIONS.map((option) => {
             const isActive = option.value === period;
@@ -38,6 +39,8 @@ export const MonthlySpending: React.FC = () => {
 
       {isLoading ? (
         <ActivityIndicator color="#ffffff" style={styles.amountLoader} />
+      ) : errorMessage ? (
+        <Text style={styles.error}>{errorMessage}</Text>
       ) : (
         <Text style={styles.amount}>{formatPrice(total.amount, total.currency)}</Text>
       )}
@@ -91,5 +94,9 @@ const styles = StyleSheet.create({
   amountLoader: {
     alignSelf: 'flex-start',
     height: 43,
+  },
+  error: {
+    fontSize: 14,
+    color: '#ff3a5e',
   },
 });
