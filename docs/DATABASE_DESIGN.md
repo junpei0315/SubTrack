@@ -336,6 +336,13 @@ LINE 公式アカウントのトークから利用実績を記録するための
 - `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
 - マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。INSERT / UPDATE / DELETE はアプリから行わない（マイグレーションで管理）
 
+### `next_billing_date` の自動繰り上げ（DB 関数・cron）
+
+- `calc_next_billing_date(start_date, cycle, today)`: 契約開始日とサイクルから「今日以降の最初の請求日」を算出する純粋関数
+- `refresh_due_billing_dates()`: `status = active` かつ `next_billing_date < 今日（JST）` の契約を一括更新。戻り値は更新件数
+- `pg_cron` ジョブ `refresh-due-billing-dates`: 毎日 JST 0:10（UTC 15:10）に `refresh_due_billing_dates()` を実行
+- 開始日を起点に周期を加算するため、毎月の請求日（例: 15 日）を維持し、月末 clamp によるドリフトを防ぐ
+
 ---
 
 ## 変更履歴
@@ -348,6 +355,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 | 2026-06-06 | `line_links` / `line_link_codes` と連携コード発行 RPC を追加（LINE 連携）            |
 | 2026-06-06 | プリセットマスタ投入: `services.logo_key` 追加、categories 17 ジャンル、RLS（マスタ SELECT 可）、Notion 由来の services 53 件 / plans 210 件を投入、migration `20260606120000` / `20260606120100` |
 | 2026-06-05 | `subscriptions.status` に CHECK 制約を追加（`active` / `paused` / `cancelled` に限定）|
+| 2026-06-05 | マスタテーブルの `select` RLS ポリシー追加。`next_billing_date` 自動繰り上げ関数・pg_cron を追加 |
 | 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
