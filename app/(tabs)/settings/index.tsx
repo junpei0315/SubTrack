@@ -1,5 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
+import { LineLinkCard } from '@/components/settings/LineLinkCard';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
@@ -7,18 +8,21 @@ import { ThemedView } from '@/components/themed-view';
 // 関連機能: F-12 / F-13 / F-14 への導線
 export default function SettingsRoute() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">Settings</ThemedText>
-      <ThemedText>設定トップ（未実装）</ThemedText>
-    </ThemedView>
+    <ScrollView style={styles.scrollView}>
+      <ThemedView style={styles.container}>
+        <ThemedText type="title">Settings</ThemedText>
+        <LineLinkCard />
+      </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 16,
     gap: 8,
   },

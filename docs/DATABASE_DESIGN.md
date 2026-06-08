@@ -127,6 +127,8 @@ erDiagram
 | `subscriptions`         | ユーザーの契約台帳                     | **改修**。`plan_id` 参照でスリム化     |
 | `notification_settings` | サブスクごとの通知タイミング（複数可） | **新規**（`notify_timing` の切り出し） |
 | `usage_logs`            | 利用実績（使用チェック）               |                                        |
+| `line_links`            | ユーザーと LINE userId の紐付け        | **新規**（`20260606130000`）           |
+| `line_link_codes`       | LINE 連携用ワンタイムコード（短命）    | **新規**（`20260606130000`）           |
 
 マイグレーションファイル名は追加時に本表へ追記する。
 
@@ -292,6 +294,33 @@ erDiagram
 
 ---
 
+### `line_links`（新規）
+
+LINE 公式アカウントのトークから利用実績を記録するための、ユーザーと LINE userId の 1:1 紐付け。書き込み（連携確定）は Edge Function が service_role で行う。
+
+| カラム名     | 型          | NULL | デフォルト | 説明                          |
+| ------------ | ----------- | ---- | ---------- | ----------------------------- |
+| user_id      | uuid        | NO   | —          | PK。FK → `profiles.id`        |
+| line_user_id | text        | NO   | —          | LINE のユーザーID（UNIQUE）   |
+| linked_at    | timestamptz | NO   | `now()`    | 連携した時刻                  |
+
+**RLS**: 自分の行のみ `select` / `delete`（`auth.uid() = user_id`）。`insert`/`update` は service_role のみ。
+
+### `line_link_codes`（新規）
+
+連携用のワンタイムコード。アプリが RPC `create_line_link_code()` で発行し、ユーザーが LINE に送ると Edge Function が照合して `line_links` を作成する。
+
+| カラム名   | 型          | NULL | デフォルト | 説明                       |
+| ---------- | ----------- | ---- | ---------- | -------------------------- |
+| code       | text        | NO   | —          | PK。6 桁の数字コード       |
+| user_id    | uuid        | NO   | —          | FK → `profiles.id`         |
+| expires_at | timestamptz | NO   | —          | 有効期限（発行から 10 分） |
+| created_at | timestamptz | NO   | `now()`    | 発行時刻                   |
+
+**RLS**: ポリシーなし（一般ユーザーは直接アクセス不可）。発行は `SECURITY DEFINER` の RPC、照合は service_role。
+
+---
+
 ## マイグレーション運用
 
 - **スキーマの変更はマイグレーションファイルのみ**（UI 上のエディタで本番・Staging を直接いじらない。理由・例外は [`docs/Rule.md`](./Rule.md)）
@@ -313,6 +342,10 @@ erDiagram
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-06 | Dropbox のプリセット価格を税込に統一（`20260606160000`）                             |
+| 2026-06-06 | AppleCare+「iPhone（月払い）」プランを追加（`20260606150000`）                        |
+| 2026-06-06 | 既存ユーザーの `profiles` backfill と `create_line_link_code` の profile 自動作成（`20260606140000`）|
+| 2026-06-06 | `line_links` / `line_link_codes` と連携コード発行 RPC を追加（LINE 連携）            |
 | 2026-06-06 | プリセットマスタ投入: `services.logo_key` 追加、categories 17 ジャンル、RLS（マスタ SELECT 可）、Notion 由来の services 53 件 / plans 210 件を投入、migration `20260606120000` / `20260606120100` |
 | 2026-06-05 | `subscriptions.status` に CHECK 制約を追加（`active` / `paused` / `cancelled` に限定）|
 | 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
