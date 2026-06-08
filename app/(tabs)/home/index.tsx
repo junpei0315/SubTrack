@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
 import { Calendar } from '@/components/calendar/Calendar';
+import { MonthlySpending } from '@/components/dashboard/MonthlySpending';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
@@ -12,6 +13,7 @@ export default function HomeRoute() {
       <ThemedView style={styles.container}>
         <ThemedText type="title">Home</ThemedText>
         <ThemedText>ダッシュボード（未実装）</ThemedText>
+        <MonthlySpending />
         <Calendar />
       </ThemedView>
     </ScrollView>
