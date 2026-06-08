@@ -21,6 +21,15 @@ module.exports = defineConfig([
   },
   prettierConfig,
   {
-    ignores: ['dist/*', 'node_modules/*', '.expo/*', 'build/*', 'coverage/*', 'android/*', 'ios/*'],
+    ignores: [
+      'dist/*',
+      'node_modules/*',
+      '.expo/*',
+      'build/*',
+      'coverage/*',
+      'android/*',
+      'ios/*',
+      'supabase/functions/*',
+    ],
   },
 ]);

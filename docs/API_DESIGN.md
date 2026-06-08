@@ -73,9 +73,14 @@
 
 ### エンドポイント一覧（Edge）
 
-| 関数ディレクトリ名 | メソッド | パス（相対）        | 概要 | 関連機能 |
-| ------------------ | -------- | ------------------- | ---- | -------- |
-| （未実装）         |          | `/functions/v1/...` |      |          |
+| 関数ディレクトリ名 | メソッド | パス（相対）              | 概要                                                              | `verify_jwt` | 関連機能 |
+| ------------------ | -------- | ------------------------- | ----------------------------------------------------------------- | ------------ | -------- |
+| `line-webhook`     | POST     | `/functions/v1/line-webhook`     | LINE Webhook 受け口。署名検証 → 連携コード照合 / postback で利用記録 | false        | F-08     |
+| `line-daily-push`  | POST     | `/functions/v1/line-daily-push`  | 連携済みユーザーへ「使った/使ってない」ボタンを毎日プッシュ          | false        | F-08     |
+
+- `line-webhook` は LINE の署名（`X-Line-Signature`）で保護するため JWT 検証は無効化する。
+- `line-daily-push` は cron（pg_cron / 外部スケジューラ）から呼び、`CRON_SECRET`（任意）で簡易保護する。
+- 詳細・セットアップ手順は [`supabase/functions/README.md`](../supabase/functions/README.md)。
 
 ---
 
@@ -106,5 +111,6 @@
 
 | 日付       | 変更内容                                                |
 | ---------- | ------------------------------------------------------- |
+| 2026-06-06 | LINE 連携の Edge Functions（line-webhook / line-daily-push）を追記 |
 | 2026-05-15 | Edge Functions の採用方針・PostgREST との住み分けを追記 |
 | （追記）   |                                                         |
