@@ -6,6 +6,8 @@ import { formatBillingDate, getBillingCycleLabel } from '@/src/domain/billingCyc
 import { formatPrice } from '@/src/domain/money';
 import type { Subscription } from '@/src/domain/subscription';
 
+import { resolveServiceLogo } from './serviceLogos';
+
 interface SubscriptionListItemProps {
   subscription: Subscription;
   onPress?: (subscription: Subscription) => void;
@@ -18,6 +20,7 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
   const { service, plan, nextBillingDate, status } = subscription;
   const isPaused = status === 'paused';
   const initial = service.name.charAt(0).toUpperCase();
+  const logoSource = resolveServiceLogo(service.logoKey, service.logoUri);
 
   return (
     <TouchableOpacity
@@ -26,8 +29,8 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
       onPress={() => onPress?.(subscription)}
     >
       <View style={styles.logoWrapper}>
-        {service.logoUri ? (
-          <Image source={{ uri: service.logoUri }} style={styles.logo} contentFit="cover" />
+        {logoSource ? (
+          <Image source={logoSource} style={styles.logo} contentFit="cover" />
         ) : (
           <View style={styles.logoFallback}>
             <Text style={styles.logoFallbackText}>{initial}</Text>
