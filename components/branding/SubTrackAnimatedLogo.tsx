@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedProps,
@@ -151,7 +151,7 @@ export function SubTrackAnimatedLogo({
   }));
 
   return (
-    <View className="items-center gap-9">
+    <View style={styles.container}>
       <Svg width={ICON_SIZE} height={ICON_SIZE} viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`}>
         <Rect
           width={ICON_SIZE}
@@ -205,7 +205,7 @@ export function SubTrackAnimatedLogo({
       </Svg>
 
       {showWordmark ? (
-        <AnimatedView className="items-center gap-2" style={wordmarkStyle}>
+        <AnimatedView style={[styles.wordmarkContainer, wordmarkStyle]}>
           <ThemedText type="title" lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
             Sub<Text style={{ color: COLORS.accent }}>Track</Text>
           </ThemedText>
@@ -217,3 +217,14 @@ export function SubTrackAnimatedLogo({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    gap: 36,
+  },
+  wordmarkContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+});

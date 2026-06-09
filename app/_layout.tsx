@@ -2,7 +2,7 @@ import { DarkTheme, ThemeProvider, type Theme } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 
 import '../global.css';
@@ -83,17 +83,14 @@ export default function RootLayout() {
   const isDevAuthReady = useDevAuthReady();
 
   if (!isDevAuthReady) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator />
-      </View>
-    );
+    // 開発用自動サインイン完了まで黒画面を維持（スプラッシュと同色でチラつきを防ぐ）
+    return <View style={styles.root} />;
   }
 
   return (
     <ThemeProvider value={blackNavigationTheme}>
       <AuthProvider>
-        <View className="flex-1">
+        <View style={styles.root}>
           <RootNavigator />
           {!isSplashDone ? (
             <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
@@ -104,3 +101,10 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: AppColors.background,
+  },
+});

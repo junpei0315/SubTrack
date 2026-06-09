@@ -1,5 +1,6 @@
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useRef } from 'react';
+import { StyleSheet } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -8,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SubTrackAnimatedLogo } from '@/components/branding/SubTrackAnimatedLogo';
+import { AppColors } from '@/constants/colors';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // 開発中のホットリロード等で既に hide 済みの場合がある
@@ -43,11 +45,18 @@ export function AnimatedSplashOverlay({ onFinish }: AnimatedSplashOverlayProps) 
   }));
 
   return (
-    <Animated.View
-      className="absolute inset-0 z-[9999] items-center justify-center bg-background-splash"
-      style={overlayStyle}
-    >
+    <Animated.View style={[styles.overlay, overlayStyle]}>
       <SubTrackAnimatedLogo onAnimationComplete={handleAnimationComplete} />
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.background,
+  },
+});
