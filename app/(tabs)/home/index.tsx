@@ -12,8 +12,8 @@ export default function HomeRoute() {
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
       <ThemedView style={styles.container}>
         <MonthlySpending />
-        <UpcomingSubscriptions />
         <Calendar />
+        <UpcomingSubscriptions />
       </ThemedView>
     </ScrollView>
   );
