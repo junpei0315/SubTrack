@@ -26,6 +26,8 @@ const SERVICE_LOGOS: Record<string, ImageSourcePropType> = {
   'dmm.co': require('@/assets/services/dmm.co.jpeg'),
   dropbox: require('@/assets/services/dropbox.jpeg'),
   duolingo: require('@/assets/services/duolingo.jpeg'),
+  figma: require('@/assets/services/figma.jpeg'),
+  gemini: require('@/assets/services/gemini.jpeg'),
   github: require('@/assets/services/github.jpeg'),
   goinc: require('@/assets/services/goinc.jpeg'),
   goodnotes: require('@/assets/services/goodnotes.jpeg'),
