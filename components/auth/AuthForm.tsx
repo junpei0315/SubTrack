@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
   TextInput,
   View,
   type KeyboardTypeOptions,
@@ -66,7 +65,7 @@ export function AuthForm({
   };
 
   return (
-    <View style={styles.form}>
+    <View className="gap-4">
       <FormField
         label="メールアドレス"
         value={email}
@@ -91,12 +90,12 @@ export function AuthForm({
       />
 
       {errorMessage ? (
-        <ThemedText style={styles.error} lightColor="#c0392b" darkColor="#ff6b6b">
+        <ThemedText className="text-sm" lightColor="#c0392b" darkColor="#ff6b6b">
           {errorMessage}
         </ThemedText>
       ) : null}
       {successMessage ? (
-        <ThemedText style={styles.success} lightColor="#1e8449" darkColor="#5fd07d">
+        <ThemedText className="text-sm" lightColor="#1e8449" darkColor="#5fd07d">
           {successMessage}
         </ThemedText>
       ) : null}
@@ -105,41 +104,43 @@ export function AuthForm({
         accessibilityRole="button"
         disabled={isSubmitting}
         onPress={handleSubmit}
-        style={({ pressed }) => [
-          styles.primaryButton,
-          { backgroundColor: tint, opacity: isSubmitting || pressed ? 0.7 : 1 },
-        ]}
+        className="items-center justify-center rounded-lg py-3.5"
+        style={({ pressed }) => ({
+          backgroundColor: tint,
+          opacity: isSubmitting || pressed ? 0.7 : 1,
+        })}
       >
         {isSubmitting ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <ThemedText style={styles.primaryLabel} lightColor="#fff" darkColor="#11181C">
+          <ThemedText className="text-base font-bold" lightColor="#fff" darkColor="#11181C">
             {submitLabel}
           </ThemedText>
         )}
       </Pressable>
 
-      <View style={styles.dividerRow}>
-        <View style={[styles.divider, { backgroundColor: icon }]} />
-        <ThemedText style={styles.dividerText} lightColor={icon} darkColor={icon}>
+      <View className="flex-row items-center gap-2">
+        <View className="h-px flex-1 opacity-50" style={{ backgroundColor: icon }} />
+        <ThemedText className="text-xs" lightColor={icon} darkColor={icon}>
           または
         </ThemedText>
-        <View style={[styles.divider, { backgroundColor: icon }]} />
+        <View className="h-px flex-1 opacity-50" style={{ backgroundColor: icon }} />
       </View>
 
       <Pressable
         accessibilityRole="button"
         disabled={isSubmitting}
         onPress={handleGoogle}
-        style={({ pressed }) => [
-          styles.googleButton,
-          { borderColor: icon, opacity: isSubmitting || pressed ? 0.7 : 1 },
-        ]}
+        className="items-center justify-center rounded-lg border py-3.5"
+        style={({ pressed }) => ({
+          borderColor: icon,
+          opacity: isSubmitting || pressed ? 0.7 : 1,
+        })}
       >
-        <ThemedText style={styles.googleLabel}>Google で続ける</ThemedText>
+        <ThemedText className="text-base font-semibold">Google で続ける</ThemedText>
       </Pressable>
 
-      {footer ? <View style={styles.footer}>{footer}</View> : null}
+      {footer ? <View className="mt-2 items-center">{footer}</View> : null}
     </View>
   );
 }
@@ -170,8 +171,8 @@ function FormField({
   placeholderColor,
 }: FormFieldProps) {
   return (
-    <View style={styles.field}>
-      <ThemedText style={styles.label}>{label}</ThemedText>
+    <View className="gap-1.5">
+      <ThemedText className="text-sm font-semibold">{label}</ThemedText>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -182,7 +183,8 @@ function FormField({
         editable={editable}
         autoCapitalize="none"
         autoCorrect={false}
-        style={[styles.input, { color: textColor, borderColor }]}
+        className="rounded-lg border px-3 py-3 text-base"
+        style={{ color: textColor, borderColor }}
       />
     </View>
   );
@@ -197,67 +199,3 @@ function toMessage(error: unknown): string {
   }
   return '予期しないエラーが発生しました';
 }
-
-const styles = StyleSheet.create({
-  form: {
-    gap: 16,
-  },
-  field: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-  error: {
-    fontSize: 14,
-  },
-  success: {
-    fontSize: 14,
-  },
-  primaryButton: {
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  divider: {
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-    opacity: 0.5,
-  },
-  dividerText: {
-    fontSize: 12,
-  },
-  googleButton: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footer: {
-    alignItems: 'center',
-    marginTop: 8,
-  },
-});

@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { formatBillingDate, getBillingCycleLabel } from '@/src/domain/billingCycle';
 import { formatPrice } from '@/src/domain/money';
@@ -21,113 +21,37 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
 
   return (
     <TouchableOpacity
-      style={[styles.card, isPaused && styles.cardPaused]}
+      className={`flex-row items-center gap-3.5 rounded-2xl bg-card p-3.5${isPaused ? ' opacity-50' : ''}`}
       activeOpacity={0.7}
       onPress={() => onPress?.(subscription)}
     >
-      <View style={styles.logoWrapper}>
+      <View className="h-12 w-12 overflow-hidden rounded-xl">
         {service.logoUri ? (
-          <Image source={{ uri: service.logoUri }} style={styles.logo} contentFit="cover" />
+          <Image source={{ uri: service.logoUri }} className="h-full w-full" contentFit="cover" />
         ) : (
-          <View style={styles.logoFallback}>
-            <Text style={styles.logoFallbackText}>{initial}</Text>
+          <View className="h-full w-full items-center justify-center bg-surface">
+            <Text className="text-xl font-bold text-foreground">{initial}</Text>
           </View>
         )}
       </View>
 
-      <View style={styles.info}>
-        <Text style={styles.serviceName} numberOfLines={1}>
+      <View className="flex-1 gap-0.5">
+        <Text className="text-base font-bold text-foreground" numberOfLines={1}>
           {service.name}
         </Text>
-        <Text style={styles.planName} numberOfLines={1}>
+        <Text className="text-[13px] text-subtle" numberOfLines={1}>
           {plan.name}
         </Text>
-        <Text style={styles.billingDate}>次回 {formatBillingDate(nextBillingDate)}</Text>
+        <Text className="mt-0.5 text-xs text-subtle">
+          次回 {formatBillingDate(nextBillingDate)}
+        </Text>
       </View>
 
-      <View style={styles.priceColumn}>
-        <Text style={styles.price}>{formatPrice(plan.price, plan.currency)}</Text>
-        <Text style={styles.cycle}>{getBillingCycleLabel(plan.cycle)}</Text>
-        {isPaused && <Text style={styles.pausedBadge}>停止中</Text>}
+      <View className="items-end gap-0.5">
+        <Text className="text-base font-bold text-foreground">{formatPrice(plan.price, plan.currency)}</Text>
+        <Text className="text-xs font-semibold text-accent">{getBillingCycleLabel(plan.cycle)}</Text>
+        {isPaused ? <Text className="mt-0.5 text-[11px] text-subtle">停止中</Text> : null}
       </View>
     </TouchableOpacity>
   );
 };
-
-const ACCENT_COLOR = '#ff3a5e';
-const TEXT_COLOR = '#ffffff';
-const SUBTLE_COLOR = '#9aa0a6';
-const CARD_BG = '#1c1c1e';
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: CARD_BG,
-    borderRadius: 16,
-    padding: 14,
-    gap: 14,
-  },
-  cardPaused: {
-    opacity: 0.5,
-  },
-  logoWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  logo: {
-    width: '100%',
-    height: '100%',
-  },
-  logoFallback: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#2c2c2e',
-  },
-  logoFallbackText: {
-    color: TEXT_COLOR,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  info: {
-    flex: 1,
-    gap: 2,
-  },
-  serviceName: {
-    color: TEXT_COLOR,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  planName: {
-    color: SUBTLE_COLOR,
-    fontSize: 13,
-  },
-  billingDate: {
-    color: SUBTLE_COLOR,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  priceColumn: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  price: {
-    color: TEXT_COLOR,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  cycle: {
-    color: ACCENT_COLOR,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  pausedBadge: {
-    color: SUBTLE_COLOR,
-    fontSize: 11,
-    marginTop: 2,
-  },
-});

@@ -2,8 +2,10 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
+
+import '../global.css';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
@@ -74,7 +76,7 @@ export default function RootLayout() {
 
   if (!isDevAuthReady) {
     return (
-      <View style={styles.bootstrapping}>
+      <View className="flex-1 items-center justify-center bg-background-black">
         <ActivityIndicator />
       </View>
     );
@@ -83,7 +85,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <View style={styles.root}>
+        <View className="flex-1">
           <RootNavigator />
           {!isSplashDone ? (
             <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
@@ -94,15 +96,3 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
-  bootstrapping: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000000',
-  },
-});

@@ -1,6 +1,5 @@
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useRef } from 'react';
-import { StyleSheet } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -44,18 +43,11 @@ export function AnimatedSplashOverlay({ onFinish }: AnimatedSplashOverlayProps) 
   }));
 
   return (
-    <Animated.View style={[styles.overlay, overlayStyle]}>
+    <Animated.View
+      className="absolute inset-0 z-[9999] items-center justify-center bg-background-splash"
+      style={overlayStyle}
+    >
       <SubTrackAnimatedLogo onAnimationComplete={handleAnimationComplete} />
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0A0A0A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-  },
-});

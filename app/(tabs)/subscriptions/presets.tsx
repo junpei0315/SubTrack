@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
 
 import { PresetListItem } from '@/components/subscriptions/PresetListItem';
 import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
+import { AppColors } from '@/constants/colors';
 
 // 関連機能: F-01（プリセット選択で一括登録）
 // 人気のサブスク一覧をマスタ（services / plans / categories）から取得して表示する。
@@ -24,32 +25,36 @@ export default function SubscriptionPresetsRoute() {
   }, [presets, query]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View className="flex-1 bg-background">
+      <View className="gap-4 px-4 pt-4">
         <SubscriptionSearchBar value={query} onChangeText={setQuery} />
-        <Text style={styles.sectionTitle}>全て</Text>
+        <Text className="text-lg font-bold text-foreground">全て</Text>
       </View>
 
       {isLoading && presets.length === 0 ? (
-        <View style={styles.centered}>
-          <ActivityIndicator color="#ff3a5e" />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={AppColors.accent} />
         </View>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <PresetListItem preset={item} />}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          contentContainerClassName="flex-grow p-4"
+          ItemSeparatorComponent={() => <View className="h-3" />}
           refreshControl={
-            <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor="#ff3a5e" />
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={reload}
+              tintColor={AppColors.accent}
+            />
           }
           ListEmptyComponent={
-            <View style={styles.emptyWrapper}>
+            <View className="flex-1 items-center justify-center py-20">
               {errorMessage ? (
-                <Text style={styles.errorText}>{errorMessage}</Text>
+                <Text className="text-sm text-accent">{errorMessage}</Text>
               ) : (
-                <Text style={styles.emptyTitle}>該当するサブスクがありません</Text>
+                <Text className="text-sm text-subtle">該当するサブスクがありません</Text>
               )}
             </View>
           }
@@ -58,49 +63,3 @@ export default function SubscriptionPresetsRoute() {
     </View>
   );
 }
-
-const BACKGROUND_COLOR = '#0f0f0f';
-const TEXT_COLOR = '#ffffff';
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    gap: 16,
-  },
-  sectionTitle: {
-    color: TEXT_COLOR,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  listContent: {
-    padding: 16,
-    flexGrow: 1,
-  },
-  separator: {
-    height: 12,
-  },
-  emptyWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 80,
-  },
-  emptyTitle: {
-    color: '#9aa0a6',
-    fontSize: 14,
-  },
-  errorText: {
-    color: '#ff3a5e',
-    fontSize: 14,
-  },
-});
