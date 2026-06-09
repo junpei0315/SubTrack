@@ -4,6 +4,12 @@
 // supabase/migrations/20260606120100_seed_preset_services_plans.sql を再生成する。
 // 使い終わったら削除してよい。
 //   node scripts/generate-preset-seed.js
+//
+// 注意:
+// - service / plan の UUID は配列順の連番で採番している（serviceUuid / planUuid）。
+//   既存行の並べ替え・削除は適用済みマイグレーションと UUID がずれるため不可。
+// - price = 0 の無料プランは支出管理上の意味が薄いため、後続マイグレーション
+//   20260609120000 で削除している。ここでは UUID 連番維持のため敢えて残している。
 
 const fs = require('fs');
 const path = require('path');
@@ -139,8 +145,7 @@ const services = [
     ['Pro', 20, 'USD', M],
     ['Max', 100, 'USD', M],
   ] },
-  { name: 'Gemini', cat: CAT.ai, logoKey: null,
-    logoUri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Google_Gemini_icon_2025.svg/3840px-Google_Gemini_icon_2025.svg.png', plans: [
+  { name: 'Gemini', cat: CAT.ai, logoKey: 'gemini', plans: [
     ['無料', 0, 'JPY', M],
     ['Google AI Plus', 1200, 'JPY', M],
     ['Google AI Pro', 2900, 'JPY', M],
@@ -170,8 +175,7 @@ const services = [
     ['プロ（年払い・月あたり）', 925, 'JPY', Y],
     ['プロ（月払い）', 1920, 'JPY', M],
   ] },
-  { name: 'Figma', cat: CAT.design, logoKey: null,
-    logoUri: 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg', plans: [
+  { name: 'Figma', cat: CAT.design, logoKey: 'figma', plans: [
     ['プロフェッショナル フルシート（月払い）', 3000, 'JPY', M],
     ['プロフェッショナル Devシート（月払い）', 2250, 'JPY', M],
     ['プロフェッショナル コラボシート（月払い）', 750, 'JPY', M],

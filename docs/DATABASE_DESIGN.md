@@ -100,7 +100,7 @@ erDiagram
 
 **補足**: 旧メモにあった `notify_timing` は **`notification_settings`** へ分離。プリセットサービスのロゴは **`services.logo_key`** で `assets/services/` の同梱画像と紐づける（`logo_uri` は外部 URL 用）。ユーザー固有アイコンがマスタに要る場合は別途検討。
 
-**プリセットマスタ**: `categories` / `cycles` / `services` / `plans` の初期データは **`supabase/migrations/`** で管理する（`seed.sql` はローカル開発用ユーザー・サンプル契約のみ）。出典は Notion「主要サブスク一覧」を正とし（**services 53 件 / plans 210 件**）、内容は [`docs/preset-services-template.csv`](./preset-services-template.csv) に出力（各値は要レビュー）。`cycle` は **`monthly` / `yearly` / `weekly`** のみで、3ヶ月・期間保証などはプラン名に期間を併記し近い `cycle` へ丸める。ロゴは 53 件中 47 件が同梱画像（`logo_key`）にマッチ、未同梱の 6 件（`LINE MUSIC` / `Gemini` / `Figma` / `AppleCare+` / `dマガジン` / `コミックシーモア`）は `logo_key=NULL`、外部 URL があるものは `logo_uri` にフォールバック。生成は [`scripts/generate-preset-seed.js`](../scripts/generate-preset-seed.js)。
+**プリセットマスタ**: `categories` / `cycles` / `services` / `plans` の初期データは **`supabase/migrations/`** で管理する（`seed.sql` はローカル開発用ユーザー・サンプル契約のみ）。出典は Notion「主要サブスク一覧」を正とし（**services 53 件 / plans 204 件** ※無料プラン6件は `20260609120000` で削除）、内容は [`docs/preset-services-template.csv`](./preset-services-template.csv) に出力（各値は要レビュー）。`cycle` は **`monthly` / `yearly` / `weekly`** のみで、3ヶ月・期間保証などはプラン名に期間を併記し近い `cycle` へ丸める。ロゴは 53 件中 49 件が同梱画像（`logo_key`）にマッチ、未同梱の 4 件（`LINE MUSIC` / `AppleCare+` / `dマガジン` / `コミックシーモア`）は `logo_key=NULL`、外部 URL があるものは `logo_uri` にフォールバック。生成は [`scripts/generate-preset-seed.js`](../scripts/generate-preset-seed.js)。
 
 ---
 
@@ -349,6 +349,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-09 | プリセット整理: 重複サービス（手動投入の `33333333-…` Netflix/Amazon Prime Video/DAZN）と配下プランを削除、無料プラン（price=0、金額不定は除外）を削除、Figma/Gemini を同梱ロゴ（`logo_key`）方式へ統一（`20260609120000`） |
 | 2026-06-06 | Dropbox のプリセット価格を税込に統一（`20260606160000`）                             |
 | 2026-06-06 | AppleCare+「iPhone（月払い）」プランを追加（`20260606150000`）                        |
 | 2026-06-06 | 既存ユーザーの `profiles` backfill と `create_line_link_code` の profile 自動作成（`20260606140000`）|
