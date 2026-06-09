@@ -45,7 +45,7 @@ export const UpcomingSubscriptions: React.FC = () => {
 
       {isLoading && subscriptions.length === 0 ? (
         <View style={styles.centered}>
-          <ActivityIndicator color="#ff3a5e" />
+          <ActivityIndicator color={ACCENT_COLOR} />
         </View>
       ) : errorMessage ? (
         <Text style={styles.message}>{errorMessage}</Text>
@@ -66,6 +66,7 @@ export const UpcomingSubscriptions: React.FC = () => {
   );
 };
 
+const ACCENT_COLOR = '#DC052D';
 const TEXT_COLOR = '#ffffff';
 const SUBTLE_COLOR = '#9aa0a6';
 

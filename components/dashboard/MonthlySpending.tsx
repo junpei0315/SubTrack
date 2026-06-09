@@ -97,6 +97,6 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: 14,
-    color: '#ff3a5e',
+    color: '#DC052D',
   },
 });
