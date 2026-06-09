@@ -43,6 +43,8 @@ export const UpcomingSubscriptions: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {upcoming.length > 0 ? <Text style={styles.caption}>支払日が近い順</Text> : null}
+
       {isLoading && subscriptions.length === 0 ? (
         <View style={styles.centered}>
           <ActivityIndicator color={ACCENT_COLOR} />
@@ -85,6 +87,11 @@ const styles = StyleSheet.create({
     color: TEXT_COLOR,
     fontSize: 18,
     fontWeight: '700',
+  },
+  caption: {
+    color: SUBTLE_COLOR,
+    fontSize: 12,
+    marginTop: -4,
   },
   allButton: {
     flexDirection: 'row',
