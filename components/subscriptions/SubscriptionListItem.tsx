@@ -54,7 +54,7 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
   );
 };
 
-const ACCENT_COLOR = '#ff3a5e';
+const ACCENT_COLOR = '#DC052D';
 const TEXT_COLOR = '#ffffff';
 const SUBTLE_COLOR = '#9aa0a6';
 const CARD_BG = '#1c1c1e';

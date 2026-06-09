@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pillSelected: {
-    backgroundColor: '#ff3a5e',
+    backgroundColor: '#DC052D',
   },
   pillUnselected: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',

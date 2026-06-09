@@ -154,7 +154,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                         key={`${sub.id}-${idx}`}
                         name={getIconName(sub.service.name)}
                         size={12}
-                        color="#ff3a5e"
+                        color="#DC052D"
                         style={styles.icon}
                       />
                     ))}
@@ -197,11 +197,11 @@ const styles = StyleSheet.create({
   monthText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ff3a5e',
+    color: '#DC052D',
   },
   navButton: {
     fontSize: 20,
-    color: '#ff3a5e',
+    color: '#DC052D',
     padding: 8,
   },
   calendarContainer: {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   weekendText: {
-    color: '#ff3a5e',
+    color: '#DC052D',
   },
   daysGrid: {
     flexDirection: 'row',
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   weekendDayText: {
-    color: '#ff3a5e',
+    color: '#DC052D',
   },
   iconsContainer: {
     flexDirection: 'row',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   moreText: {
     fontSize: 8,
-    color: '#ff3a5e',
+    color: '#DC052D',
     marginLeft: 2,
   },
 });

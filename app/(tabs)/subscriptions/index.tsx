@@ -20,7 +20,7 @@ export default function SubscriptionListRoute() {
   if (isLoading && subscriptions.length === 0) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator color="#ff3a5e" />
+        <ActivityIndicator color="#DC052D" />
       </View>
     );
   }
@@ -36,7 +36,7 @@ export default function SubscriptionListRoute() {
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor="#ff3a5e" />
+          <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor="#DC052D" />
         }
         ListEmptyComponent={
           <View style={styles.emptyWrapper}>
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   errorText: {
-    color: '#ff3a5e',
+    color: '#DC052D',
     fontSize: 14,
   },
 });

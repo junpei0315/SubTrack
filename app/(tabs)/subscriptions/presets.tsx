@@ -32,7 +32,7 @@ export default function SubscriptionPresetsRoute() {
 
       {isLoading && presets.length === 0 ? (
         <View style={styles.centered}>
-          <ActivityIndicator color="#ff3a5e" />
+          <ActivityIndicator color="#DC052D" />
         </View>
       ) : (
         <FlatList
@@ -42,7 +42,7 @@ export default function SubscriptionPresetsRoute() {
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
-            <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor="#ff3a5e" />
+            <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor="#DC052D" />
           }
           ListEmptyComponent={
             <View style={styles.emptyWrapper}>
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   errorText: {
-    color: '#ff3a5e',
+    color: '#DC052D',
     fontSize: 14,
   },
 });
