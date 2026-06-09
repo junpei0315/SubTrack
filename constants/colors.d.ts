@@ -1,7 +1,7 @@
 export const AppColors: {
   readonly accent: '#ff3a5e';
   readonly accentBrand: '#DC052D';
-  readonly background: '#0f0f0f';
+  readonly background: '#000000';
   readonly backgroundDarker: '#0D0D0D';
   readonly backgroundBlack: '#000000';
   readonly backgroundSplash: '#0A0A0A';

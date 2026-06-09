@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, ThemeProvider, type Theme } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -9,11 +9,20 @@ import '../global.css';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AppColors } from '@/constants/colors';
 import { useDevAuthReady } from '@/hooks/useDevAuthReady';
 
 export const unstable_settings = {
   anchor: '(tabs)',
+};
+
+const blackNavigationTheme: Theme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: AppColors.background,
+    card: AppColors.background,
+  },
 };
 
 const AUTH_ROUTE_NAMES = new Set(['sign-in', 'sign-up']);
@@ -70,20 +79,19 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [isSplashDone, setIsSplashDone] = useState(false);
   const isDevAuthReady = useDevAuthReady();
 
   if (!isDevAuthReady) {
     return (
-      <View className="flex-1 items-center justify-center bg-background-black">
+      <View className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={blackNavigationTheme}>
       <AuthProvider>
         <View className="flex-1">
           <RootNavigator />
@@ -91,7 +99,7 @@ export default function RootLayout() {
             <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
           ) : null}
         </View>
-        <StatusBar style={isSplashDone ? 'auto' : 'light'} />
+        <StatusBar style="light" />
       </AuthProvider>
     </ThemeProvider>
   );

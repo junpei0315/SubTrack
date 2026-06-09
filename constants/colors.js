@@ -5,7 +5,7 @@
 const AppColors = {
   accent: '#ff3a5e',
   accentBrand: '#DC052D',
-  background: '#0f0f0f',
+  background: '#000000',
   backgroundDarker: '#0D0D0D',
   backgroundBlack: '#000000',
   backgroundSplash: '#0A0A0A',
