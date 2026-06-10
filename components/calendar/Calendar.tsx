@@ -119,7 +119,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
 
       <View className="rounded-2xl bg-surface p-3">
         <View className="overflow-hidden rounded-xl">
-          <View className="flex-row items-center justify-center gap-5 bg-background py-3">
+          <View className="flex-row items-center justify-center gap-5 bg-surface py-3">
             <TouchableOpacity onPress={goToPrev} hitSlop={8}>
               <Text className="px-1 text-lg text-accent">←</Text>
             </TouchableOpacity>
@@ -131,7 +131,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
             </TouchableOpacity>
           </View>
 
-          <View className="flex-row bg-background py-2">
+          <View className="flex-row bg-surface py-2">
             {DAYS_OF_WEEK.map((day, index) => (
               <View key={day} className="flex-1 items-center">
                 <Text
@@ -149,7 +149,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
             ))}
           </View>
 
-          <View className="bg-background pb-1">
+          <View className="bg-surface pb-1">
             {weeksToRender.map((week, weekIndex) => (
               <View key={weekIndex} className="flex-row">
                 {week.map((day, dayIndex) => {
