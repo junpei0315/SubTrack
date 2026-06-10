@@ -103,8 +103,8 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   };
 
   return (
-    <View className="my-4 rounded-2xl bg-surface p-4">
-      <View className="mb-4 flex-row items-center justify-between">
+    <View className="my-4 rounded-2xl bg-surface p-3">
+      <View className="mb-3 flex-row items-center justify-between">
         <Text className="text-lg font-semibold text-foreground">お支払いカレンダー</Text>
         <View className="flex-row items-center gap-2">
           <TouchableOpacity onPress={goToPrev} hitSlop={8}>
@@ -127,11 +127,11 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
       </View>
 
       <View className="overflow-hidden rounded-xl">
-        <View className="flex-row bg-card py-3">
+        <View className="flex-row bg-card py-2">
           {DAYS_OF_WEEK.map((day, index) => (
             <View key={day} className="flex-1 items-center">
               <Text
-                className={`text-sm font-medium ${index === 0 || index === 6 ? 'text-weekend' : 'text-muted'}`}
+                className={`text-xs font-medium ${index === 0 || index === 6 ? 'text-weekend' : 'text-muted'}`}
               >
                 {day}
               </Text>
@@ -139,7 +139,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
           ))}
         </View>
 
-        <View className="bg-card py-2">
+        <View className="bg-card pb-1">
           {weeksToRender.map((week, weekIndex) => (
             <View key={weekIndex} className="flex-row">
               {week.map((day, dayIndex) => {
@@ -148,17 +148,17 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                 return (
                   <TouchableOpacity
                     key={dayIndex}
-                    className="aspect-square flex-1 items-center justify-center py-1"
+                    className="h-11 flex-1 items-center justify-center px-0.5 py-0.5"
                     onPress={() => handleDatePress(day)}
                     activeOpacity={0.7}
                   >
                     <View
-                      className={`h-full w-full items-center justify-center rounded-xl ${
+                      className={`h-full w-full items-center justify-center rounded-lg ${
                         isSelected ? 'bg-accent' : ''
                       }`}
                     >
                       <Text
-                        className={`text-base ${isSelected ? 'font-bold' : 'font-medium'} ${
+                        className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'} ${
                           isSelected
                             ? 'text-foreground'
                             : !day.isCurrentMonth
@@ -176,13 +176,13 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                             <MaterialIcons
                               key={`${sub.id}-${idx}`}
                               name={getIconName(sub.service.name)}
-                              size={12}
+                              size={10}
                               color={isSelected ? AppColors.text : AppColors.accent}
                             />
                           ))}
                           {day.subscriptions.length > 2 && (
                             <Text
-                              className={`ml-0.5 text-[8px] ${isSelected ? 'text-foreground' : 'text-accent'}`}
+                              className={`ml-0.5 text-[7px] ${isSelected ? 'text-foreground' : 'text-accent'}`}
                             >
                               +{day.subscriptions.length - 2}
                             </Text>
