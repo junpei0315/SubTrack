@@ -3,7 +3,7 @@
  * @type {const}
  */
 const AppColors = {
-  accent: '#ff3a5e',
+  accent: '#DC052D',
   accentBrand: '#DC052D',
   background: '#000000',
   backgroundDarker: '#0D0D0D',
@@ -18,11 +18,11 @@ const AppColors = {
   mutedDark: '#777777',
   border: '#262626',
   borderMuted: '#555555',
-  error: '#ff3a5e',
+  error: '#DC052D',
   errorAlt: '#ff6b6b',
   success: '#5fd07d',
   signOut: '#c0392b',
-  weekend: '#ff3a5e',
+  weekend: '#DC052D',
   whiteMuted40: 'rgba(255, 255, 255, 0.4)',
   whiteMuted50: 'rgba(255, 255, 255, 0.5)',
   whiteMuted8: 'rgba(255, 255, 255, 0.08)',

@@ -6,6 +6,8 @@ export interface Service {
   id: string;
   name: string;
   logoUri?: string;
+  /** 同梱ロゴ assets/services/{logoKey}.jpeg を指す識別子（logoUri より優先） */
+  logoKey?: string;
   iconName?: string;
   category: string;
 }

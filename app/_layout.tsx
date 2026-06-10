@@ -1,6 +1,8 @@
 import { DarkTheme, ThemeProvider, type Theme } from '@react-navigation/native';
+import { Image } from 'expo-image';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { cssInterop } from 'nativewind';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
@@ -11,6 +13,10 @@ import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
 import { AppColors } from '@/constants/colors';
 import { useDevAuthReady } from '@/hooks/useDevAuthReady';
+
+// expo-image は RN コア外のため、NativeWind の className を style にマッピングするには
+// cssInterop の登録が必要（未登録だと className="h-full w-full" 等が無視されロゴが表示されない）。
+cssInterop(Image, { className: { target: 'style' } });
 
 export const unstable_settings = {
   anchor: '(tabs)',

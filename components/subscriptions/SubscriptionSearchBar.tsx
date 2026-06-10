@@ -1,6 +1,6 @@
 import { Search, XCircle } from 'lucide-react-native';
 import React from 'react';
-import { TextInput, TouchableOpacity, View } from 'react-native';
+import { TextInput, type TextInputProps, TouchableOpacity, View } from 'react-native';
 
 import { AppColors } from '@/constants/colors';
 
@@ -10,7 +10,7 @@ interface SubscriptionSearchBarProps {
   placeholder?: string;
   onClear?: () => void;
   className?: string;
-  autoFocus?: boolean;
+  autoFocus?: TextInputProps['autoFocus'];
 }
 
 export const SubscriptionSearchBar: React.FC<SubscriptionSearchBarProps> = ({

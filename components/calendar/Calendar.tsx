@@ -158,7 +158,6 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                         name={getIconName(sub.service.name)}
                         size={12}
                         color={AppColors.accent}
-                        style={{ marginHorizontal: 1 }}
                       />
                     ))}
                     {day.subscriptions.length > 2 && (

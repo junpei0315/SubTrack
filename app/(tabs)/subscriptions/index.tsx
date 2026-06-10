@@ -53,7 +53,7 @@ export default function SubscriptionListRoute() {
                   登録中のサブスクはありません
                 </Text>
                 <Text className="text-[13px] text-subtle">
-                  ＋ボタンからサブスクを登録しましょう
+                  +ボタンからサブスクを登録しましょう
                 </Text>
               </>
             )}
