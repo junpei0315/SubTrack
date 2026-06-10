@@ -1,7 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { AppColors } from '@/constants/colors';
 import { formatLocalDate } from '@/src/domain/localDate';
 import type { Subscription } from '@/src/domain/subscription';
@@ -148,12 +150,12 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                 return (
                   <TouchableOpacity
                     key={dayIndex}
-                    className="h-11 flex-1 items-center justify-center px-0.5 py-0.5"
+                    className="h-14 flex-1 items-center px-0.5 py-0.5"
                     onPress={() => handleDatePress(day)}
                     activeOpacity={0.7}
                   >
                     <View
-                      className={`h-full w-full items-center justify-center rounded-lg ${
+                      className={`h-full w-full items-center rounded-lg pt-1.5 ${
                         isSelected ? 'bg-accent' : ''
                       }`}
                     >
@@ -170,25 +172,36 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                       >
                         {day.day}
                       </Text>
-                      {day.subscriptions.length > 0 && (
-                        <View className="mt-0.5 flex-row items-center gap-0.5">
-                          {day.subscriptions.slice(0, 2).map((sub, idx) => (
+                      <View className="mt-1 h-4 flex-row items-center justify-center gap-0.5">
+                        {day.subscriptions.slice(0, 2).map((sub, idx) => {
+                          const logoSource = resolveServiceLogo(
+                            sub.service.logoKey,
+                            sub.service.logoUri
+                          );
+                          return logoSource ? (
+                            <Image
+                              key={`${sub.id}-${idx}`}
+                              source={logoSource}
+                              className="h-4 w-4 rounded-full"
+                              contentFit="cover"
+                            />
+                          ) : (
                             <MaterialIcons
                               key={`${sub.id}-${idx}`}
                               name={getIconName(sub.service.name)}
-                              size={10}
+                              size={14}
                               color={isSelected ? AppColors.text : AppColors.accent}
                             />
-                          ))}
-                          {day.subscriptions.length > 2 && (
-                            <Text
-                              className={`ml-0.5 text-[7px] ${isSelected ? 'text-foreground' : 'text-accent'}`}
-                            >
-                              +{day.subscriptions.length - 2}
-                            </Text>
-                          )}
-                        </View>
-                      )}
+                          );
+                        })}
+                        {day.subscriptions.length > 2 && (
+                          <Text
+                            className={`text-[7px] ${isSelected ? 'text-foreground' : 'text-accent'}`}
+                          >
+                            +{day.subscriptions.length - 2}
+                          </Text>
+                        )}
+                      </View>
                     </View>
                   </TouchableOpacity>
                 );
