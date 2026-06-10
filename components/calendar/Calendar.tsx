@@ -119,7 +119,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
 
       <View className="rounded-2xl bg-surface p-3">
         <View className="overflow-hidden rounded-xl">
-          <View className="flex-row items-center justify-center gap-5 bg-card py-3">
+          <View className="flex-row items-center justify-center gap-5 bg-background py-3">
             <TouchableOpacity onPress={goToPrev} hitSlop={8}>
               <Text className="px-1 text-lg text-accent">←</Text>
             </TouchableOpacity>
@@ -131,12 +131,16 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
             </TouchableOpacity>
           </View>
 
-          <View className="flex-row bg-card py-2">
+          <View className="flex-row bg-background py-2">
             {DAYS_OF_WEEK.map((day, index) => (
               <View key={day} className="flex-1 items-center">
                 <Text
                   className={`text-xs font-medium ${
-                    index === 0 || index === 6 ? 'text-weekend' : 'text-muted'
+                    index === 0
+                      ? 'text-weekend'
+                      : index === 6
+                      ? 'text-[#4a90e2]'
+                      : 'text-muted'
                   }`}
                 >
                   {day}
@@ -145,16 +149,17 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
             ))}
           </View>
 
-          <View className="bg-card pb-1">
+          <View className="bg-background pb-1">
             {weeksToRender.map((week, weekIndex) => (
               <View key={weekIndex} className="flex-row">
                 {week.map((day, dayIndex) => {
                   const isSelected = formatLocalDate(day.date) === selectedDateString;
-                  const isWeekend = dayIndex === 0 || dayIndex === 6;
+                  const isSunday = dayIndex === 0;
+                  const isSaturday = dayIndex === 6;
                   return (
                     <TouchableOpacity
                       key={dayIndex}
-                      className="h-14 flex-1 items-center px-0.5 py-0.5"
+                      className="h-16 flex-1 items-center px-0.5 py-0.5"
                       onPress={() => handleDatePress(day)}
                       activeOpacity={0.7}
                     >
@@ -169,14 +174,16 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                               ? 'text-foreground'
                               : !day.isCurrentMonth
                               ? 'text-border-muted opacity-50'
-                              : isWeekend
+                              : isSunday
                               ? 'text-weekend'
+                              : isSaturday
+                              ? 'text-[#4a90e2]'
                               : 'text-foreground'
                           }`}
                         >
                           {day.day}
                         </Text>
-                        <View className="mt-1 h-4 flex-row items-center justify-center gap-0.5">
+                        <View className="mt-1 h-6 flex-row items-center justify-center gap-0.5">
                           {day.subscriptions.slice(0, 2).map((sub, idx) => {
                             const logoSource = resolveServiceLogo(
                               sub.service.logoKey,
@@ -186,21 +193,21 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                               <Image
                                 key={`${sub.id}-${idx}`}
                                 source={logoSource}
-                                className="h-4 w-4 rounded-md"
+                                className="h-6 w-6 rounded-md"
                                 contentFit="cover"
                               />
                             ) : (
                               <MaterialIcons
                                 key={`${sub.id}-${idx}`}
                                 name={getIconName(sub.service.name)}
-                                size={14}
+                                size={22}
                                 color={isSelected ? AppColors.text : AppColors.accent}
                               />
                             );
                           })}
                           {day.subscriptions.length > 2 && (
                             <Text
-                              className={`text-[7px] ${
+                              className={`text-[8px] ${
                                 isSelected ? 'text-foreground' : 'text-accent'
                               }`}
                             >
