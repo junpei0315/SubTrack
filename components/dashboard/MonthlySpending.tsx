@@ -1,6 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
+import { AppColors } from '@/constants/colors';
 import { formatPrice } from '@/src/domain/money';
 
 import { type SpendingPeriod, useMonthlySpending } from './useMonthlySpending';
@@ -15,20 +16,22 @@ export const MonthlySpending: React.FC = () => {
   const titleText = period === 'month' ? '今月の合計支出' : '今年の合計支出';
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{titleText}</Text>
-        <View style={styles.toggle}>
+    <View className="my-4 self-stretch py-3">
+      <View className="mb-3 flex-row items-center justify-between">
+        <Text className="text-sm font-medium text-muted">{titleText}</Text>
+        <View className="flex-row rounded-full p-[3px]">
           {PERIOD_OPTIONS.map((option) => {
             const isActive = option.value === period;
             return (
               <TouchableOpacity
                 key={option.value}
-                style={[styles.toggleButton, isActive && styles.toggleButtonActive]}
+                className={`rounded-full px-4 py-1.5 ${isActive ? 'bg-accent-brand' : ''}`}
                 onPress={() => setPeriod(option.value)}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.toggleText, isActive && styles.toggleTextActive]}>
+                <Text
+                  className={`text-[13px] font-semibold ${isActive ? 'text-foreground' : 'text-muted'}`}
+                >
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -38,65 +41,14 @@ export const MonthlySpending: React.FC = () => {
       </View>
 
       {isLoading ? (
-        <ActivityIndicator color="#ffffff" style={styles.amountLoader} />
+        <ActivityIndicator color={AppColors.text} className="h-[43px] self-start" />
       ) : errorMessage ? (
-        <Text style={styles.error}>{errorMessage}</Text>
+        <Text className="text-sm text-accent">{errorMessage}</Text>
       ) : (
-        <Text style={styles.amount}>{formatPrice(total.amount, total.currency)}</Text>
+        <Text className="text-[36px] font-bold text-foreground">
+          {formatPrice(total.amount, total.currency)}
+        </Text>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 12,
-    marginVertical: 16,
-    alignSelf: 'stretch',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 14,
-    color: '#999999',
-    fontWeight: '500',
-  },
-  toggle: {
-    flexDirection: 'row',
-    borderRadius: 999,
-    padding: 3,
-  },
-  toggleButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-  },
-  toggleButtonActive: {
-    backgroundColor: '#DC052D',
-  },
-  toggleText: {
-    fontSize: 13,
-    color: '#999999',
-    fontWeight: '600',
-  },
-  toggleTextActive: {
-    color: '#ffffff',
-  },
-  amount: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  amountLoader: {
-    alignSelf: 'flex-start',
-    height: 43,
-  },
-  error: {
-    fontSize: 14,
-    color: '#DC052D',
-  },
-});

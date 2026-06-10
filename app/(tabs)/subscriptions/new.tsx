@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 import { GenreSelector } from '@/components/subscriptions/GenreSelector';
 import { ThemedText } from '@/components/themed-text';
@@ -13,9 +13,9 @@ export default function SubscriptionNewRoute() {
   const [genreId, setGenreId] = useState<GenreId>(DEFAULT_GENRE_ID);
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
+    <ThemedView className="flex-1 pt-6">
+      <View className="gap-3">
+        <ThemedText type="subtitle" className="px-4">
           ジャンル
         </ThemedText>
         <GenreSelector selectedId={genreId} onChange={setGenreId} />
@@ -23,16 +23,3 @@ export default function SubscriptionNewRoute() {
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 24,
-  },
-  section: {
-    gap: 12,
-  },
-  sectionTitle: {
-    paddingHorizontal: 16,
-  },
-});

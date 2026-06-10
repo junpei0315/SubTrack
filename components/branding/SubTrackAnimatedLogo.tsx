@@ -207,7 +207,7 @@ export function SubTrackAnimatedLogo({
       {showWordmark ? (
         <AnimatedView style={[styles.wordmarkContainer, wordmarkStyle]}>
           <ThemedText type="title" lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
-            Sub<Text style={styles.wordmarkAccent}>Track</Text>
+            Sub<Text style={{ color: COLORS.accent }}>Track</Text>
           </ThemedText>
           <ThemedText lightColor={SPLASH_SUBTITLE_COLOR} darkColor={SPLASH_SUBTITLE_COLOR}>
             Track Your Subscriptions
@@ -226,8 +226,5 @@ const styles = StyleSheet.create({
   wordmarkContainer: {
     alignItems: 'center',
     gap: 8,
-  },
-  wordmarkAccent: {
-    color: COLORS.accent,
   },
 });

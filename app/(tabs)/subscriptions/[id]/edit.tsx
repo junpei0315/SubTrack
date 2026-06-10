@@ -1,5 +1,4 @@
 import { useLocalSearchParams } from 'expo-router';
-import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -10,20 +9,10 @@ export default function SubscriptionEditRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
       <ThemedText type="title">Edit Subscription</ThemedText>
       <ThemedText>ID: {id ?? '-'}</ThemedText>
       <ThemedText>編集フォーム（未実装）</ThemedText>
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    gap: 8,
-  },
-});

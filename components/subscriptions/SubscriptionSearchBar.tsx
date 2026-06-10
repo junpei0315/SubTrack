@@ -1,21 +1,15 @@
 import { Search, XCircle } from 'lucide-react-native';
 import React from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-  type TextInputProps,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
+import { TextInput, type TextInputProps, TouchableOpacity, View } from 'react-native';
+
+import { AppColors } from '@/constants/colors';
 
 interface SubscriptionSearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   onClear?: () => void;
-  style?: ViewStyle;
+  className?: string;
   autoFocus?: TextInputProps['autoFocus'];
 }
 
@@ -24,20 +18,22 @@ export const SubscriptionSearchBar: React.FC<SubscriptionSearchBarProps> = ({
   onChangeText,
   placeholder = 'サービス名で検索',
   onClear,
-  style,
+  className,
   autoFocus,
 }) => {
   const showClear = value.length > 0;
 
   return (
-    <View style={[styles.container, style]}>
-      <Search size={20} color="rgba(255, 255, 255, 0.5)" />
+    <View
+      className={`h-12 flex-row items-center gap-2.5 rounded-xl border-2 border-white/40 bg-background-black px-4${className ? ` ${className}` : ''}`}
+    >
+      <Search size={20} color={AppColors.whiteMuted50} />
       <TextInput
-        style={[styles.input, { outlineStyle: 'none' } as unknown as TextStyle]}
+        className="flex-1 border-0 p-0 text-base text-foreground outline-none"
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="rgba(255, 255, 255, 0.4)"
+        placeholderTextColor={AppColors.whiteMuted40}
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="search"
@@ -53,31 +49,9 @@ export const SubscriptionSearchBar: React.FC<SubscriptionSearchBarProps> = ({
             onClear?.();
           }}
         >
-          <XCircle size={18} color="rgba(255, 255, 255, 0.4)" />
+          <XCircle size={18} color={AppColors.whiteMuted40} />
         </TouchableOpacity>
       ) : null}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    height: 48,
-    backgroundColor: '#000000',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-    borderRadius: 12,
-  },
-  input: {
-    flex: 1,
-    color: '#ffffff',
-    fontSize: 16,
-    padding: 0,
-    outlineWidth: 0,
-    borderWidth: 0,
-  },
-});

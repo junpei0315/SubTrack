@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -23,16 +23,16 @@ export default function SignUpRoute() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      className="flex-1"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerClassName="flex-grow justify-center"
         keyboardShouldPersistTaps="handled"
       >
-        <ThemedView style={styles.container}>
+        <ThemedView className="gap-2 p-6">
           <ThemedText type="title">新規登録</ThemedText>
-          <ThemedText style={styles.subtitle}>アカウントを作成して始めましょう</ThemedText>
+          <ThemedText className="mb-4">アカウントを作成して始めましょう</ThemedText>
 
           <AuthForm
             submitLabel="登録する"
@@ -50,20 +50,3 @@ export default function SignUpRoute() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  container: {
-    padding: 24,
-    gap: 8,
-  },
-  subtitle: {
-    marginBottom: 16,
-  },
-});

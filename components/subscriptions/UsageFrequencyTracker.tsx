@@ -1,13 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  LayoutChangeEvent,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type ViewStyle,
-} from 'react-native';
+import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { AppColors } from '@/constants/colors';
 import { formatLocalDate } from '@/src/domain/localDate';
 import {
   buildRangeUsageView,
@@ -32,18 +26,8 @@ interface UsageFrequencyTrackerProps {
   onRecordUsagePress?: () => void;
   onUndoUsagePress?: () => void;
   title?: string;
-  style?: ViewStyle;
+  className?: string;
 }
-
-const ACCENT_COLOR = '#DC052D';
-const TEXT_COLOR = '#ffffff';
-const SECTION_TITLE_COLOR = '#9aa0a6';
-const CARD_BG = '#1c1c1e';
-const CELL_EMPTY = '#2c2c2e';
-const CELL_FUTURE = 'rgba(255, 255, 255, 0.03)';
-const STAT_LABEL_COLOR = '#9aa0a6';
-const NAV_DISABLED_COLOR = 'rgba(255, 255, 255, 0.2)';
-const PLACEHOLDER = '—';
 
 const CELL_GAP = 4;
 const CELL_RADIUS = 3;
@@ -51,6 +35,8 @@ const MIN_CELL_SIZE = 10;
 const MAX_CELL_SIZE = 20;
 // 月曜始まりの行に対応するラベル（月・水・金・日を表示）
 const WEEKDAY_LABELS = ['月', '', '水', '', '金', '', '日'];
+
+const PLACEHOLDER = '—';
 
 export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   usedDateKeys,
@@ -60,7 +46,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   onRecordUsagePress,
   onUndoUsagePress,
   title = '利用状況トラッカー',
-  style,
+  className,
 }) => {
   const today = useMemo(() => todayProp ?? new Date(), [todayProp]);
   const todayKey = formatLocalDate(today);
@@ -153,18 +139,18 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
     setGridWidth(event.nativeEvent.layout.width);
   };
 
-  const cellStyle = { width: cellSize, height: cellSize };
+  const cellStyle = { width: cellSize, height: cellSize, borderRadius: CELL_RADIUS };
   const weekColumnStyle = { gap: CELL_GAP };
 
   return (
-    <View style={[styles.container, style]}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.card}>
-        <View style={styles.header}>
+    <View className={`w-full${className ? ` ${className}` : ''}`}>
+      <Text className="mb-2 px-1 text-[13px] font-semibold text-subtle">{title}</Text>
+      <View className="gap-4 rounded-2xl bg-card px-5 pb-5 pt-4">
+        <View className="flex-row items-center justify-between">
           <Pressable onPress={goPrev} hitSlop={8} accessibilityRole="button" accessibilityLabel="前の期間">
-            <MaterialIcons name="chevron-left" size={26} color={TEXT_COLOR} />
+            <MaterialIcons name="chevron-left" size={26} color={AppColors.text} />
           </Pressable>
-          <Text style={styles.rangeLabel}>{view.rangeLabel}</Text>
+          <Text className="text-[15px] font-bold text-foreground">{view.rangeLabel}</Text>
           <Pressable
             onPress={goNext}
             disabled={view.isAnchorCurrentMonth}
@@ -174,53 +160,52 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
             <MaterialIcons
               name="chevron-right"
               size={26}
-              color={view.isAnchorCurrentMonth ? NAV_DISABLED_COLOR : TEXT_COLOR}
+              color={view.isAnchorCurrentMonth ? AppColors.navDisabled : AppColors.text}
             />
           </Pressable>
         </View>
 
-        <Animated.View style={[styles.heatmapRow, heatmapAnimatedStyle]}>
-          <View style={styles.weekdayLabels}>
+        <Animated.View className="flex-row gap-1.5" style={heatmapAnimatedStyle}>
+          <View className="justify-end gap-1">
             {WEEKDAY_LABELS.map((label, index) => (
-              <View key={index} style={[styles.weekdayLabelCell, { height: cellSize }]}>
-                <Text style={[styles.weekdayLabelText, { lineHeight: cellSize }]}>{label}</Text>
+              <View key={index} className="justify-center" style={{ height: cellSize }}>
+                <Text className="text-[9px] text-subtle" style={{ lineHeight: cellSize }}>
+                  {label}
+                </Text>
               </View>
             ))}
           </View>
-          <View style={styles.weeksArea}>
-            <View style={[styles.monthLabelRow, { height: 14 }]}>
+          <View className="flex-1">
+            <View className="relative" style={{ height: 14 }}>
               {view.monthLabels.map((monthLabel) => (
                 <Text
                   key={`${monthLabel.weekIndex}-${monthLabel.label}`}
-                  style={[
-                    styles.monthLabelText,
-                    { left: monthLabel.weekIndex * (cellSize + CELL_GAP) },
-                  ]}>
+                  className="absolute text-[10px] font-semibold text-subtle"
+                  style={{ left: monthLabel.weekIndex * (cellSize + CELL_GAP) }}>
                   {monthLabel.label}
                 </Text>
               ))}
             </View>
-            <View style={styles.weeks} onLayout={onWeeksLayout}>
+            <View className="flex-row justify-between" onLayout={onWeeksLayout}>
               {view.weeks.map((week, weekIndex) => (
                 <View key={weekIndex} style={weekColumnStyle}>
                   {week.map((cell, dayIndex) => {
                     if (!cell.inRange) {
-                      return <View key={dayIndex} style={[styles.cell, cellStyle, styles.cellOutside]} />;
+                      return (
+                        <View key={dayIndex} className="bg-transparent" style={cellStyle} />
+                      );
                     }
                     const isUsed = cell.isToday ? usedToday : cell.used;
+                    const cellClass = cell.isFuture
+                      ? 'bg-white/[0.03]'
+                      : isUsed
+                        ? 'bg-accent-brand'
+                        : 'bg-surface';
                     return (
                       <View
                         key={dayIndex}
-                        style={[
-                          styles.cell,
-                          cellStyle,
-                          cell.isFuture
-                            ? styles.cellFuture
-                            : isUsed
-                              ? styles.cellUsed
-                              : styles.cellEmpty,
-                          cell.isToday && styles.cellToday,
-                        ]}
+                        className={`${cellClass}${cell.isToday ? ' border-[1.5px] border-foreground' : ''}`}
+                        style={cellStyle}
                       />
                     );
                   })}
@@ -230,189 +215,42 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
           </View>
         </Animated.View>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>今月の利用回数</Text>
-            <Text style={styles.statValue}>{usesLabel}</Text>
+        <View className="flex-row justify-between gap-4">
+          <View className="flex-1 gap-1.5">
+            <Text className="text-xs font-medium text-subtle">今月の利用回数</Text>
+            <Text className="text-lg font-bold text-foreground">{usesLabel}</Text>
           </View>
-          <View style={styles.statBlock}>
-            <Text style={styles.statLabel}>1回あたりのコスト</Text>
-            <Text style={styles.statValue}>{costPerUseLabel}</Text>
+          <View className="flex-1 gap-1.5">
+            <Text className="text-xs font-medium text-subtle">1回あたりのコスト</Text>
+            <Text className="text-lg font-bold text-foreground">{costPerUseLabel}</Text>
           </View>
         </View>
       </View>
 
       {usedToday ? (
-        <View style={styles.recordedRow}>
-          <View style={styles.recordedStatus}>
-            <MaterialIcons name="check-circle" size={20} color={ACCENT_COLOR} />
-            <Text style={styles.recordedText}>今日は利用済み</Text>
+        <View className="mt-4 flex-row items-center justify-between rounded-2xl border border-[rgba(220,5,45,0.5)] px-5 py-4">
+          <View className="flex-row items-center gap-2">
+            <MaterialIcons name="check-circle" size={20} color={AppColors.accentBrand} />
+            <Text className="text-base font-bold text-foreground">今日は利用済み</Text>
           </View>
           <Pressable
             onPress={handleUndo}
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="今日の利用記録を取り消す">
-            <Text style={styles.undoText}>取り消す</Text>
+            <Text className="text-sm font-semibold text-subtle underline">取り消す</Text>
           </Pressable>
         </View>
       ) : (
         <Pressable
-          style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+          className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl bg-accent-brand px-6 py-[18px] active:opacity-[0.88]"
           onPress={handleRecord}
           accessibilityRole="button"
           accessibilityLabel="今日使った？">
-          <MaterialIcons name="auto-awesome" size={22} color={TEXT_COLOR} />
-          <Text style={styles.ctaLabel}>今日使った？</Text>
+          <MaterialIcons name="auto-awesome" size={22} color={AppColors.text} />
+          <Text className="text-[17px] font-bold text-foreground">今日使った？</Text>
         </Pressable>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  sectionTitle: {
-    color: SECTION_TITLE_COLOR,
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 8,
-    paddingHorizontal: 4,
-  },
-  card: {
-    backgroundColor: CARD_BG,
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-    gap: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  rangeLabel: {
-    color: TEXT_COLOR,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  heatmapRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  weekdayLabels: {
-    gap: CELL_GAP,
-    justifyContent: 'flex-end',
-    paddingBottom: 0,
-  },
-  weekdayLabelCell: {
-    justifyContent: 'center',
-  },
-  weekdayLabelText: {
-    color: STAT_LABEL_COLOR,
-    fontSize: 9,
-  },
-  weeksArea: {
-    flex: 1,
-  },
-  monthLabelRow: {
-    position: 'relative',
-  },
-  monthLabelText: {
-    position: 'absolute',
-    color: STAT_LABEL_COLOR,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  weeks: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  cell: {
-    borderRadius: CELL_RADIUS,
-  },
-  cellOutside: {
-    backgroundColor: 'transparent',
-  },
-  cellEmpty: {
-    backgroundColor: CELL_EMPTY,
-  },
-  cellUsed: {
-    backgroundColor: ACCENT_COLOR,
-  },
-  cellFuture: {
-    backgroundColor: CELL_FUTURE,
-  },
-  cellToday: {
-    borderWidth: 1.5,
-    borderColor: TEXT_COLOR,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  statBlock: {
-    flex: 1,
-    gap: 6,
-  },
-  statLabel: {
-    color: STAT_LABEL_COLOR,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  statValue: {
-    color: TEXT_COLOR,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  ctaButton: {
-    marginTop: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: ACCENT_COLOR,
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 24,
-  },
-  ctaButtonPressed: {
-    opacity: 0.88,
-  },
-  ctaLabel: {
-    color: TEXT_COLOR,
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  recordedRow: {
-    marginTop: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(220, 5, 45, 0.5)',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  recordedStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  recordedText: {
-    color: TEXT_COLOR,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  undoText: {
-    color: STAT_LABEL_COLOR,
-    fontSize: 14,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-});
