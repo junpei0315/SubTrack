@@ -8,6 +8,12 @@ import { Platform } from 'react-native';
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
+/**
+ * SubTrack のブランドカラー（暫定）。ロゴ・主要アクセントに使う赤。
+ * 直書きの 16 進カラーを避けるため、ブランド色はここに集約する。
+ */
+export const BrandColor = '#ff3a5e';
+
 export const Colors = {
   light: {
     text: '#11181C',
@@ -16,6 +22,10 @@ export const Colors = {
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    brand: BrandColor,
+    headerBackground: '#ffffff',
+    headerText: '#11181C',
+    headerBorder: '#e5e7eb',
   },
   dark: {
     text: '#ECEDEE',
@@ -24,6 +34,10 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    brand: BrandColor,
+    headerBackground: '#0a0a0a',
+    headerText: '#ECEDEE',
+    headerBorder: '#1f1f1f',
   },
 };
 

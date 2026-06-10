@@ -6,7 +6,7 @@ export const unstable_settings = {
 
 export default function SubscriptionsLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: 'Subscriptions' }} />
       <Stack.Screen name="new" options={{ title: 'New', presentation: 'modal' }} />
       <Stack.Screen name="presets" options={{ title: 'Presets', presentation: 'modal' }} />
