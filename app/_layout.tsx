@@ -1,17 +1,34 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, ThemeProvider, type Theme } from '@react-navigation/native';
+import { Image } from 'expo-image';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { cssInterop } from 'nativewind';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
+
+import '../global.css';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AppColors } from '@/constants/colors';
 import { useDevAuthReady } from '@/hooks/useDevAuthReady';
+
+// expo-image は RN コア外のため、NativeWind の className を style にマッピングするには
+// cssInterop の登録が必要（未登録だと className="h-full w-full" 等が無視されロゴが表示されない）。
+cssInterop(Image, { className: { target: 'style' } });
 
 export const unstable_settings = {
   anchor: '(tabs)',
+};
+
+const blackNavigationTheme: Theme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: AppColors.background,
+    card: AppColors.background,
+  },
 };
 
 const AUTH_ROUTE_NAMES = new Set(['sign-in', 'sign-up']);
@@ -68,20 +85,16 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [isSplashDone, setIsSplashDone] = useState(false);
   const isDevAuthReady = useDevAuthReady();
 
   if (!isDevAuthReady) {
-    return (
-      <View style={styles.bootstrapping}>
-        <ActivityIndicator />
-      </View>
-    );
+    // 開発用自動サインイン完了まで黒画面を維持（スプラッシュと同色でチラつきを防ぐ）
+    return <View style={styles.root} />;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={blackNavigationTheme}>
       <AuthProvider>
         <View style={styles.root}>
           <RootNavigator />
@@ -89,7 +102,7 @@ export default function RootLayout() {
             <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
           ) : null}
         </View>
-        <StatusBar style={isSplashDone ? 'auto' : 'light'} />
+        <StatusBar style="light" />
       </AuthProvider>
     </ThemeProvider>
   );
@@ -98,11 +111,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  },
-  bootstrapping: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: AppColors.background,
   },
 });

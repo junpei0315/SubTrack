@@ -1,5 +1,7 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+
+import { AppColors } from '@/constants/colors';
 
 import { useLineLink } from './useLineLink';
 
@@ -7,118 +9,49 @@ export const LineLinkCard: React.FC = () => {
   const { isLinked, code, isLoading, errorMessage, generateCode, unlink } = useLineLink();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>LINE 連携</Text>
-      <Text style={styles.description}>
+    <View className="gap-2 self-stretch py-4">
+      <Text className="text-base font-bold text-foreground">LINE 連携</Text>
+      <Text className="text-[13px] text-muted">
         LINE のトーク上で、アプリを開かずに「使った / 使ってない」を記録できます。
       </Text>
 
       {isLinked ? (
         <>
-          <Text style={styles.linkedLabel}>連携済み</Text>
+          <Text className="mt-1 text-sm font-semibold text-accent-brand">連携済み</Text>
           <TouchableOpacity
-            style={[styles.button, styles.secondaryButton]}
+            className="mt-2 items-center rounded-full border border-border-muted bg-transparent py-3"
             onPress={() => void unlink()}
             disabled={isLoading}
           >
-            <Text style={styles.secondaryButtonText}>連携を解除</Text>
+            <Text className="text-sm font-semibold text-foreground">連携を解除</Text>
           </TouchableOpacity>
         </>
       ) : (
         <>
           {code ? (
-            <View style={styles.codeBox}>
-              <Text style={styles.codeLabel}>このコードを公式アカウントに送ってください</Text>
-              <Text style={styles.code}>{code}</Text>
-              <Text style={styles.codeHint}>有効期限: 10 分</Text>
+            <View className="mt-2 items-center gap-1 rounded-xl bg-card-alt p-4">
+              <Text className="text-xs text-muted">このコードを公式アカウントに送ってください</Text>
+              <Text className="text-[32px] font-bold tracking-[4px] text-foreground">{code}</Text>
+              <Text className="text-[11px] text-muted-dark">有効期限: 10 分</Text>
             </View>
           ) : null}
           <TouchableOpacity
-            style={styles.button}
+            className="mt-2 items-center rounded-full bg-accent-brand py-3"
             onPress={() => void generateCode()}
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={AppColors.text} />
             ) : (
-              <Text style={styles.buttonText}>{code ? 'コードを再発行' : '連携コードを発行'}</Text>
+              <Text className="text-sm font-semibold text-foreground">
+                {code ? 'コードを再発行' : '連携コードを発行'}
+              </Text>
             )}
           </TouchableOpacity>
         </>
       )}
 
-      {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+      {errorMessage ? <Text className="text-[13px] text-error-alt">{errorMessage}</Text> : null}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignSelf: 'stretch',
-    paddingVertical: 16,
-    gap: 8,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  description: {
-    fontSize: 13,
-    color: '#999999',
-  },
-  linkedLabel: {
-    fontSize: 14,
-    color: '#DC052D',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  codeBox: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-  },
-  codeLabel: {
-    fontSize: 12,
-    color: '#999999',
-  },
-  code: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#ffffff',
-    letterSpacing: 4,
-  },
-  codeHint: {
-    fontSize: 11,
-    color: '#777777',
-  },
-  button: {
-    backgroundColor: '#DC052D',
-    borderRadius: 999,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#555555',
-  },
-  secondaryButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  error: {
-    color: '#ff6b6b',
-    fontSize: 13,
-  },
-});

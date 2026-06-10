@@ -1,4 +1,4 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -8,53 +8,32 @@ export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
+const TYPE_CLASS: Record<NonNullable<ThemedTextProps['type']>, string> = {
+  default: 'text-base leading-6 text-foreground',
+  defaultSemiBold: 'text-base leading-6 font-semibold text-foreground',
+  title: 'text-[32px] font-bold leading-8 text-foreground',
+  subtitle: 'text-xl font-bold text-foreground',
+  link: 'text-base leading-[30px] text-accent',
+};
+
 export function ThemedText({
   style,
   lightColor,
   darkColor,
   type = 'default',
+  className,
   ...rest
 }: ThemedTextProps) {
+  // lightColor / darkColor が明示されたときのみ文字色を inline で強制する。
+  // 未指定なら type の className（例: link の text-accent）や style 側で色を制御できる。
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const colorStyle = lightColor || darkColor ? { color } : undefined;
 
   return (
     <Text
-      style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
-        style,
-      ]}
+      className={`${TYPE_CLASS[type]}${className ? ` ${className}` : ''}`}
+      style={[colorStyle, style]}
       {...rest}
     />
   );
 }
-
-const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
-  },
-});

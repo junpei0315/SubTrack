@@ -1,21 +1,21 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, type ViewStyle } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { GENRES, type GenreId } from '@/src/domain/genre';
 
 interface GenreSelectorProps {
   selectedId: GenreId;
   onChange: (id: GenreId) => void;
-  style?: ViewStyle;
+  className?: string;
 }
 
-export const GenreSelector: React.FC<GenreSelectorProps> = ({ selectedId, onChange, style }) => {
+export const GenreSelector: React.FC<GenreSelectorProps> = ({ selectedId, onChange, className }) => {
   return (
-    <View style={[styles.container, style]}>
+    <View className={`w-full${className ? ` ${className}` : ''}`}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerClassName="items-center gap-3 px-4 py-2"
       >
         {GENRES.map((genre) => {
           const isSelected = genre.id === selectedId;
@@ -24,15 +24,9 @@ export const GenreSelector: React.FC<GenreSelectorProps> = ({ selectedId, onChan
               key={genre.id}
               activeOpacity={0.8}
               onPress={() => onChange(genre.id)}
-              style={[styles.pill, isSelected ? styles.pillSelected : styles.pillUnselected]}
+              className={`min-w-[72px] items-center justify-center rounded-full px-5 py-3 ${isSelected ? 'bg-accent' : 'bg-white/[0.08]'}`}
             >
-              <Text
-                style={[
-                  styles.label,
-                  isSelected ? styles.labelSelected : styles.labelUnselected,
-                ]}
-                numberOfLines={1}
-              >
+              <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
                 {genre.label}
               </Text>
             </TouchableOpacity>
@@ -42,39 +36,3 @@ export const GenreSelector: React.FC<GenreSelectorProps> = ({ selectedId, onChan
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 12,
-    alignItems: 'center',
-  },
-  pill: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 999,
-    minWidth: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillSelected: {
-    backgroundColor: '#DC052D',
-  },
-  pillUnselected: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  labelSelected: {
-    color: '#ffffff',
-  },
-  labelUnselected: {
-    color: '#ffffff',
-  },
-});

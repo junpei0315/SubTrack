@@ -1,12 +1,10 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ACTIVE_COLOR = '#DC052D';
-const INACTIVE_COLOR = '#9BA1A6';
-const BACKGROUND_COLOR = '#0D0D0D';
-const BORDER_COLOR = '#262626';
+import { AppColors } from '@/constants/colors';
+
 const ICON_SIZE = 24;
 
 // フッターに並べるタブの順序。ここに無いルート（settings 等）は表示しない。
@@ -18,14 +16,8 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          paddingBottom: insets.bottom + 8,
-          backgroundColor: BACKGROUND_COLOR,
-          borderTopColor: BORDER_COLOR,
-        },
-      ]}
+      className="flex-row border-t border-border bg-background-darker pt-2.5"
+      style={{ paddingBottom: insets.bottom + 8 }}
     >
       {VISIBLE_ROUTES.map((name) => {
         const route = state.routes.find((r) => r.name === name);
@@ -35,7 +27,7 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
 
         const { options } = descriptors[route.key];
         const isActive = activeRouteName === name;
-        const color = isActive ? ACTIVE_COLOR : INACTIVE_COLOR;
+        const color = isActive ? AppColors.accentBrand : AppColors.subtle;
         const label = typeof options.title === 'string' ? options.title : name;
 
         const onPress = () => {
@@ -56,13 +48,16 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
           <Pressable
             key={route.key}
             onPress={onPress}
-            style={styles.item}
+            className="flex-1 items-center justify-center gap-1 px-0.5"
             accessibilityRole="button"
             accessibilityState={isActive ? { selected: true } : {}}
             accessibilityLabel={label}
           >
             {options.tabBarIcon?.({ focused: isActive, color, size: ICON_SIZE })}
-            <Text style={[styles.label, { color }]} numberOfLines={1}>
+            <Text
+              className={`text-[11px] font-semibold ${isActive ? 'text-accent-brand' : 'text-subtle'}`}
+              numberOfLines={1}
+            >
               {label}
             </Text>
           </Pressable>
@@ -71,22 +66,3 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 10,
-  },
-  item: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingHorizontal: 2,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-});

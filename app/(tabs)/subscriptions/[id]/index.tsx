@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
 import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
@@ -61,7 +61,7 @@ export default function SubscriptionDetailRoute() {
 
   if (isLoading) {
     return (
-      <ThemedView style={styles.centered}>
+      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
         <ActivityIndicator />
       </ThemedView>
     );
@@ -69,7 +69,7 @@ export default function SubscriptionDetailRoute() {
 
   if (errorMessage) {
     return (
-      <ThemedView style={styles.centered}>
+      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
         <ThemedText type="title">Subscription Detail</ThemedText>
         <ThemedText>{errorMessage}</ThemedText>
       </ThemedView>
@@ -78,7 +78,7 @@ export default function SubscriptionDetailRoute() {
 
   if (!subscription) {
     return (
-      <ThemedView style={styles.centered}>
+      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
         <ThemedText type="title">Subscription Detail</ThemedText>
         <ThemedText>ID「{id ?? '-'}」のサブスクが見つかりません</ThemedText>
       </ThemedView>
@@ -86,9 +86,9 @@ export default function SubscriptionDetailRoute() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
+    <ThemedView className="flex-1">
+      <ScrollView contentContainerClassName="gap-6 p-4">
+        <View className="gap-1">
           <ThemedText type="title">{subscription.service.name}</ThemedText>
           <ThemedText>{subscription.plan.name}</ThemedText>
         </View>
@@ -111,23 +111,3 @@ export default function SubscriptionDetailRoute() {
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    gap: 24,
-  },
-  header: {
-    gap: 4,
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    gap: 8,
-  },
-});
