@@ -105,109 +105,116 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   };
 
   return (
-    <View className="my-4 rounded-2xl bg-surface p-3">
-      <View className="mb-3 flex-row items-center justify-between">
+    <View className="my-4">
+      <View className="mb-2 flex-row items-center justify-between px-1">
         <Text className="text-lg font-semibold text-foreground">お支払いカレンダー</Text>
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity onPress={goToPrev} hitSlop={8}>
-            <Text className="px-1 text-lg text-accent">←</Text>
-          </TouchableOpacity>
-          <Text className="text-base font-semibold text-accent">
-            {year}年 {month + 1}月
-          </Text>
-          <TouchableOpacity onPress={goToNext} hitSlop={8}>
-            <Text className="px-1 text-lg text-accent">→</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={toggleExpanded} hitSlop={8} className="ml-1">
-            <MaterialIcons
-              name={isExpanded ? 'expand-less' : 'expand-more'}
-              size={24}
-              color={AppColors.text}
-            />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={toggleExpanded} hitSlop={8}>
+          <MaterialIcons
+            name={isExpanded ? 'expand-less' : 'expand-more'}
+            size={24}
+            color={AppColors.text}
+          />
+        </TouchableOpacity>
       </View>
 
-      <View className="overflow-hidden rounded-xl">
-        <View className="flex-row bg-card py-2">
-          {DAYS_OF_WEEK.map((day, index) => (
-            <View key={day} className="flex-1 items-center">
-              <Text
-                className={`text-xs font-medium ${index === 0 || index === 6 ? 'text-weekend' : 'text-muted'}`}
-              >
-                {day}
-              </Text>
-            </View>
-          ))}
-        </View>
+      <View className="rounded-2xl bg-surface p-3">
+        <View className="overflow-hidden rounded-xl">
+          <View className="flex-row items-center justify-center gap-5 bg-card py-3">
+            <TouchableOpacity onPress={goToPrev} hitSlop={8}>
+              <Text className="px-1 text-lg text-accent">←</Text>
+            </TouchableOpacity>
+            <Text className="text-base font-semibold text-accent">
+              {year}年 {month + 1}月
+            </Text>
+            <TouchableOpacity onPress={goToNext} hitSlop={8}>
+              <Text className="px-1 text-lg text-accent">→</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View className="bg-card pb-1">
-          {weeksToRender.map((week, weekIndex) => (
-            <View key={weekIndex} className="flex-row">
-              {week.map((day, dayIndex) => {
-                const isSelected = formatLocalDate(day.date) === selectedDateString;
-                const isWeekend = dayIndex === 0 || dayIndex === 6;
-                return (
-                  <TouchableOpacity
-                    key={dayIndex}
-                    className="h-14 flex-1 items-center px-0.5 py-0.5"
-                    onPress={() => handleDatePress(day)}
-                    activeOpacity={0.7}
-                  >
-                    <View
-                      className={`h-full w-full items-center rounded-lg pt-1.5 ${
-                        isSelected ? 'bg-accent' : ''
-                      }`}
+          <View className="flex-row bg-card py-2">
+            {DAYS_OF_WEEK.map((day, index) => (
+              <View key={day} className="flex-1 items-center">
+                <Text
+                  className={`text-xs font-medium ${
+                    index === 0 || index === 6 ? 'text-weekend' : 'text-muted'
+                  }`}
+                >
+                  {day}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <View className="bg-card pb-1">
+            {weeksToRender.map((week, weekIndex) => (
+              <View key={weekIndex} className="flex-row">
+                {week.map((day, dayIndex) => {
+                  const isSelected = formatLocalDate(day.date) === selectedDateString;
+                  const isWeekend = dayIndex === 0 || dayIndex === 6;
+                  return (
+                    <TouchableOpacity
+                      key={dayIndex}
+                      className="h-14 flex-1 items-center px-0.5 py-0.5"
+                      onPress={() => handleDatePress(day)}
+                      activeOpacity={0.7}
                     >
-                      <Text
-                        className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'} ${
-                          isSelected
-                            ? 'text-foreground'
-                            : !day.isCurrentMonth
-                              ? 'text-border-muted opacity-50'
-                              : isWeekend
-                                ? 'text-weekend'
-                                : 'text-foreground'
+                      <View
+                        className={`h-full w-full items-center rounded-lg pt-1.5 ${
+                          isSelected ? 'bg-accent' : ''
                         }`}
                       >
-                        {day.day}
-                      </Text>
-                      <View className="mt-1 h-4 flex-row items-center justify-center gap-0.5">
-                        {day.subscriptions.slice(0, 2).map((sub, idx) => {
-                          const logoSource = resolveServiceLogo(
-                            sub.service.logoKey,
-                            sub.service.logoUri
-                          );
-                          return logoSource ? (
-                            <Image
-                              key={`${sub.id}-${idx}`}
-                              source={logoSource}
-                              className="h-4 w-4 rounded-full"
-                              contentFit="cover"
-                            />
-                          ) : (
-                            <MaterialIcons
-                              key={`${sub.id}-${idx}`}
-                              name={getIconName(sub.service.name)}
-                              size={14}
-                              color={isSelected ? AppColors.text : AppColors.accent}
-                            />
-                          );
-                        })}
-                        {day.subscriptions.length > 2 && (
-                          <Text
-                            className={`text-[7px] ${isSelected ? 'text-foreground' : 'text-accent'}`}
-                          >
-                            +{day.subscriptions.length - 2}
-                          </Text>
-                        )}
+                        <Text
+                          className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'} ${
+                            isSelected
+                              ? 'text-foreground'
+                              : !day.isCurrentMonth
+                              ? 'text-border-muted opacity-50'
+                              : isWeekend
+                              ? 'text-weekend'
+                              : 'text-foreground'
+                          }`}
+                        >
+                          {day.day}
+                        </Text>
+                        <View className="mt-1 h-4 flex-row items-center justify-center gap-0.5">
+                          {day.subscriptions.slice(0, 2).map((sub, idx) => {
+                            const logoSource = resolveServiceLogo(
+                              sub.service.logoKey,
+                              sub.service.logoUri
+                            );
+                            return logoSource ? (
+                              <Image
+                                key={`${sub.id}-${idx}`}
+                                source={logoSource}
+                                className="h-4 w-4 rounded-md"
+                                contentFit="cover"
+                              />
+                            ) : (
+                              <MaterialIcons
+                                key={`${sub.id}-${idx}`}
+                                name={getIconName(sub.service.name)}
+                                size={14}
+                                color={isSelected ? AppColors.text : AppColors.accent}
+                              />
+                            );
+                          })}
+                          {day.subscriptions.length > 2 && (
+                            <Text
+                              className={`text-[7px] ${
+                                isSelected ? 'text-foreground' : 'text-accent'
+                              }`}
+                            >
+                              +{day.subscriptions.length - 2}
+                            </Text>
+                          )}
+                        </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ))}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
+          </View>
         </View>
       </View>
     </View>
