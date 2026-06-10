@@ -1,5 +1,5 @@
 export const AppColors: {
-  readonly accent: '#ff3a5e';
+  readonly accent: '#DC052D';
   readonly accentBrand: '#DC052D';
   readonly background: '#000000';
   readonly backgroundDarker: '#0D0D0D';
@@ -14,11 +14,11 @@ export const AppColors: {
   readonly mutedDark: '#777777';
   readonly border: '#262626';
   readonly borderMuted: '#555555';
-  readonly error: '#ff3a5e';
+  readonly error: '#DC052D';
   readonly errorAlt: '#ff6b6b';
   readonly success: '#5fd07d';
   readonly signOut: '#c0392b';
-  readonly weekend: '#ff3a5e';
+  readonly weekend: '#DC052D';
   readonly whiteMuted40: 'rgba(255, 255, 255, 0.4)';
   readonly whiteMuted50: 'rgba(255, 255, 255, 0.5)';
   readonly whiteMuted8: 'rgba(255, 255, 255, 0.08)';
