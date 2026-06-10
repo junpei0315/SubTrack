@@ -1,8 +1,10 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
+import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
+import { useSubscriptionUsage } from '@/components/subscriptions/useSubscriptionUsage';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
@@ -17,6 +19,11 @@ export default function SubscriptionDetailRoute() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const { usedDateKeys, recordToday, undoToday } = useSubscriptionUsage({
+    subscriptionId: id ?? '',
+    userId: subscription?.userId ?? '',
+  });
+
   useEffect(() => {
     let isMounted = true;
 
@@ -29,9 +36,14 @@ export default function SubscriptionDetailRoute() {
         if (isMounted) {
           setSubscription(result);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          setErrorMessage('請求情報の取得に失敗しました');
+          const detail =
+            __DEV__ && error instanceof Error ? `\n（${error.message}）` : '';
+          setErrorMessage(`請求情報の取得に失敗しました${detail}`);
+        }
+        if (__DEV__) {
+          console.error('[SubscriptionDetail] load failed', error);
         }
       } finally {
         if (isMounted) {
@@ -49,7 +61,7 @@ export default function SubscriptionDetailRoute() {
 
   if (isLoading) {
     return (
-      <ThemedView style={styles.centered}>
+      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
         <ActivityIndicator />
       </ThemedView>
     );
@@ -57,7 +69,7 @@ export default function SubscriptionDetailRoute() {
 
   if (errorMessage) {
     return (
-      <ThemedView style={styles.centered}>
+      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
         <ThemedText type="title">Subscription Detail</ThemedText>
         <ThemedText>{errorMessage}</ThemedText>
       </ThemedView>
@@ -66,7 +78,7 @@ export default function SubscriptionDetailRoute() {
 
   if (!subscription) {
     return (
-      <ThemedView style={styles.centered}>
+      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
         <ThemedText type="title">Subscription Detail</ThemedText>
         <ThemedText>ID「{id ?? '-'}」のサブスクが見つかりません</ThemedText>
       </ThemedView>
@@ -74,9 +86,9 @@ export default function SubscriptionDetailRoute() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
+    <ThemedView className="flex-1">
+      <ScrollView contentContainerClassName="gap-6 p-4">
+        <View className="gap-1">
           <ThemedText type="title">{subscription.service.name}</ThemedText>
           <ThemedText>{subscription.plan.name}</ThemedText>
         </View>
@@ -85,27 +97,17 @@ export default function SubscriptionDetailRoute() {
           nextBillingDate={subscription.nextBillingDate}
           startDate={subscription.startDate}
         />
+        <UsageFrequencyTracker
+          usedDateKeys={usedDateKeys}
+          monthlyPriceYen={subscription.plan.price}
+          onRecordUsagePress={() => {
+            void recordToday();
+          }}
+          onUndoUsagePress={() => {
+            void undoToday();
+          }}
+        />
       </ScrollView>
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    gap: 24,
-  },
-  header: {
-    gap: 4,
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    gap: 8,
-  },
-});

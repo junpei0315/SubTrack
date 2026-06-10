@@ -48,7 +48,8 @@ erDiagram
         uuid id PK
         varchar name "サービス名 (NOT NULL)"
         int category_id FK "categories 参照"
-        varchar logo_uri "ロゴ画像 URL（優先）"
+        varchar logo_key "同梱ロゴ識別子 assets/services/{logo_key}.jpeg"
+        varchar logo_uri "ロゴ画像 URL（外部URL用・任意）"
         varchar icon_name "画像がない場合の UI アイコン名"
     }
 
@@ -97,7 +98,9 @@ erDiagram
     SUBSCRIPTIONS ||--o{ USAGE_LOGS : "利用履歴"
 ```
 
-**補足**: 旧メモにあった `notify_timing` は **`notification_settings`** へ分離。ユーザー固有アイコンがマスタに要る場合は別途検討（現状は `services` の `logo_uri` / `icon_name` で表現）。
+**補足**: 旧メモにあった `notify_timing` は **`notification_settings`** へ分離。プリセットサービスのロゴは **`services.logo_key`** で `assets/services/` の同梱画像と紐づける（`logo_uri` は外部 URL 用）。ユーザー固有アイコンがマスタに要る場合は別途検討。
+
+**プリセットマスタ**: `categories` / `cycles` / `services` / `plans` の初期データは **`supabase/migrations/`** で管理する（`seed.sql` はローカル開発用ユーザー・サンプル契約のみ）。出典は Notion「主要サブスク一覧」を正とし（**services 53 件 / plans 204 件** ※無料プラン6件は `20260609120000` で削除）、内容は [`docs/preset-services-template.csv`](./preset-services-template.csv) に出力（各値は要レビュー）。`cycle` は **`monthly` / `yearly` / `weekly`** のみで、3ヶ月・期間保証などはプラン名に期間を併記し近い `cycle` へ丸める。ロゴは 53 件中 49 件が同梱画像（`logo_key`）にマッチ、未同梱の 4 件（`LINE MUSIC` / `AppleCare+` / `dマガジン` / `コミックシーモア`）は `logo_key=NULL`、外部 URL があるものは `logo_uri` にフォールバック。生成は [`scripts/generate-preset-seed.js`](../scripts/generate-preset-seed.js)。
 
 ---
 
@@ -124,6 +127,8 @@ erDiagram
 | `subscriptions`         | ユーザーの契約台帳                     | **改修**。`plan_id` 参照でスリム化     |
 | `notification_settings` | サブスクごとの通知タイミング（複数可） | **新規**（`notify_timing` の切り出し） |
 | `usage_logs`            | 利用実績（使用チェック）               |                                        |
+| `line_links`            | ユーザーと LINE userId の紐付け        | **新規**（`20260606130000`）           |
+| `line_link_codes`       | LINE 連携用ワンタイムコード（短命）    | **新規**（`20260606130000`）           |
 
 マイグレーションファイル名は追加時に本表へ追記する。
 
@@ -149,6 +154,8 @@ erDiagram
 | --------------- | ------ | ------- | ---- |
 | `profiles_pkey` | id     | PRIMARY | —    |
 
+**自動作成**: `auth.users` への INSERT を契機に `public.handle_new_user()` トリガが `profiles` 行（`id` / `email`）を作成する。メール認証・Google OAuth いずれの登録でも適用される（マイグレーション: `20260605160000_create_profile_on_signup.sql`）。
+
 ---
 
 ### `categories`
@@ -165,6 +172,8 @@ erDiagram
 | インデックス名    | カラム | 種別    | 目的 |
 | ----------------- | ------ | ------- | ---- |
 | `categories_pkey` | id     | PRIMARY | —    |
+
+**ジャンル対応**: `id` 1〜17 は [`src/domain/genre.ts`](../src/domain/genre.ts) の `GENRE_IDS` 順（`ai`, `video`, `music`, … `other`）と対応。`name` は日本語ラベル（画面表示用）。
 
 ---
 
@@ -186,20 +195,22 @@ erDiagram
 
 ### `services`（旧 Master_Services）
 
-| カラム名    | 型            | NULL | デフォルト          | 説明                           |
-| ----------- | ------------- | ---- | ------------------- | ------------------------------ |
-| id          | uuid          | NO   | `gen_random_uuid()` | PK                             |
-| name        | varchar(255)  | NO   | —                   | 例: Netflix, Spotify           |
-| category_id | int           | NO   | —                   | FK → `categories.id`           |
-| logo_uri    | varchar(2048) | YES  | —                   | ロゴ画像 URL（優先表示）       |
-| icon_name   | varchar(128)  | YES  | —                   | 画像がない場合の UI アイコン名 |
+| カラム名    | 型            | NULL | デフォルト          | 説明                                              |
+| ----------- | ------------- | ---- | ------------------- | ------------------------------------------------- |
+| id          | uuid          | NO   | `gen_random_uuid()` | PK                                                |
+| name        | varchar(255)  | NO   | —                   | 例: Netflix, Spotify                              |
+| category_id | int           | NO   | —                   | FK → `categories.id`                              |
+| logo_key    | varchar(100)  | YES  | —                   | 同梱ロゴ `assets/services/{logo_key}.jpeg` の識別子 |
+| logo_uri    | varchar(2048) | YES  | —                   | 外部ロゴ URL（任意）                              |
+| icon_name   | varchar(128)  | YES  | —                   | 画像がない場合の UI アイコン名                    |
 
 **インデックス**
 
-| インデックス名  | カラム      | 種別    | 目的             |
-| --------------- | ----------- | ------- | ---------------- |
-| `services_pkey` | id          | PRIMARY | —                |
-| （任意）        | category_id | INDEX   | ジャンルフィルタ |
+| インデックス名        | カラム      | 種別    | 目的                         |
+| --------------------- | ----------- | ------- | ---------------------------- |
+| `services_pkey`       | id          | PRIMARY | —                            |
+| `services_logo_key_key` | logo_key  | UNIQUE  | プリセット slug の一意（NULL 除く） |
+| （任意）              | category_id | INDEX   | ジャンルフィルタ             |
 
 ---
 
@@ -283,6 +294,33 @@ erDiagram
 
 ---
 
+### `line_links`（新規）
+
+LINE 公式アカウントのトークから利用実績を記録するための、ユーザーと LINE userId の 1:1 紐付け。書き込み（連携確定）は Edge Function が service_role で行う。
+
+| カラム名     | 型          | NULL | デフォルト | 説明                          |
+| ------------ | ----------- | ---- | ---------- | ----------------------------- |
+| user_id      | uuid        | NO   | —          | PK。FK → `profiles.id`        |
+| line_user_id | text        | NO   | —          | LINE のユーザーID（UNIQUE）   |
+| linked_at    | timestamptz | NO   | `now()`    | 連携した時刻                  |
+
+**RLS**: 自分の行のみ `select` / `delete`（`auth.uid() = user_id`）。`insert`/`update` は service_role のみ。
+
+### `line_link_codes`（新規）
+
+連携用のワンタイムコード。アプリが RPC `create_line_link_code()` で発行し、ユーザーが LINE に送ると Edge Function が照合して `line_links` を作成する。
+
+| カラム名   | 型          | NULL | デフォルト | 説明                       |
+| ---------- | ----------- | ---- | ---------- | -------------------------- |
+| code       | text        | NO   | —          | PK。6 桁の数字コード       |
+| user_id    | uuid        | NO   | —          | FK → `profiles.id`         |
+| expires_at | timestamptz | NO   | —          | 有効期限（発行から 10 分） |
+| created_at | timestamptz | NO   | `now()`    | 発行時刻                   |
+
+**RLS**: ポリシーなし（一般ユーザーは直接アクセス不可）。発行は `SECURITY DEFINER` の RPC、照合は service_role。
+
+---
+
 ## マイグレーション運用
 
 - **スキーマの変更はマイグレーションファイルのみ**（UI 上のエディタで本番・Staging を直接いじらない。理由・例外は [`docs/Rule.md`](./Rule.md)）
@@ -295,7 +333,15 @@ erDiagram
 
 - `profiles`: 原則として「自分の行のみ `select` / `update`」（`auth.uid() = id`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
-- マスタ（`categories`, `cycles`, `services`, `plans`）: 参照は全ユーザー可、更新はサービスロールのみ、等 — **確定後にポリシーを追記**
+- `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
+- マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。INSERT / UPDATE / DELETE はアプリから行わない（マイグレーションで管理）
+
+### `next_billing_date` の自動繰り上げ（DB 関数・cron）
+
+- `calc_next_billing_date(start_date, cycle, today)`: 契約開始日とサイクルから「今日以降の最初の請求日」を算出する純粋関数
+- `refresh_due_billing_dates()`: `status = active` かつ `next_billing_date < 今日（JST）` の契約を一括更新。戻り値は更新件数
+- `pg_cron` ジョブ `refresh-due-billing-dates`: 毎日 JST 0:10（UTC 15:10）に `refresh_due_billing_dates()` を実行
+- 開始日を起点に周期を加算するため、毎月の請求日（例: 15 日）を維持し、月末 clamp によるドリフトを防ぐ
 
 ---
 
@@ -303,7 +349,16 @@ erDiagram
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-09 | 重複サービスを参照する `test@test.com` の契約（`55555555-…`）を正プランへ付け替え、参照の消えた誤plan（`44444444-…`）・誤service（`33333333-…`）を削除して重複を解消（`20260609130000`） |
+| 2026-06-09 | プリセット整理: 重複サービス（手動投入の `33333333-…` Netflix/Amazon Prime Video/DAZN）と配下プランを削除、無料プラン（price=0、金額不定は除外）を削除、Figma/Gemini を同梱ロゴ（`logo_key`）方式へ統一（`20260609120000`） |
+| 2026-06-06 | Dropbox のプリセット価格を税込に統一（`20260606160000`）                             |
+| 2026-06-06 | AppleCare+「iPhone（月払い）」プランを追加（`20260606150000`）                        |
+| 2026-06-06 | 既存ユーザーの `profiles` backfill と `create_line_link_code` の profile 自動作成（`20260606140000`）|
+| 2026-06-06 | `line_links` / `line_link_codes` と連携コード発行 RPC を追加（LINE 連携）            |
+| 2026-06-06 | プリセットマスタ投入: `services.logo_key` 追加、categories 17 ジャンル、RLS（マスタ SELECT 可）、Notion 由来の services 53 件 / plans 210 件を投入、migration `20260606120000` / `20260606120100` |
 | 2026-06-05 | `subscriptions.status` に CHECK 制約を追加（`active` / `paused` / `cancelled` に限定）|
+| 2026-06-05 | マスタテーブルの `select` RLS ポリシー追加。`next_billing_date` 自動繰り上げ関数・pg_cron を追加 |
+| 2026-06-04 | `usage_logs` に INSERT / DELETE の RLS ポリシーを追加（F-08 利用チェック）           |
 | 2026-06-02 | `subscriptions.start_date`（契約の最初の請求日）を追加                               |
 | 2026-05-15 | 「スキーマ変更のルール」: Supabase UI での変更は原則禁止、マイグレーション運用を明記 |
 | 2026-05-15 | 初版: ER・テーブル定義ドラフトを反映                                                 |

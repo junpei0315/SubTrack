@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SubTrackAnimatedLogo } from '@/components/branding/SubTrackAnimatedLogo';
+import { AppColors } from '@/constants/colors';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   // 開発中のホットリロード等で既に hide 済みの場合がある
@@ -53,9 +54,9 @@ export function AnimatedSplashOverlay({ onFinish }: AnimatedSplashOverlayProps) 
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0A0A0A',
+    zIndex: 9999,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 9999,
+    backgroundColor: AppColors.background,
   },
 });

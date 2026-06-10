@@ -1,7 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
+import { AppColors } from '@/constants/colors';
 import { formatLocalDate } from '@/src/domain/localDate';
 import type { Subscription } from '@/src/domain/subscription';
 
@@ -100,28 +101,28 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>お支払いカレンダー</Text>
-        <View style={styles.monthNavigation}>
+    <View className="my-4 rounded-2xl bg-card-alt p-4">
+      <View className="mb-5">
+        <Text className="mb-2 text-lg font-semibold text-foreground">お支払いカレンダー</Text>
+        <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={goToPrevMonth}>
-            <Text style={styles.navButton}>←</Text>
+            <Text className="p-2 text-xl text-accent">←</Text>
           </TouchableOpacity>
-          <Text style={styles.monthText}>
+          <Text className="text-base font-semibold text-accent">
             {year}年 {month + 1}月
           </Text>
           <TouchableOpacity onPress={goToNextMonth}>
-            <Text style={styles.navButton}>→</Text>
+            <Text className="p-2 text-xl text-accent">→</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.calendarContainer}>
-        <View style={styles.dayHeaderRow}>
+      <View className="overflow-hidden rounded-xl">
+        <View className="flex-row bg-background py-3">
           {DAYS_OF_WEEK.map((day, index) => (
-            <View key={day} style={styles.dayHeaderCell}>
+            <View key={day} className="flex-1 items-center">
               <Text
-                style={[styles.dayHeaderText, (index === 5 || index === 6) && styles.weekendText]}
+                className={`text-sm font-medium ${index === 5 || index === 6 ? 'text-weekend' : 'text-muted'}`}
               >
                 {day}
               </Text>
@@ -129,37 +130,40 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
           ))}
         </View>
 
-        <View style={styles.daysGrid}>
+        <View className="flex-row flex-wrap bg-background py-2">
           {calendarDays.map((day, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.dayCell}
+              className="aspect-square w-[14.285%] items-center justify-center py-2"
               onPress={() => handleDatePress(day.date)}
               activeOpacity={day.isCurrentMonth ? 0.7 : 1}
             >
-              <View style={styles.dayCellContent}>
+              <View className="h-full w-full items-center justify-center">
                 <Text
-                  style={[
-                    styles.dayText,
-                    !day.isCurrentMonth && styles.otherMonthText,
-                    (index % 7 === 5 || index % 7 === 6) && styles.weekendDayText,
-                  ]}
+                  className={`text-base font-medium ${
+                    !day.isCurrentMonth
+                      ? 'text-border-muted opacity-50'
+                      : index % 7 === 5 || index % 7 === 6
+                        ? 'text-weekend'
+                        : 'text-foreground'
+                  }`}
                 >
                   {day.date}
                 </Text>
                 {day.subscriptions.length > 0 && (
-                  <View style={styles.iconsContainer}>
+                  <View className="mt-0.5 flex-row items-center gap-0.5">
                     {day.subscriptions.slice(0, 2).map((sub, idx) => (
                       <MaterialIcons
                         key={`${sub.id}-${idx}`}
                         name={getIconName(sub.service.name)}
                         size={12}
-                        color="#ff3a5e"
-                        style={styles.icon}
+                        color={AppColors.accent}
                       />
                     ))}
                     {day.subscriptions.length > 2 && (
-                      <Text style={styles.moreText}>+{day.subscriptions.length - 2}</Text>
+                      <Text className="ml-0.5 text-[8px] text-accent">
+                        +{day.subscriptions.length - 2}
+                      </Text>
                     )}
                   </View>
                 )}
@@ -171,103 +175,3 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 16,
-    padding: 16,
-    marginVertical: 16,
-    marginHorizontal: 0,
-  },
-  header: {
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-  monthNavigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  monthText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ff3a5e',
-  },
-  navButton: {
-    fontSize: 20,
-    color: '#ff3a5e',
-    padding: 8,
-  },
-  calendarContainer: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  dayHeaderRow: {
-    flexDirection: 'row',
-    backgroundColor: '#0f0f0f',
-    paddingVertical: 12,
-  },
-  dayHeaderCell: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  dayHeaderText: {
-    fontSize: 14,
-    color: '#999999',
-    fontWeight: '500',
-  },
-  weekendText: {
-    color: '#ff3a5e',
-  },
-  daysGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    backgroundColor: '#0f0f0f',
-    paddingVertical: 8,
-  },
-  dayCell: {
-    width: '14.285%',
-    aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  dayCellContent: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '500',
-  },
-  otherMonthText: {
-    color: '#555555',
-    opacity: 0.5,
-  },
-  weekendDayText: {
-    color: '#ff3a5e',
-  },
-  iconsContainer: {
-    flexDirection: 'row',
-    marginTop: 2,
-    alignItems: 'center',
-    gap: 2,
-  },
-  icon: {
-    marginHorizontal: 1,
-  },
-  moreText: {
-    fontSize: 8,
-    color: '#ff3a5e',
-    marginLeft: 2,
-  },
-});

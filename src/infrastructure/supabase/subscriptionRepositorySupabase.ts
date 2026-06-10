@@ -5,6 +5,19 @@ import { supabase } from './client';
 import { mapSubscriptionRow, SUBSCRIPTION_SELECT } from './subscriptionMapper';
 
 export const subscriptionRepositorySupabase: SubscriptionRepository = {
+  async findAll(): Promise<Subscription[]> {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select(SUBSCRIPTION_SELECT)
+      .order('next_billing_date', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((row) => mapSubscriptionRow(row as Record<string, unknown>));
+  },
+
   async findById(id: string): Promise<Subscription | null> {
     const { data, error } = await supabase
       .from('subscriptions')

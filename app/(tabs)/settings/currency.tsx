@@ -1,5 +1,3 @@
-import { StyleSheet } from 'react-native';
-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
@@ -7,19 +5,9 @@ import { ThemedView } from '@/components/themed-view';
 // 関連機能: F-13（通貨・表示形式の設定）
 export default function CurrencySettingsRoute() {
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
       <ThemedText type="title">Currency</ThemedText>
       <ThemedText>通貨設定（未実装）</ThemedText>
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    gap: 8,
-  },
-});

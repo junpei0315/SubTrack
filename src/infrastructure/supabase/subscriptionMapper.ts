@@ -45,6 +45,7 @@ export const SUBSCRIPTION_SELECT = `
       id,
       name,
       logo_uri,
+      logo_key,
       icon_name,
       categories ( name )
     )
@@ -66,6 +67,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
                 id: string;
                 name: string;
                 logo_uri: string | null;
+                logo_key: string | null;
                 icon_name: string | null;
                 categories: { name: string } | { name: string }[];
               }
@@ -73,6 +75,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
                 id: string;
                 name: string;
                 logo_uri: string | null;
+                logo_key: string | null;
                 icon_name: string | null;
                 categories: { name: string } | { name: string }[];
               }[];
@@ -89,6 +92,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
                 id: string;
                 name: string;
                 logo_uri: string | null;
+                logo_key: string | null;
                 icon_name: string | null;
                 categories: { name: string } | { name: string }[];
               }
@@ -96,6 +100,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
                 id: string;
                 name: string;
                 logo_uri: string | null;
+                logo_key: string | null;
                 icon_name: string | null;
                 categories: { name: string } | { name: string }[];
               }[];
@@ -114,6 +119,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
       id: service.id,
       name: service.name,
       logoUri: service.logo_uri ?? undefined,
+      logoKey: service.logo_key ?? undefined,
       iconName: service.icon_name ?? undefined,
       category: category.name,
     },
