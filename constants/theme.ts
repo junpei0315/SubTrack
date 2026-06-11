@@ -22,12 +22,6 @@ const palette = {
   headerBorder: AppColors.border,
 };
 
-/**
- * SubTrack のブランドカラー（暫定）。ロゴ・主要アクセントに使う赤。
- * 直書きの 16 進カラーを避けるため、ブランド色はここに集約する。
- */
-export const BrandColor = AppColors.accentBrand;
-
 export const Colors = {
   light: palette,
   dark: palette,

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
 export interface UseHeaderParams {
-  /** 通知アイコン押下時のハンドラ（未指定ならログのみ）。 */
+  /** 通知アイコン押下時のハンドラ（未指定時は何もしない）。 */
   onPressNotifications?: () => void;
   /** 設定アイコン押下時のハンドラ（未指定なら設定画面へ遷移）。 */
   onPressSettings?: () => void;
@@ -18,7 +18,7 @@ export interface UseHeaderResult {
 
 /**
  * Header の振る舞い（ナビゲーション・アクション）を切り出すフック。
- * 遷移先画面が未実装のアクションは props 未指定時にログだけ出す。
+ * 通知は遷移先未実装のため props 未指定時は何もしない。
  */
 export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
   const { onPressNotifications, onPressSettings, onPressAvatar } = params;
@@ -33,11 +33,7 @@ export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
   }, [onPressAvatar, router]);
 
   const handlePressNotifications = useCallback(() => {
-    if (onPressNotifications) {
-      onPressNotifications();
-      return;
-    }
-    console.log('[Header] notifications pressed');
+    onPressNotifications?.();
   }, [onPressNotifications]);
 
   const handlePressSettings = useCallback(() => {
