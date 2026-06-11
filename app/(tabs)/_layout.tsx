@@ -3,6 +3,7 @@ import { ChartColumn, CreditCard, House } from 'lucide-react-native';
 import React from 'react';
 
 import { Footer } from '@/components/navigation/Footer';
+import { Header } from '@/components/ui/header';
 
 export const unstable_settings = {
   initialRouteName: 'home',
@@ -10,7 +11,13 @@ export const unstable_settings = {
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <Footer {...props} />}>
+    <Tabs
+      screenOptions={{
+        headerShown: true,
+        header: () => <Header />,
+      }}
+      tabBar={(props) => <Footer {...props} />}
+    >
       <Tabs.Screen
         name="home"
         options={{

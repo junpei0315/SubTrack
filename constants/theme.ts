@@ -16,6 +16,10 @@ const palette = {
   icon: '#9BA1A6',
   tabIconDefault: '#9BA1A6',
   tabIconSelected: tintColor,
+  brand: AppColors.accentBrand,
+  headerBackground: AppColors.backgroundDarker,
+  headerText: AppColors.text,
+  headerBorder: AppColors.border,
 };
 
 export const Colors = {

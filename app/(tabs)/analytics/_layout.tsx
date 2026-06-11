@@ -6,7 +6,7 @@ export const unstable_settings = {
 
 export default function AnalyticsLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: 'Analytics' }} />
     </Stack>
   );
