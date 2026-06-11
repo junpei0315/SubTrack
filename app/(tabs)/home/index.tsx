@@ -10,7 +10,7 @@ import { ThemedView } from '@/components/themed-view';
 export default function HomeRoute() {
   return (
     <ScrollView className="flex-1" contentContainerClassName="grow">
-      <ThemedView className="flex-1 p-4">
+      <ThemedView className="flex-1 px-4 pb-4 pt-1">
         <MonthlySpending />
         <Calendar />
         <UpcomingSubscriptions />

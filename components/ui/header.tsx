@@ -1,26 +1,25 @@
 import { Bell, Settings } from 'lucide-react-native';
 import React from 'react';
-import { Image, type ImageSourcePropType, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { SubTrackMark } from '@/components/branding/SubTrackMark';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+import { HeaderLogo } from './header-logo';
 import { useHeader, type UseHeaderParams } from './useHeader';
 
-const DEFAULT_AVATAR = require('@/assets/images/icon.png') as ImageSourcePropType;
+export type HeaderProps = UseHeaderParams;
 
-export interface HeaderProps extends UseHeaderParams {
-  /** アバターに表示する画像。未指定ならプレースホルダーを使う。 */
-  avatarSource?: ImageSourcePropType;
-}
+const VERTICAL_PADDING = 10;
 
 /**
- * プロダクト共通ヘッダー。左にアバター、中央に SUBTRACK ロゴ、右に通知・設定アイコン。
+ * プロダクト共通ヘッダー。左にブランドマークとワードマーク（SubTrack＋サブタイトル）を並べ、
+ * 右に通知・設定アイコンを置く。要素は上下中央に揃える。
  * 振る舞いは useHeader に委譲し、ここは見た目のみを担う。
  */
 export const Header: React.FC<HeaderProps> = ({
-  avatarSource,
   onPressNotifications,
   onPressSettings,
   onPressAvatar,
@@ -42,7 +41,8 @@ export const Header: React.FC<HeaderProps> = ({
         {
           backgroundColor: colors.headerBackground,
           borderBottomColor: colors.headerBorder,
-          paddingTop: insets.top + 8,
+          paddingTop: insets.top + VERTICAL_PADDING,
+          paddingBottom: VERTICAL_PADDING,
         },
       ]}
     >
@@ -52,16 +52,11 @@ export const Header: React.FC<HeaderProps> = ({
         accessibilityLabel="プロフィール"
         hitSlop={8}
       >
-        <Image
-          source={avatarSource ?? DEFAULT_AVATAR}
-          style={[styles.avatar, { borderColor: colors.headerBorder }]}
-        />
+        <SubTrackMark size={56} />
       </Pressable>
 
       <View style={styles.logoContainer}>
-        <Text style={[styles.logo, { color: colors.brand }]} accessibilityRole="header">
-          SUBTRACK
-        </Text>
+        <HeaderLogo />
       </View>
 
       <View style={styles.actions}>
@@ -90,24 +85,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingLeft: 10,
+    paddingRight: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
   },
   logoContainer: {
     flex: 1,
-    marginLeft: 12,
-  },
-  logo: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: 1,
+    marginLeft: 10,
+    overflow: 'visible',
   },
   actions: {
     flexDirection: 'row',

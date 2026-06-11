@@ -16,7 +16,7 @@ export const MonthlySpending: React.FC = () => {
   const titleText = period === 'month' ? '今月の合計支出' : '今年の合計支出';
 
   return (
-    <View className="my-4 self-stretch py-3">
+    <View className="mb-4 self-stretch">
       <View className="mb-3 flex-row items-center justify-between">
         <Text className="text-sm font-medium text-muted">{titleText}</Text>
         <View className="flex-row rounded-full p-[3px]">
