@@ -13,7 +13,7 @@ import { PresetListItem } from '@/components/subscriptions/PresetListItem';
 import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { AppColors } from '@/constants/colors';
-import { DEFAULT_GENRE_ID, type GenreId } from '@/src/domain/genre';
+import { DEFAULT_GENRE_ID, getGenreLabel, type GenreId } from '@/src/domain/genre';
 
 // 関連機能: F-01（プリセット選択で一括登録）/ F-02（カスタム新規追加）
 // プリセットから追加 と 手動入力 をページ遷移なしで切り替える。
@@ -54,25 +54,31 @@ export default function SubscriptionNewRoute() {
 
 function PresetAddSection() {
   const [query, setQuery] = useState('');
+  const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
   const { presets, isLoading, errorMessage, reload } = usePresetList();
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
-    if (!keyword) {
-      return presets;
-    }
-    return presets.filter(
-      (preset) =>
-        preset.name.toLowerCase().includes(keyword) ||
-        preset.genre.toLowerCase().includes(keyword)
-    );
-  }, [presets, query]);
+    const genreLabel = genreFilter ? getGenreLabel(genreFilter) : null;
+
+    return presets.filter((preset) => {
+      const matchesGenre = genreLabel === null || preset.genre === genreLabel;
+      const matchesKeyword = !keyword || preset.name.toLowerCase().includes(keyword);
+      return matchesGenre && matchesKeyword;
+    });
+  }, [presets, query, genreFilter]);
 
   return (
     <View className="flex-1">
       <View className="gap-4 px-4 pt-4">
         <SubscriptionSearchBar value={query} onChangeText={setQuery} />
-        <Text className="text-lg font-bold text-foreground">全て</Text>
+      </View>
+
+      <View className="pt-2">
+        <GenreSelector selectedId={genreFilter} onChange={setGenreFilter} includeAll />
+        <Text className="px-4 pt-2 text-lg font-bold text-foreground">
+          {genreFilter ? getGenreLabel(genreFilter) : '全て'}
+        </Text>
       </View>
 
       {isLoading && presets.length === 0 ? (
@@ -115,7 +121,7 @@ function ManualAddSection() {
     <View className="flex-1 pt-6">
       <View className="gap-3">
         <Text className="px-4 text-lg font-bold text-foreground">ジャンル</Text>
-        <GenreSelector selectedId={genreId} onChange={setGenreId} />
+        <GenreSelector selectedId={genreId} onChange={(id) => id && setGenreId(id)} />
       </View>
     </View>
   );
