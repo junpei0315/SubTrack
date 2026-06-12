@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Calendar as CalendarIcon } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Easing,
   type LayoutChangeEvent,
@@ -34,6 +35,7 @@ export interface PresetSelection {
 interface PresetDetailModalProps {
   preset: PresetService | null;
   visible: boolean;
+  isSubmitting?: boolean;
   onClose: () => void;
   onConfirm: (selection: PresetSelection) => void;
 }
@@ -52,6 +54,7 @@ const CYCLE_SUFFIX: Record<string, string> = {
 export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   preset,
   visible,
+  isSubmitting = false,
   onClose,
   onConfirm,
 }) => {
@@ -94,7 +97,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   const parsedPrice = Number(priceText.replace(/[^0-9.]/g, ''));
   const isPriceValid = priceText.trim().length > 0 && !Number.isNaN(parsedPrice) && parsedPrice >= 0;
   const priceChanged = selectedPlan != null && isPriceValid && parsedPrice !== selectedPlan.price;
-  const canConfirm = selectedPlan != null && isPriceValid;
+  const canConfirm = selectedPlan != null && isPriceValid && !isSubmitting;
 
   const handleConfirm = () => {
     if (!selectedPlan || !isPriceValid) {
@@ -110,9 +113,21 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={() => {
+        if (!isSubmitting) {
+          onClose();
+        }
+      }}
+    >
       <View className="flex-1 justify-end">
-        <Pressable className="absolute inset-0 bg-black/60" onPress={onClose} />
+        <Pressable
+          className="absolute inset-0 bg-black/60"
+          onPress={isSubmitting ? undefined : onClose}
+        />
 
         <View className="h-[94%] overflow-hidden rounded-t-3xl bg-background-darker">
           <View className="items-center pt-3">
@@ -143,6 +158,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
               </View>
               <TouchableOpacity
                 onPress={onClose}
+                disabled={isSubmitting}
                 hitSlop={8}
                 className="h-9 w-9 items-center justify-center rounded-full bg-white/[0.08]"
               >
@@ -263,14 +279,15 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
               activeOpacity={0.85}
               disabled={!canConfirm}
               onPress={handleConfirm}
-              className={`items-center justify-center rounded-full py-4 ${
+              className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${
                 canConfirm ? 'bg-accent' : 'bg-white/[0.08]'
               }`}
             >
+              {isSubmitting ? <ActivityIndicator color={AppColors.text} size="small" /> : null}
               <Text
                 className={`text-base font-bold ${canConfirm ? 'text-foreground' : 'text-subtle'}`}
               >
-                この内容で追加
+                {isSubmitting ? '登録中...' : 'この内容で追加'}
               </Text>
             </TouchableOpacity>
           </View>

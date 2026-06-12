@@ -29,6 +29,7 @@ export const SUBSCRIPTION_SELECT = `
   id,
   user_id,
   plan_id,
+  custom_price,
   next_billing_date,
   start_date,
   status,
@@ -131,6 +132,10 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
       currency: plan.currency,
       cycle: toBillingCycle(cycle.name),
     },
+    customPrice:
+      row.custom_price != null && row.custom_price !== ''
+        ? Number(row.custom_price)
+        : undefined,
     nextBillingDate: parseLocalDate(row.next_billing_date as string),
     startDate: parseLocalDate(row.start_date as string),
     status: toSubscriptionStatus(row.status as string),

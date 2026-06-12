@@ -9,6 +9,7 @@
  */
 
 import type { Subscription } from './subscription';
+import { getEffectiveSubscriptionPrice } from './subscriptionPrice';
 
 export interface MonthlyBillingTotal {
   /** 合計金額（対象月に請求されるサブスクの料金合計） */
@@ -42,7 +43,7 @@ export function computeMonthlyBillingTotal(
     (sub) => sub.status === 'active' && isBilledInMonth(sub.nextBillingDate, year, month)
   );
 
-  const amount = targets.reduce((sum, sub) => sum + sub.plan.price, 0);
+  const amount = targets.reduce((sum, sub) => sum + getEffectiveSubscriptionPrice(sub), 0);
   const currency = targets[0]?.plan.currency ?? 'JPY';
 
   return {

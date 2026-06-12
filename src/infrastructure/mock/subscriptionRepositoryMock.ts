@@ -115,4 +115,8 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
     const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
     return all.find((sub) => sub.id === id) ?? null;
   },
+
+  async create(): Promise<Subscription> {
+    throw new Error('subscriptionRepositoryMock.create is not implemented');
+  },
 };

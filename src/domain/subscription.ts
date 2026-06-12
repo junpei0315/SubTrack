@@ -27,6 +27,8 @@ export interface Subscription {
   planId: string;
   service: Service;
   plan: Plan;
+  /** ユーザーが編集した契約料金。未設定時は plan.price を使う。 */
+  customPrice?: number;
   nextBillingDate: Date;
   startDate: Date;
   status: 'active' | 'paused' | 'cancelled';
