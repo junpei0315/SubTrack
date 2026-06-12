@@ -1,5 +1,8 @@
 import type { Subscription } from '@/src/domain/subscription';
-import type { SubscriptionRepository } from '@/src/ports/subscriptionRepository';
+import type {
+  CreateSubscriptionInput,
+  SubscriptionRepository,
+} from '@/src/ports/subscriptionRepository';
 
 function buildMockSubscriptions(year: number, month: number): Subscription[] {
   return [
@@ -114,5 +117,34 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
     const now = new Date();
     const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
     return all.find((sub) => sub.id === id) ?? null;
+  },
+
+  async create(input: CreateSubscriptionInput): Promise<Subscription> {
+    const now = new Date();
+    return {
+      id: `sub-mock-${now.getTime()}`,
+      userId: input.userId,
+      planId: input.planId,
+      service: {
+        id: 'svc-mock',
+        name: 'Mock Service',
+        iconName: 'circle',
+        category: 'other',
+      },
+      plan: {
+        id: input.planId,
+        serviceId: 'svc-mock',
+        name: 'Mock Plan',
+        price: input.customPrice ?? 0,
+        currency: 'JPY',
+        cycle: 'monthly',
+      },
+      customPrice: input.customPrice,
+      nextBillingDate: input.nextBillingDate,
+      startDate: input.startDate,
+      status: 'active',
+      createdAt: now,
+      updatedAt: now,
+    };
   },
 };

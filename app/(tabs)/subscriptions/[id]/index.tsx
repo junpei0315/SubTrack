@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
 import type { Subscription } from '@/src/domain/subscription';
+import { getEffectiveSubscriptionPrice } from '@/src/domain/subscriptionPrice';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
 // TODO: src/features/subscriptions/screens/SubscriptionDetailScreen.tsx を実装して差し替える
@@ -99,7 +100,7 @@ export default function SubscriptionDetailRoute() {
         />
         <UsageFrequencyTracker
           usedDateKeys={usedDateKeys}
-          monthlyPriceYen={subscription.plan.price}
+          monthlyPriceYen={getEffectiveSubscriptionPrice(subscription)}
           onRecordUsagePress={() => {
             void recordToday();
           }}

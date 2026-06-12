@@ -1,6 +1,9 @@
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   RefreshControl,
   Text,
@@ -8,12 +11,19 @@ import {
   View,
 } from 'react-native';
 
+import { useAuth } from '@/components/auth/AuthProvider';
 import { GenreSelector } from '@/components/subscriptions/GenreSelector';
+import {
+  PresetDetailModal,
+  type PresetSelection,
+} from '@/components/subscriptions/PresetDetailModal';
 import { PresetListItem } from '@/components/subscriptions/PresetListItem';
 import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
+import { useCreateSubscriptionFromPreset } from '@/components/subscriptions/useCreateSubscriptionFromPreset';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { AppColors } from '@/constants/colors';
 import { DEFAULT_GENRE_ID, getGenreLabel, type GenreId } from '@/src/domain/genre';
+import type { PresetService } from '@/src/domain/preset';
 
 // 関連機能: F-01（プリセット選択で一括登録）/ F-02（カスタム新規追加）
 // プリセットから追加 と 手動入力 をページ遷移なしで切り替える。
@@ -53,9 +63,37 @@ export default function SubscriptionNewRoute() {
 }
 
 function PresetAddSection() {
+  const router = useRouter();
+  const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<PresetService | null>(null);
   const { presets, isLoading, errorMessage, reload } = usePresetList();
+  const { create, isSubmitting } = useCreateSubscriptionFromPreset();
+
+  const handleConfirm = async (selection: PresetSelection) => {
+    const userId = session?.user.id;
+    if (!userId) {
+      Alert.alert('ログインが必要です', '再度ログインしてからお試しください。');
+      return;
+    }
+
+    try {
+      await create({
+        userId,
+        planId: selection.plan.id,
+        planPrice: selection.plan.price,
+        cycle: selection.plan.cycle,
+        startDate: selection.startDate,
+        price: selection.price,
+      });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSelectedPreset(null);
+      router.back();
+    } catch {
+      Alert.alert('登録に失敗しました', '通信環境を確認して再度お試しください。');
+    }
+  };
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -89,7 +127,9 @@ function PresetAddSection() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <PresetListItem preset={item} />}
+          renderItem={({ item }) => (
+            <PresetListItem preset={item} onPress={setSelectedPreset} />
+          )}
           contentContainerClassName="flex-grow p-4"
           ItemSeparatorComponent={() => <View className="h-3" />}
           refreshControl={
@@ -110,6 +150,14 @@ function PresetAddSection() {
           }
         />
       )}
+
+      <PresetDetailModal
+        preset={selectedPreset}
+        visible={selectedPreset !== null}
+        isSubmitting={isSubmitting}
+        onClose={() => setSelectedPreset(null)}
+        onConfirm={handleConfirm}
+      />
     </View>
   );
 }
