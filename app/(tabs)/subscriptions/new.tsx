@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   RefreshControl,
   Text,
@@ -9,11 +10,18 @@ import {
 } from 'react-native';
 
 import { GenreSelector } from '@/components/subscriptions/GenreSelector';
+import {
+  PresetDetailModal,
+  type PresetSelection,
+} from '@/components/subscriptions/PresetDetailModal';
 import { PresetListItem } from '@/components/subscriptions/PresetListItem';
 import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { AppColors } from '@/constants/colors';
+import { formatBillingDate } from '@/src/domain/billingCycle';
 import { DEFAULT_GENRE_ID, getGenreLabel, type GenreId } from '@/src/domain/genre';
+import { formatPrice } from '@/src/domain/money';
+import type { PresetService } from '@/src/domain/preset';
 
 // 関連機能: F-01（プリセット選択で一括登録）/ F-02（カスタム新規追加）
 // プリセットから追加 と 手動入力 をページ遷移なしで切り替える。
@@ -55,7 +63,19 @@ export default function SubscriptionNewRoute() {
 function PresetAddSection() {
   const [query, setQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<PresetService | null>(null);
   const { presets, isLoading, errorMessage, reload } = usePresetList();
+
+  const handleConfirm = (selection: PresetSelection) => {
+    setSelectedPreset(null);
+    // TODO(F-01): サブスク登録ユースケースが実装されたら永続化処理に差し替える。
+    Alert.alert(
+      '追加内容の確認',
+      `${selection.preset.name}（${selection.plan.name}）\n` +
+        `料金: ${formatPrice(selection.price, selection.plan.currency)}\n` +
+        `支払い開始日: ${formatBillingDate(selection.startDate)}`
+    );
+  };
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -89,7 +109,9 @@ function PresetAddSection() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <PresetListItem preset={item} />}
+          renderItem={({ item }) => (
+            <PresetListItem preset={item} onPress={setSelectedPreset} />
+          )}
           contentContainerClassName="flex-grow p-4"
           ItemSeparatorComponent={() => <View className="h-3" />}
           refreshControl={
@@ -110,6 +132,13 @@ function PresetAddSection() {
           }
         />
       )}
+
+      <PresetDetailModal
+        preset={selectedPreset}
+        visible={selectedPreset !== null}
+        onClose={() => setSelectedPreset(null)}
+        onConfirm={handleConfirm}
+      />
     </View>
   );
 }
