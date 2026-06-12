@@ -174,6 +174,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
                   <TouchableOpacity
                     key={plan.id}
                     activeOpacity={0.8}
+                    disabled={isSubmitting}
                     onPress={() => handleSelectPlan(plan)}
                     className={`flex-row items-center justify-between rounded-2xl border p-4 ${
                       isSelected ? 'border-accent bg-accent/10' : 'border-border bg-card'
@@ -224,7 +225,8 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
               <TextInput
                 value={priceText}
                 onChangeText={setPriceText}
-                keyboardType="number-pad"
+                editable={!isSubmitting}
+                keyboardType="decimal-pad"
                 placeholder="0"
                 placeholderTextColor={AppColors.mutedDark}
                 className="flex-1 border-0 py-4 pl-2 text-xl font-bold text-foreground outline-none"
@@ -245,6 +247,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
             <View className="rounded-2xl bg-card">
               <TouchableOpacity
                 activeOpacity={0.8}
+                disabled={isSubmitting}
                 onPress={() => setIsCalendarOpen((prev) => !prev)}
                 className="flex-row items-center justify-between p-4"
               >

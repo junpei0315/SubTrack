@@ -68,6 +68,7 @@ erDiagram
         uuid plan_id FK "plans 参照"
         date start_date "契約の最初の請求日 (NOT NULL)"
         date next_billing_date "次回更新日 (NOT NULL)"
+        numeric custom_price "ユーザー編集料金 numeric(14,4) NULL可 / NULL時は plans.price"
         varchar status "active / paused / cancelled"
         text memo "解約リンクなど"
         timestamp created_at "default: now()"
@@ -350,7 +351,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
-| 2026-06-12 | `subscriptions.custom_price` 追加と INSERT RLS ポリシー追加（F-01 プリセット登録、`20260612170000`） |
+| 2026-06-12 | `subscriptions.custom_price`（numeric(14,4)・NULL 可・非負 CHECK 制約）追加と INSERT RLS ポリシー追加（F-01 プリセット登録、`20260612170000`） |
 | 2026-06-09 | 重複サービスを参照する `test@test.com` の契約（`55555555-…`）を正プランへ付け替え、参照の消えた誤plan（`44444444-…`）・誤service（`33333333-…`）を削除して重複を解消（`20260609130000`） |
 | 2026-06-09 | プリセット整理: 重複サービス（手動投入の `33333333-…` Netflix/Amazon Prime Video/DAZN）と配下プランを削除、無料プラン（price=0、金額不定は除外）を削除、Figma/Gemini を同梱ロゴ（`logo_key`）方式へ統一（`20260609120000`） |
 | 2026-06-06 | Dropbox のプリセット価格を税込に統一（`20260606160000`）                             |

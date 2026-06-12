@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
@@ -86,6 +87,7 @@ function PresetAddSection() {
         startDate: selection.startDate,
         price: selection.price,
       });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSelectedPreset(null);
       router.back();
     } catch {
