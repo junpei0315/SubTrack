@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import {
   createSubscriptionFromPreset,
@@ -14,12 +14,19 @@ interface UseCreateSubscriptionFromPresetResult {
 
 export function useCreateSubscriptionFromPreset(): UseCreateSubscriptionFromPresetResult {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // state 反映前の連打による再入（二重 INSERT）を同期的に弾くためのガード。
+  const submittingRef = useRef(false);
 
   const create = useCallback(async (params: CreateSubscriptionFromPresetParams) => {
+    if (submittingRef.current) {
+      throw new Error('submission already in progress');
+    }
+    submittingRef.current = true;
     setIsSubmitting(true);
     try {
       return await createSubscriptionFromPreset(subscriptionRepositorySupabase, params);
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }, []);
