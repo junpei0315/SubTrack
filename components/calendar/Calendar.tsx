@@ -117,25 +117,25 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
         </TouchableOpacity>
       </View>
 
-      <View className="rounded-2xl bg-surface p-3">
-        <View className="overflow-hidden rounded-xl">
-          <View className="flex-row items-center justify-center gap-5 bg-surface py-3">
+      <View className="overflow-hidden rounded-2xl bg-surface px-2 pb-2">
+        <View>
+          <View className="flex-row items-center justify-center gap-5 py-3">
             <TouchableOpacity onPress={goToPrev} hitSlop={8}>
-              <Text className="px-1 text-lg text-accent">←</Text>
+              <Text className="px-1 text-xl text-accent">←</Text>
             </TouchableOpacity>
-            <Text className="text-base font-semibold text-accent">
+            <Text className="text-lg font-semibold text-accent">
               {year}年 {month + 1}月
             </Text>
             <TouchableOpacity onPress={goToNext} hitSlop={8}>
-              <Text className="px-1 text-lg text-accent">→</Text>
+              <Text className="px-1 text-xl text-accent">→</Text>
             </TouchableOpacity>
           </View>
 
-          <View className="flex-row bg-surface py-2">
+          <View className="flex-row pb-1">
             {DAYS_OF_WEEK.map((day, index) => (
               <View key={day} className="flex-1 items-center">
                 <Text
-                  className={`text-xs font-medium ${
+                  className={`text-sm font-medium ${
                     index === 0
                       ? 'text-weekend'
                       : index === 6
@@ -149,7 +149,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
             ))}
           </View>
 
-          <View className="bg-surface pb-1">
+          <View>
             {weeksToRender.map((week, weekIndex) => (
               <View key={weekIndex} className="flex-row">
                 {week.map((day, dayIndex) => {
@@ -169,7 +169,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                         }`}
                       >
                         <Text
-                          className={`text-sm ${isSelected ? 'font-bold' : 'font-medium'} ${
+                          className={`text-base ${isSelected ? 'font-bold' : 'font-medium'} ${
                             isSelected
                               ? 'text-foreground'
                               : !day.isCurrentMonth
