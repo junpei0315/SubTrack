@@ -61,15 +61,17 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     );
   };
 
-  // 当月を含む6週間（日曜始まり）
+  // 当月に必要な週数だけ描画（日曜始まり）。固定6週だと末尾に次月の週が余分に出る。
   const getMonthWeeks = (): CalendarDay[][] => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDayOffset = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const weeksNeeded = Math.ceil((firstDayOffset + daysInMonth) / 7);
     const gridStart = new Date(year, month, 1 - firstDayOffset);
 
     const weeks: CalendarDay[][] = [];
-    for (let w = 0; w < 6; w++) {
+    for (let w = 0; w < weeksNeeded; w++) {
       const week: CalendarDay[] = [];
       for (let d = 0; d < 7; d++) {
         const cellDate = new Date(
