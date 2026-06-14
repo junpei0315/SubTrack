@@ -108,7 +108,12 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     <View className="my-4">
       <View className="mb-2 flex-row items-center justify-between px-1">
         <Text className="text-lg font-semibold text-foreground">お支払いカレンダー</Text>
-        <TouchableOpacity onPress={toggleExpanded} hitSlop={8}>
+        <TouchableOpacity
+          onPress={toggleExpanded}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={isExpanded ? '週表示に切り替え' : '月表示に切り替え'}
+        >
           <MaterialIcons
             name={isExpanded ? 'expand-less' : 'expand-more'}
             size={24}
@@ -117,16 +122,26 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
         </TouchableOpacity>
       </View>
 
-      <View className="overflow-hidden rounded-2xl bg-surface px-2 pb-2">
+      <View className="overflow-hidden rounded-2xl bg-card px-2 pb-2">
         <View>
           <View className="flex-row items-center justify-center gap-5 py-3">
-            <TouchableOpacity onPress={goToPrev} hitSlop={8}>
+            <TouchableOpacity
+              onPress={goToPrev}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={isExpanded ? '前の月へ移動' : '前の週へ移動'}
+            >
               <Text className="px-1 text-xl text-accent">←</Text>
             </TouchableOpacity>
             <Text className="text-lg font-semibold text-accent">
               {year}年 {month + 1}月
             </Text>
-            <TouchableOpacity onPress={goToNext} hitSlop={8}>
+            <TouchableOpacity
+              onPress={goToNext}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={isExpanded ? '次の月へ移動' : '次の週へ移動'}
+            >
               <Text className="px-1 text-xl text-accent">→</Text>
             </TouchableOpacity>
           </View>
