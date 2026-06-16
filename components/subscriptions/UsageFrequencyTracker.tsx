@@ -31,8 +31,8 @@ interface UsageFrequencyTrackerProps {
 
 const CELL_GAP = 4;
 const CELL_RADIUS = 3;
-const MIN_CELL_SIZE = 10;
-const MAX_CELL_SIZE = 20;
+const MIN_CELL_SIZE = 12;
+const MAX_CELL_SIZE = 24;
 // 月曜始まりの行に対応するラベル（月・水・金・日を表示）
 const WEEKDAY_LABELS = ['月', '', '水', '', '金', '', '日'];
 
@@ -145,7 +145,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   return (
     <View className={`w-full${className ? ` ${className}` : ''}`}>
       <Text className="mb-2 px-1 text-[13px] font-semibold text-subtle">{title}</Text>
-      <View className="gap-4 rounded-2xl bg-card px-5 pb-5 pt-4">
+      <View className="gap-4 rounded-2xl bg-card px-4 pb-4 pt-4">
         <View className="flex-row items-center justify-between">
           <Pressable onPress={goPrev} hitSlop={8} accessibilityRole="button" accessibilityLabel="前の期間">
             <MaterialIcons name="chevron-left" size={26} color={AppColors.text} />
@@ -228,7 +228,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
       </View>
 
       {usedToday ? (
-        <View className="mt-4 flex-row items-center justify-between rounded-2xl border border-[rgba(220,5,45,0.5)] px-5 py-4">
+        <View className="mt-4 flex-row items-center justify-between rounded-2xl border border-[rgba(220,5,45,0.5)] px-4 py-4">
           <View className="flex-row items-center gap-2">
             <MaterialIcons name="check-circle" size={20} color={AppColors.accentBrand} />
             <Text className="text-base font-bold text-foreground">今日は利用済み</Text>
@@ -243,7 +243,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
         </View>
       ) : (
         <Pressable
-          className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl bg-accent-brand px-6 py-[18px] active:opacity-[0.88]"
+          className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl bg-accent-brand px-4 py-[18px] active:opacity-[0.88]"
           onPress={handleRecord}
           accessibilityRole="button"
           accessibilityLabel="今日使った？">

@@ -25,7 +25,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({
   return (
     <View className={`w-full${className ? ` ${className}` : ''}`}>
       <Text className="mb-2 px-1 text-[13px] font-semibold text-subtle">{title}</Text>
-      <View className="rounded-2xl bg-card px-5">
+      <View className="rounded-2xl bg-card px-4">
         <Row label="請求サイクル" value={getBillingCycleLabel(cycle)} valueAccent />
         <Divider />
         <Row label="次回請求日" value={formatBillingDate(nextBillingDate)} />
