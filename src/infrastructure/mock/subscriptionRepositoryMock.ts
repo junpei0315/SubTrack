@@ -2,6 +2,7 @@ import type { Subscription } from '@/src/domain/subscription';
 import type {
   CreateSubscriptionInput,
   SubscriptionRepository,
+  UpdateSubscriptionStatusInput,
 } from '@/src/ports/subscriptionRepository';
 
 function buildMockSubscriptions(year: number, month: number): Subscription[] {
@@ -146,5 +147,30 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
       createdAt: now,
       updatedAt: now,
     };
+  },
+
+  async updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription> {
+    const now = new Date();
+    const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
+    const target = all.find((sub) => sub.id === id);
+    if (!target) {
+      throw new Error(`Subscription not found: ${id}`);
+    }
+    return {
+      ...target,
+      status: input.status,
+      nextBillingDate: input.nextBillingDate ?? target.nextBillingDate,
+      cancelledAt:
+        input.cancelledAt === undefined
+          ? target.cancelledAt
+          : input.cancelledAt === null
+            ? undefined
+            : input.cancelledAt,
+      updatedAt: now,
+    };
+  },
+
+  async delete(): Promise<void> {
+    // モックは永続化しないため何もしない。
   },
 };

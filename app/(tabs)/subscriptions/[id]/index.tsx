@@ -6,7 +6,9 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
+import { SubscriptionStatusBadge } from '@/components/subscriptions/SubscriptionStatusBadge';
 import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
+import { useSubscriptionActions } from '@/components/subscriptions/useSubscriptionActions';
 import { useSubscriptionUsage } from '@/components/subscriptions/useSubscriptionUsage';
 import { ThemedText } from '@/components/themed-text';
 import { AppColors } from '@/constants/colors';
@@ -29,6 +31,11 @@ export default function SubscriptionDetailRoute() {
   const { usedDateKeys, recordToday, undoToday } = useSubscriptionUsage({
     subscriptionId: id ?? '',
     userId: subscription?.userId ?? '',
+  });
+
+  const { isBusy, pause, resume, confirmCancel, confirmDelete } = useSubscriptionActions({
+    onUpdated: setSubscription,
+    onDeleted: () => router.back(),
   });
 
   useEffect(() => {
@@ -140,6 +147,10 @@ export default function SubscriptionDetailRoute() {
                 {getBillingCycleLabel(plan.cycle)}
               </Text>
             </View>
+            <SubscriptionStatusBadge
+              status={subscription.status}
+              cancelledAt={subscription.cancelledAt}
+            />
           </View>
         </View>
 
@@ -158,8 +169,90 @@ export default function SubscriptionDetailRoute() {
             void undoToday();
           }}
         />
+
+        <View className="mt-2 gap-3">
+          {subscription.status === 'active' ? (
+            <ActionButton
+              icon="pause-circle-outline"
+              label="一時停止する"
+              disabled={isBusy}
+              onPress={() => void pause(subscription)}
+            />
+          ) : (
+            <ActionButton
+              icon="play-circle-outline"
+              label={subscription.status === 'cancelled' ? '再開する（契約を戻す）' : '再開する'}
+              disabled={isBusy}
+              onPress={() => void resume(subscription)}
+            />
+          )}
+
+          {subscription.status !== 'cancelled' ? (
+            <ActionButton
+              icon="cancel"
+              label="解約する"
+              variant="warning"
+              disabled={isBusy}
+              onPress={() => confirmCancel(subscription)}
+            />
+          ) : null}
+
+          <ActionButton
+            icon="delete-outline"
+            label="削除する"
+            variant="danger"
+            disabled={isBusy}
+            onPress={() => confirmDelete(subscription)}
+          />
+        </View>
       </View>
     </ScrollView>
+  );
+}
+
+type ActionButtonVariant = 'default' | 'warning' | 'danger';
+
+interface ActionButtonProps {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  variant?: ActionButtonVariant;
+}
+
+const VARIANT_TEXT: Record<ActionButtonVariant, string> = {
+  default: 'text-foreground',
+  warning: 'text-accent',
+  danger: 'text-accent-brand',
+};
+
+function ActionButton({
+  icon,
+  label,
+  onPress,
+  disabled = false,
+  variant = 'default',
+}: ActionButtonProps) {
+  const color =
+    variant === 'danger'
+      ? AppColors.accentBrand
+      : variant === 'warning'
+        ? AppColors.accent
+        : AppColors.text;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className={`flex-row items-center justify-center gap-2 rounded-2xl bg-card px-4 py-4 active:opacity-80${
+        disabled ? ' opacity-50' : ''
+      }`}
+    >
+      <MaterialIcons name={icon} size={20} color={color} />
+      <Text className={`text-base font-bold ${VARIANT_TEXT[variant]}`}>{label}</Text>
+    </Pressable>
   );
 }
 

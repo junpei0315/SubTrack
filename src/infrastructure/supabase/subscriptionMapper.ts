@@ -33,6 +33,7 @@ export const SUBSCRIPTION_SELECT = `
   next_billing_date,
   start_date,
   status,
+  cancelled_at,
   created_at,
   updated_at,
   plans (
@@ -139,6 +140,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
     nextBillingDate: parseLocalDate(row.next_billing_date as string),
     startDate: parseLocalDate(row.start_date as string),
     status: toSubscriptionStatus(row.status as string),
+    cancelledAt: row.cancelled_at ? new Date(row.cancelled_at as string) : undefined,
     createdAt: new Date(row.created_at as string),
     updatedAt: row.updated_at
       ? new Date(row.updated_at as string)
