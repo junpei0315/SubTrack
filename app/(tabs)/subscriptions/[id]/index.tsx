@@ -1,13 +1,19 @@
-import { useLocalSearchParams } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
+import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
 import { useSubscriptionUsage } from '@/components/subscriptions/useSubscriptionUsage';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AppColors } from '@/constants/colors';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
+import { getBillingCycleLabel } from '@/src/domain/billingCycle';
+import { formatPrice } from '@/src/domain/money';
 import type { Subscription } from '@/src/domain/subscription';
 import { getEffectiveSubscriptionPrice } from '@/src/domain/subscriptionPrice';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
@@ -15,6 +21,7 @@ import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/su
 // TODO: src/features/subscriptions/screens/SubscriptionDetailScreen.tsx を実装して差し替える
 // 関連機能: F-04（削除導線） / F-09（使用頻度・1回あたりコスト）
 export default function SubscriptionDetailRoute() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -86,21 +93,61 @@ export default function SubscriptionDetailRoute() {
     );
   }
 
+  const { service, plan } = subscription;
+  const logoSource = resolveServiceLogo(service.logoKey, service.logoUri);
+  const initial = service.name.charAt(0).toUpperCase();
+  const price = getEffectiveSubscriptionPrice(subscription);
+
   return (
     <ThemedView className="flex-1">
-      <ScrollView contentContainerClassName="gap-6 p-4">
-        <View className="gap-1">
-          <ThemedText type="title">{subscription.service.name}</ThemedText>
-          <ThemedText>{subscription.plan.name}</ThemedText>
+      <ScrollView className="flex-1" contentContainerClassName="w-full grow gap-6 px-4 pb-8">
+        <Pressable
+          onPress={() => router.back()}
+          className="flex-row items-center gap-1 self-start py-1"
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="戻る"
+        >
+          <MaterialIcons name="arrow-back" size={22} color={AppColors.text} />
+          <Text className="text-base text-foreground">戻る</Text>
+        </Pressable>
+
+        <View className="w-full flex-row items-center gap-4">
+          <View className="h-16 w-16 overflow-hidden rounded-2xl">
+            {logoSource ? (
+              <Image source={logoSource} className="h-full w-full" contentFit="cover" />
+            ) : (
+              <View className="h-full w-full items-center justify-center bg-surface">
+                <Text className="text-2xl font-bold text-foreground">{initial}</Text>
+              </View>
+            )}
+          </View>
+          <View className="min-w-0 flex-1 gap-1">
+            <Text className="text-xl font-bold text-foreground" numberOfLines={2}>
+              {service.name}
+            </Text>
+            <Text className="text-[15px] text-subtle" numberOfLines={2}>
+              {plan.name}
+            </Text>
+            <View className="mt-1 flex-row items-baseline gap-2">
+              <Text className="text-lg font-bold text-foreground">
+                {formatPrice(price, plan.currency)}
+              </Text>
+              <Text className="text-sm font-semibold text-accent">
+                {getBillingCycleLabel(plan.cycle)}
+              </Text>
+            </View>
+          </View>
         </View>
+
         <BillingInfo
-          cycle={subscription.plan.cycle}
+          cycle={plan.cycle}
           nextBillingDate={subscription.nextBillingDate}
           startDate={subscription.startDate}
         />
         <UsageFrequencyTracker
           usedDateKeys={usedDateKeys}
-          monthlyPriceYen={getEffectiveSubscriptionPrice(subscription)}
+          monthlyPriceYen={price}
           onRecordUsagePress={() => {
             void recordToday();
           }}
