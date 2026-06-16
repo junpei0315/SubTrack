@@ -2,14 +2,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
 import { useSubscriptionUsage } from '@/components/subscriptions/useSubscriptionUsage';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { AppColors } from '@/constants/colors';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
@@ -69,27 +68,27 @@ export default function SubscriptionDetailRoute() {
 
   if (isLoading) {
     return (
-      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
+      <View className="flex-1 items-center justify-center bg-background p-4" style={styles.screen}>
         <ActivityIndicator />
-      </ThemedView>
+      </View>
     );
   }
 
   if (errorMessage) {
     return (
-      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
+      <View className="flex-1 items-center justify-center gap-2 bg-background p-4" style={styles.screen}>
         <ThemedText type="title">Subscription Detail</ThemedText>
         <ThemedText>{errorMessage}</ThemedText>
-      </ThemedView>
+      </View>
     );
   }
 
   if (!subscription) {
     return (
-      <ThemedView className="flex-1 items-center justify-center gap-2 p-4">
+      <View className="flex-1 items-center justify-center gap-2 bg-background p-4" style={styles.screen}>
         <ThemedText type="title">Subscription Detail</ThemedText>
         <ThemedText>ID「{id ?? '-'}」のサブスクが見つかりません</ThemedText>
-      </ThemedView>
+      </View>
     );
   }
 
@@ -99,8 +98,12 @@ export default function SubscriptionDetailRoute() {
   const price = getEffectiveSubscriptionPrice(subscription);
 
   return (
-    <ThemedView className="flex-1">
-      <ScrollView className="flex-1" contentContainerClassName="w-full grow gap-6 px-4 pb-8">
+    <ScrollView
+      className="flex-1 bg-background"
+      style={styles.screen}
+      contentContainerClassName="grow"
+    >
+      <View className="gap-6 px-5 pb-8 pt-1">
         <Pressable
           onPress={() => router.back()}
           className="flex-row items-center gap-1 self-start py-1"
@@ -155,7 +158,14 @@ export default function SubscriptionDetailRoute() {
             void undoToday();
           }}
         />
-      </ScrollView>
-    </ThemedView>
+      </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    width: '100%',
+    alignSelf: 'stretch',
+  },
+});
