@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 
+import { confirmDestructive, showAlert } from '@/components/ui/confirm';
 import {
   cancelSubscription,
   pauseSubscription,
@@ -35,8 +35,13 @@ export function useSubscriptionActions({
     setIsBusy(true);
     try {
       return await task();
-    } catch {
-      Alert.alert('操作に失敗しました', errorMessage);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('[useSubscriptionActions]', error);
+      }
+      const detail =
+        __DEV__ && error instanceof Error ? `\n（${error.message}）` : '';
+      showAlert('操作に失敗しました', `${errorMessage}${detail}`);
       return undefined;
     } finally {
       setIsBusy(false);
@@ -64,53 +69,41 @@ export function useSubscriptionActions({
   };
 
   const confirmCancel = (subscription: Subscription) => {
-    Alert.alert(
-      'このサブスクを解約しますか？',
-      '解約すると合計金額の計算から外れます。利用履歴は残ります。',
-      [
-        { text: 'キャンセル', style: 'cancel' },
-        {
-          text: '解約する',
-          style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              const updated = await run(
-                () => cancelSubscription(subscriptionRepositorySupabase, subscription),
-                '通信環境を確認して再度お試しください。'
-              );
-              if (updated) {
-                onUpdated?.(updated);
-              }
-            })();
-          },
-        },
-      ]
-    );
+    confirmDestructive({
+      title: 'このサブスクを解約しますか？',
+      message: '解約すると合計金額の計算から外れます。利用履歴は残ります。',
+      confirmLabel: '解約する',
+      onConfirm: () => {
+        void (async () => {
+          const updated = await run(
+            () => cancelSubscription(subscriptionRepositorySupabase, subscription),
+            '通信環境を確認して再度お試しください。'
+          );
+          if (updated) {
+            onUpdated?.(updated);
+          }
+        })();
+      },
+    });
   };
 
   const confirmDelete = (subscription: Subscription) => {
-    Alert.alert(
-      'このサブスクを削除しますか？',
-      '利用履歴を含めて完全に削除されます。元に戻すことはできません。',
-      [
-        { text: 'キャンセル', style: 'cancel' },
-        {
-          text: '削除する',
-          style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              const result = await run(async () => {
-                await deleteSubscription(subscriptionRepositorySupabase, subscription.id);
-                return true as const;
-              }, '通信環境を確認して再度お試しください。一覧から削除されていません。');
-              if (result) {
-                onDeleted?.();
-              }
-            })();
-          },
-        },
-      ]
-    );
+    confirmDestructive({
+      title: 'このサブスクを削除しますか？',
+      message: '利用履歴を含めて完全に削除されます。元に戻すことはできません。',
+      confirmLabel: '削除する',
+      onConfirm: () => {
+        void (async () => {
+          const result = await run(async () => {
+            await deleteSubscription(subscriptionRepositorySupabase, subscription.id);
+            return true as const;
+          }, '通信環境を確認して再度お試しください。一覧から削除されていません。');
+          if (result) {
+            onDeleted?.();
+          }
+        })();
+      },
+    });
   };
 
   return { isBusy, pause, resume, confirmCancel, confirmDelete };
