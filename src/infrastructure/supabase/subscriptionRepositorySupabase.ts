@@ -76,4 +76,30 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
 
     return mapSubscriptionRow(data as Record<string, unknown>);
   },
+
+  async createMany(inputs: CreateSubscriptionInput[]): Promise<Subscription[]> {
+    if (inputs.length === 0) {
+      return [];
+    }
+
+    const rows = inputs.map((input) => ({
+      user_id: input.userId,
+      plan_id: input.planId,
+      start_date: formatLocalDate(input.startDate),
+      next_billing_date: formatLocalDate(input.nextBillingDate),
+      status: 'active',
+      custom_price: input.customPrice ?? null,
+    }));
+
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .insert(rows)
+      .select(SUBSCRIPTION_SELECT);
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((row) => mapSubscriptionRow(row as Record<string, unknown>));
+  },
 };
