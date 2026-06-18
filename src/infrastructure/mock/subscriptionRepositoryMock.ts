@@ -170,7 +170,13 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
     };
   },
 
-  async delete(): Promise<void> {
-    // モックは永続化しないため何もしない。
+  async delete(id: string): Promise<void> {
+    const now = new Date();
+    const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
+    const exists = all.some((sub) => sub.id === id);
+    if (!exists) {
+      throw new Error(`Subscription not found: ${id}`);
+    }
+    // モックは永続化しないため、存在確認のみ行う。
   },
 };

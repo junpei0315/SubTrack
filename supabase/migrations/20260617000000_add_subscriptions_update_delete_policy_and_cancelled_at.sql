@@ -15,6 +15,12 @@ ALTER TABLE subscriptions
 COMMENT ON COLUMN subscriptions.cancelled_at IS
     '解約日時。status=cancelled のとき設定し、active/paused へ戻すと NULL に戻す。';
 
+-- 既存の cancelled 行に cancelled_at が無いと CHECK 制約追加が失敗するため補完する。
+UPDATE subscriptions
+SET cancelled_at = COALESCE(cancelled_at, updated_at, created_at, now())
+WHERE status = 'cancelled'
+    AND cancelled_at IS NULL;
+
 -- cancelled_at と status の整合を DB 側でも担保する。
 -- - cancelled のときは cancelled_at が必須
 -- - active / paused のときは cancelled_at は NULL

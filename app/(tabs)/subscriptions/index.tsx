@@ -45,7 +45,7 @@ export default function SubscriptionListRoute() {
   return (
     <View className="flex-1 bg-background">
       <View className="flex-row gap-2 px-4 pb-1 pt-4">
-        <TabButton label="稼働中" active={tab === 'active'} onPress={() => setTab('active')} />
+        <TabButton label="契約中" active={tab === 'active'} onPress={() => setTab('active')} />
         <TabButton
           label={cancelledCount > 0 ? `解約済み（${cancelledCount}）` : '解約済み'}
           active={tab === 'cancelled'}

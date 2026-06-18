@@ -70,6 +70,7 @@ erDiagram
         date next_billing_date "次回更新日 (NOT NULL)"
         numeric custom_price "ユーザー編集料金 numeric(14,4) NULL可 / NULL時は plans.price"
         varchar status "active / paused / cancelled"
+        timestamp cancelled_at "解約日時（cancelled 時必須）"
         text memo "解約リンクなど"
         timestamp created_at "default: now()"
         timestamp updated_at
