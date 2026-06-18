@@ -9,6 +9,7 @@ export const presetRepositorySupabase: PresetRepository = {
     const { data, error } = await supabase
       .from('services')
       .select(PRESET_SELECT)
+      .is('user_id', null)
       .order('name', { ascending: true });
 
     if (error) {

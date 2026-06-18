@@ -14,15 +14,21 @@ import {
 import { useAuth } from '@/components/auth/AuthProvider';
 import { GenreSelector } from '@/components/subscriptions/GenreSelector';
 import {
+  ManualSubscriptionForm,
+  type ManualSubscriptionFormValues,
+} from '@/components/subscriptions/ManualSubscriptionForm';
+import {
   PresetDetailModal,
   type PresetSelection,
 } from '@/components/subscriptions/PresetDetailModal';
 import { PresetListItem } from '@/components/subscriptions/PresetListItem';
 import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
+import { useCreateCustomSubscription } from '@/components/subscriptions/useCreateCustomSubscription';
 import { useCreateSubscriptionFromPreset } from '@/components/subscriptions/useCreateSubscriptionFromPreset';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
+import { showAlert } from '@/components/ui/confirm';
 import { AppColors } from '@/constants/colors';
-import { DEFAULT_GENRE_ID, getGenreLabel, type GenreId } from '@/src/domain/genre';
+import { getGenreLabel, type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
 
 // 関連機能: F-01（プリセット選択で一括登録）/ F-02（カスタム新規追加）
@@ -163,14 +169,35 @@ function PresetAddSection() {
 }
 
 function ManualAddSection() {
-  const [genreId, setGenreId] = useState<GenreId>(DEFAULT_GENRE_ID);
+  const router = useRouter();
+  const { session } = useAuth();
+  const { create, isSubmitting } = useCreateCustomSubscription();
 
-  return (
-    <View className="flex-1 pt-6">
-      <View className="gap-3">
-        <Text className="px-4 text-lg font-bold text-foreground">ジャンル</Text>
-        <GenreSelector selectedId={genreId} onChange={(id) => id && setGenreId(id)} />
-      </View>
-    </View>
-  );
+  const handleSubmit = async (values: ManualSubscriptionFormValues) => {
+    const userId = session?.user.id;
+    if (!userId) {
+      showAlert('ログインが必要です', '再度ログインしてからお試しください。');
+      return;
+    }
+
+    try {
+      await create({
+        serviceName: values.serviceName,
+        planName: values.planName,
+        price: values.price,
+        cycle: values.cycle,
+        startDate: values.startDate,
+      });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    } catch (error) {
+      if (error instanceof Error && error.message === 'DUPLICATE_SERVICE') {
+        showAlert('登録できません', '同じ名前のサブスクがすでに登録されています。');
+        return;
+      }
+      showAlert('登録に失敗しました', '通信環境を確認して再度お試しください。');
+    }
+  };
+
+  return <ManualSubscriptionForm isSubmitting={isSubmitting} onSubmit={handleSubmit} />;
 }

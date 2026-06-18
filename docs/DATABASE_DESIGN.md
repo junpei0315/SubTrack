@@ -48,6 +48,7 @@ erDiagram
         uuid id PK
         varchar name "サービス名 (NOT NULL)"
         int category_id FK "categories 参照"
+        uuid user_id FK "profiles 参照。NULL=プリセットマスタ"
         varchar logo_key "同梱ロゴ識別子 assets/services/{logo_key}.jpeg"
         varchar logo_uri "ロゴ画像 URL（外部URL用・任意）"
         varchar icon_name "画像がない場合の UI アイコン名"
@@ -202,6 +203,7 @@ erDiagram
 | id          | uuid          | NO   | `gen_random_uuid()` | PK                                                |
 | name        | varchar(255)  | NO   | —                   | 例: Netflix, Spotify                              |
 | category_id | int           | NO   | —                   | FK → `categories.id`                              |
+| user_id     | uuid          | YES  | —                   | FK → `profiles.id`。NULL=プリセット、NOT NULL=ユーザーカスタム（F-02） |
 | logo_key    | varchar(100)  | YES  | —                   | 同梱ロゴ `assets/services/{logo_key}.jpeg` の識別子 |
 | logo_uri    | varchar(2048) | YES  | —                   | 外部ロゴ URL（任意）                              |
 | icon_name   | varchar(128)  | YES  | —                   | 画像がない場合の UI アイコン名                    |
@@ -339,7 +341,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 - `subscriptions`: `select` / `insert` に加え、`update`（一時停止・再開・解約）と `delete`（F-04 物理削除）も `auth.uid() = user_id` に限定して許可（`20260617000000`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
 - `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
-- マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。INSERT / UPDATE / DELETE はアプリから行わない（マイグレーションで管理）
+- マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。`services` は `user_id IS NULL` のプリセットのみ全員が読める。カスタム（`user_id = auth.uid()`）は本人のみ SELECT（F-02）
 
 ### `next_billing_date` の自動繰り上げ（DB 関数・cron）
 
@@ -354,6 +356,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-18 | `services.user_id` 追加、`create_custom_subscription` RPC、カスタムサービス用 RLS（F-02 / 038、`20260618100000`） |
 | 2026-06-17 | `subscriptions.cancelled_at`（timestamptz・NULL 可・status との整合 CHECK 制約）追加、`update` / `delete` の RLS ポリシー追加（044 一時停止・解約・削除、`20260617000000`） |
 | 2026-06-12 | `subscriptions.custom_price`（numeric(14,4)・NULL 可・非負 CHECK 制約）追加と INSERT RLS ポリシー追加（F-01 プリセット登録、`20260612170000`） |
 | 2026-06-09 | 重複サービスを参照する `test@test.com` の契約（`55555555-…`）を正プランへ付け替え、参照の消えた誤plan（`44444444-…`）・誤service（`33333333-…`）を削除して重複を解消（`20260609130000`） |
