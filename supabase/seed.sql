@@ -75,8 +75,10 @@ INSERT INTO auth.identities (
 )
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO profiles (id, email, display_currency)
-VALUES ('11111111-1111-1111-1111-111111111111', 'dev@subtrack.local', 'JPY')
+-- dev ユーザーはサンプル契約を持つため、初回オンボーディングは完了扱いにする
+-- （db reset のたびにオンボーディング画面が出るのを防ぐ）。
+INSERT INTO profiles (id, email, display_currency, onboarding_completed)
+VALUES ('11111111-1111-1111-1111-111111111111', 'dev@subtrack.local', 'JPY', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- --------------------------------------------------------------------------

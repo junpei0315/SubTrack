@@ -28,6 +28,7 @@ erDiagram
         uuid id PK "auth.users の id と一致"
         varchar email "メールアドレス (NOT NULL)"
         varchar display_currency "表示希望通貨 (例: JPY)"
+        boolean onboarding_completed "初回オンボーディング完了フラグ"
         timestamp created_at "default: now()"
         timestamp updated_at
     }
@@ -143,11 +144,12 @@ erDiagram
 
 | カラム名         | 型           | NULL | デフォルト | 説明                       |
 | ---------------- | ------------ | ---- | ---------- | -------------------------- |
-| id               | uuid         | NO   | —          | PK。`auth.users.id` と一致 |
-| email            | varchar(255) | NO   | —          | ログインアドレス           |
-| display_currency | varchar(8)   | NO   | `'JPY'`    | **F-13**: 表示ベース通貨   |
-| created_at       | timestamptz  | NO   | `now()`    |                            |
-| updated_at       | timestamptz  | YES  | —          | 最終更新                   |
+| id                   | uuid         | NO   | —          | PK。`auth.users.id` と一致 |
+| email                | varchar(255) | NO   | —          | ログインアドレス           |
+| display_currency     | varchar(8)   | NO   | `'JPY'`    | **F-13**: 表示ベース通貨   |
+| onboarding_completed | boolean      | NO   | `false`    | **F-01**: 初回オンボーディング（サブスク一括登録）を完了したか。`false` の間は初回ログイン時にオンボーディング画面を表示する |
+| created_at           | timestamptz  | NO   | `now()`    |                            |
+| updated_at           | timestamptz  | YES  | —          | 最終更新                   |
 
 **インデックス**
 
@@ -351,6 +353,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-16 | `profiles.onboarding_completed`（boolean・NOT NULL・default false）追加、`profiles` の UPDATE RLS（自分の行のみ）追加、既存契約ありユーザーを完了扱いに backfill（初回オンボーディングのサブスク一括登録、F-01、`20260616120000`） |
 | 2026-06-12 | `subscriptions.custom_price`（numeric(14,4)・NULL 可・非負 CHECK 制約）追加と INSERT RLS ポリシー追加（F-01 プリセット登録、`20260612170000`） |
 | 2026-06-09 | 重複サービスを参照する `test@test.com` の契約（`55555555-…`）を正プランへ付け替え、参照の消えた誤plan（`44444444-…`）・誤service（`33333333-…`）を削除して重複を解消（`20260609130000`） |
 | 2026-06-09 | プリセット整理: 重複サービス（手動投入の `33333333-…` Netflix/Amazon Prime Video/DAZN）と配下プランを削除、無料プラン（price=0、金額不定は除外）を削除、Figma/Gemini を同梱ロゴ（`logo_key`）方式へ統一（`20260609120000`） |
