@@ -99,10 +99,14 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
       .update(patch)
       .eq('id', id)
       .select(SUBSCRIPTION_SELECT)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw error;
+    }
+
+    if (!data) {
+      throw new Error('サブスクの更新に失敗しました（対象が見つからないか、権限がありません）');
     }
 
     return mapSubscriptionRow(data as Record<string, unknown>);

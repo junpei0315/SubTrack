@@ -1,3 +1,4 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
@@ -32,6 +33,12 @@ export default function SubscriptionListRoute() {
         tab === 'cancelled' ? sub.status === 'cancelled' : sub.status !== 'cancelled'
       ),
     [subscriptions, tab]
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void reload();
+    }, [reload])
   );
 
   if (isLoading && subscriptions.length === 0) {
