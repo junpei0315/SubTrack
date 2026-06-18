@@ -32,9 +32,13 @@ export interface Subscription {
   nextBillingDate: Date;
   startDate: Date;
   status: 'active' | 'paused' | 'cancelled';
+  /** 解約日時。status === 'cancelled' のときのみ設定される。 */
+  cancelledAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type SubscriptionStatus = Subscription['status'];
 
 export interface SubscriptionForDate {
   subscription: Subscription;

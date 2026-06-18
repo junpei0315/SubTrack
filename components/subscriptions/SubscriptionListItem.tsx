@@ -18,14 +18,16 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
   subscription,
   onPress,
 }) => {
-  const { service, plan, nextBillingDate, status } = subscription;
+  const { service, plan, nextBillingDate, status, cancelledAt } = subscription;
   const isPaused = status === 'paused';
+  const isCancelled = status === 'cancelled';
+  const isDimmed = isPaused || isCancelled;
   const initial = service.name.charAt(0).toUpperCase();
   const logoSource = resolveServiceLogo(service.logoKey, service.logoUri);
 
   return (
     <TouchableOpacity
-      className={`flex-row items-center gap-3.5 rounded-2xl bg-card p-3.5${isPaused ? ' opacity-50' : ''}`}
+      className={`flex-row items-center gap-3.5 rounded-2xl bg-card p-3.5${isDimmed ? ' opacity-50' : ''}`}
       activeOpacity={0.7}
       onPress={() => onPress?.(subscription)}
     >
@@ -47,7 +49,9 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
           {plan.name}
         </Text>
         <Text className="mt-0.5 text-xs text-subtle">
-          次回 {formatBillingDate(nextBillingDate)}
+          {isCancelled
+            ? `解約 ${cancelledAt ? formatBillingDate(cancelledAt) : '済み'}`
+            : `次回 ${formatBillingDate(nextBillingDate)}`}
         </Text>
       </View>
 
@@ -57,6 +61,7 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
         </Text>
         <Text className="text-xs font-semibold text-accent">{getBillingCycleLabel(plan.cycle)}</Text>
         {isPaused ? <Text className="mt-0.5 text-[11px] text-subtle">停止中</Text> : null}
+        {isCancelled ? <Text className="mt-0.5 text-[11px] text-subtle">解約済み</Text> : null}
       </View>
     </TouchableOpacity>
   );
