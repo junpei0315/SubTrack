@@ -71,6 +71,7 @@ erDiagram
         date next_billing_date "次回更新日 (NOT NULL)"
         numeric custom_price "ユーザー編集料金 numeric(14,4) NULL可 / NULL時は plans.price"
         varchar status "active / paused / cancelled"
+        timestamp cancelled_at "解約日時（cancelled 時必須）"
         text memo "解約リンクなど"
         timestamp created_at "default: now()"
         timestamp updated_at
@@ -248,6 +249,7 @@ erDiagram
 | next_billing_date | date        | NO   | —                   | **F-10** 通知の基準日。請求ごとに更新                 |
 | custom_price      | numeric(14,4) | YES | —                 | **F-01**: ユーザー編集料金。NULL 時は `plans.price` を使用 |
 | status            | varchar(50) | NO   | `'active'`          | **F-03**: `active` / `paused` / `cancelled` のいずれか（CHECK 制約で限定） |
+| cancelled_at      | timestamptz | YES  | —                   | **F-04/044**: 解約日時。`cancelled` のとき必須・それ以外は NULL（CHECK 制約で整合） |
 | memo              | text        | YES  | —                   | 解約 URL・メモ                                        |
 | created_at        | timestamptz | NO   | `now()`             |                                                       |
 | updated_at        | timestamptz | YES  | —                   |                                                       |
@@ -336,6 +338,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 ## RLS（Row Level Security）
 
 - `profiles`: 原則として「自分の行のみ `select` / `update`」（`auth.uid() = id`）
+- `subscriptions`: `select` / `insert` に加え、`update`（一時停止・再開・解約）と `delete`（F-04 物理削除）も `auth.uid() = user_id` に限定して許可（`20260617000000`）
 - `subscriptions` / `usage_logs` / `notification_settings`: `user_id` または親 `subscription` 経由でユーザーに紐づく行のみ
 - `usage_logs`: `select` に加え、`insert` / `delete` も `auth.uid() = user_id` に限定して許可（F-08 利用チェック／取り消し）
 - マスタ（`categories`, `cycles`, `services`, `plans`）: **`anon` / `authenticated` に SELECT 可**（プリセット参照用）。INSERT / UPDATE / DELETE はアプリから行わない（マイグレーションで管理）
@@ -353,6 +356,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-17 | `subscriptions.cancelled_at`（timestamptz・NULL 可・status との整合 CHECK 制約）追加、`update` / `delete` の RLS ポリシー追加（044 一時停止・解約・削除、`20260617000000`） |
 | 2026-06-16 | `profiles.onboarding_completed`（boolean・NOT NULL・default false）追加、`profiles` の UPDATE RLS（自分の行のみ）追加、既存契約ありユーザーを完了扱いに backfill（初回オンボーディングのサブスク一括登録、F-01、`20260616120000`） |
 | 2026-06-12 | `subscriptions.custom_price`（numeric(14,4)・NULL 可・非負 CHECK 制約）追加と INSERT RLS ポリシー追加（F-01 プリセット登録、`20260612170000`） |
 | 2026-06-09 | 重複サービスを参照する `test@test.com` の契約（`55555555-…`）を正プランへ付け替え、参照の消えた誤plan（`44444444-…`）・誤service（`33333333-…`）を削除して重複を解消（`20260609130000`） |

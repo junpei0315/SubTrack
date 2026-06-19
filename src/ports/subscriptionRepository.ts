@@ -1,4 +1,4 @@
-import type { Subscription } from '@/src/domain/subscription';
+import type { Subscription, SubscriptionStatus } from '@/src/domain/subscription';
 
 export interface CreateSubscriptionInput {
   userId: string;
@@ -9,6 +9,14 @@ export interface CreateSubscriptionInput {
   customPrice?: number;
 }
 
+export interface UpdateSubscriptionStatusInput {
+  status: SubscriptionStatus;
+  /** 再開時など、請求日を同時に更新したいときに指定する。 */
+  nextBillingDate?: Date;
+  /** 解約時に now を、再開・復活時に null を渡して解約日時を更新する。 */
+  cancelledAt?: Date | null;
+}
+
 export interface SubscriptionRepository {
   findAll(): Promise<Subscription[]>;
   findByBillingMonth(year: number, month: number): Promise<Subscription[]>;
@@ -16,4 +24,6 @@ export interface SubscriptionRepository {
   create(input: CreateSubscriptionInput): Promise<Subscription>;
   /** 複数契約をまとめて登録する（初回オンボーディングの一括登録など）。 */
   createMany(inputs: CreateSubscriptionInput[]): Promise<Subscription[]>;
+  updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription>;
+  delete(id: string): Promise<void>;
 }

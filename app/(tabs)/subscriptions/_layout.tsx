@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -6,7 +7,12 @@ export const unstable_settings = {
 
 export default function SubscriptionsLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: styles.stackContent,
+      }}
+    >
       <Stack.Screen name="index" options={{ title: 'Subscriptions' }} />
       <Stack.Screen name="new" options={{ title: 'New', presentation: 'modal' }} />
       <Stack.Screen name="[id]/index" options={{ title: 'Detail' }} />
@@ -14,3 +20,11 @@ export default function SubscriptionsLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  stackContent: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'stretch',
+  },
+});

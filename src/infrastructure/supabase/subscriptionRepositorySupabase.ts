@@ -1,6 +1,10 @@
 import { formatLocalDate } from '@/src/domain/localDate';
 import type { Subscription } from '@/src/domain/subscription';
-import type { CreateSubscriptionInput, SubscriptionRepository } from '@/src/ports/subscriptionRepository';
+import type {
+  CreateSubscriptionInput,
+  SubscriptionRepository,
+  UpdateSubscriptionStatusInput,
+} from '@/src/ports/subscriptionRepository';
 
 import { supabase } from './client';
 import { mapSubscriptionRow, SUBSCRIPTION_SELECT } from './subscriptionMapper';
@@ -101,5 +105,44 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
     }
 
     return (data ?? []).map((row) => mapSubscriptionRow(row as Record<string, unknown>));
+  },
+
+  async updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription> {
+    const patch: Record<string, unknown> = {
+      status: input.status,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (input.nextBillingDate !== undefined) {
+      patch.next_billing_date = formatLocalDate(input.nextBillingDate);
+    }
+    if (input.cancelledAt !== undefined) {
+      patch.cancelled_at = input.cancelledAt === null ? null : input.cancelledAt.toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .update(patch)
+      .eq('id', id)
+      .select(SUBSCRIPTION_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('サブスクの更新に失敗しました（対象が見つからないか、権限がありません）');
+    }
+
+    return mapSubscriptionRow(data as Record<string, unknown>);
+  },
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase.from('subscriptions').delete().eq('id', id);
+
+    if (error) {
+      throw error;
+    }
   },
 };
