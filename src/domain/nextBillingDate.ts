@@ -8,7 +8,7 @@
 
 import type { BillingCycle } from './billingCycle';
 
-function toLocalDateOnly(date: Date): Date {
+export function toLocalDateOnly(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
@@ -23,7 +23,7 @@ function lastDayOfMonth(year: number, monthIndex: number): number {
  * （例: 1/31 + 1 month = 2/28、2/29 + 1 year = 翌年 2/28）。
  * JS の Date は日のオーバーフローを翌月へ繰り上げてしまうため、明示的に clamp する。
  */
-function addBillingCycle(startDate: Date, cycle: BillingCycle, count: number): Date {
+export function addBillingCycle(startDate: Date, cycle: BillingCycle, count: number): Date {
   const base = toLocalDateOnly(startDate);
   const year = base.getFullYear();
   const monthIndex = base.getMonth();

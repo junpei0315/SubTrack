@@ -15,9 +15,16 @@ export interface RemoveUsedDateParams {
   usedDate: string;
 }
 
+export interface UsageLogRow {
+  subscriptionId: string;
+  usedDate: string;
+}
+
 export interface UsageLogRepository {
   /** 指定サブスクの利用日（'YYYY-MM-DD'）一覧を返す。 */
   listUsedDatesBySubscription(subscriptionId: string): Promise<string[]>;
+  /** ユーザーの全利用ログ（subscriptionId + usedDate）を返す。 */
+  listUsedDatesByUserId(userId: string): Promise<UsageLogRow[]>;
   /** 利用日を記録する。同日重複は無視する（冪等）。 */
   addUsedDate(params: AddUsedDateParams): Promise<void>;
   /** 利用日の記録を取り消す。 */

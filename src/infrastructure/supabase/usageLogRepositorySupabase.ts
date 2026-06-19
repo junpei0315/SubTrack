@@ -24,6 +24,25 @@ export const usageLogRepositorySupabase: UsageLogRepository = {
     return (data ?? []).map((row) => (row as { used_date: string }).used_date);
   },
 
+  async listUsedDatesByUserId(userId: string) {
+    const { data, error } = await supabase
+      .from('usage_logs')
+      .select('subscription_id, used_date')
+      .eq('user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((row) => {
+      const typed = row as { subscription_id: string; used_date: string };
+      return {
+        subscriptionId: typed.subscription_id,
+        usedDate: typed.used_date,
+      };
+    });
+  },
+
   async addUsedDate({ userId, subscriptionId, usedDate }: AddUsedDateParams): Promise<void> {
     const { error } = await supabase.from('usage_logs').insert({
       user_id: userId,
