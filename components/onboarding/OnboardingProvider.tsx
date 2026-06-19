@@ -54,7 +54,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     setIsResolving(true);
 
-    // ログイン済みでサブスクが 1 件も無ければ初回オンボーディングを表示する。
+    // 仮実装: ログイン済みでサブスクが 1 件も無ければオンボーディングを表示する。
+    // 将来は profiles.onboarding_completed で「sign-up 後 1 回だけ」に切り替える。
     void getSubscriptions(repository)
       .then((subscriptions) => {
         if (!isMounted) {

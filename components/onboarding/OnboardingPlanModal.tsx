@@ -177,7 +177,7 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
             className="gap-2 border-t border-border bg-background-darker px-5 pt-3"
             style={{ paddingBottom: Math.max(insets.bottom, 12) + 8 }}
           >
-            {selectedPlanId != null ? (
+            {localSelectedId != null ? (
               <TouchableOpacity
                 activeOpacity={0.85}
                 disabled={!canClear}

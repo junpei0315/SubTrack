@@ -19,7 +19,7 @@ export function useOnboardingRegister(): UseOnboardingRegisterResult {
 
   const register = useCallback(async (userId: string, selections: PresetSelectionInput[]) => {
     if (submittingRef.current) {
-      throw new Error('submission already in progress');
+      return;
     }
     submittingRef.current = true;
     setIsSubmitting(true);
