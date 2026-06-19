@@ -19,7 +19,9 @@ export function useCalendarSubscriptions() {
     const requestId = ++requestIdRef.current;
     const results = await subscriptionRepositorySupabase.findAll();
     if (requestId === requestIdRef.current) {
-      setSubscriptions(results.filter((sub) => sub.status === 'active'));
+      setSubscriptions(
+        results.filter((sub) => sub.status === 'active' || sub.status === 'cancelled')
+      );
     }
   }, []);
 
