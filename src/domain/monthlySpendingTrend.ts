@@ -1,100 +1,15 @@
 /**
- * 契約ごとの請求発生日・月次請求額（F-07）。
+ * 契約ごとの月次想定支出トレンド（F-07）。
  */
 
-import { addBillingCycle, toLocalDateOnly } from './nextBillingDate';
+import {
+  computeBillingTotalForMonth,
+  monthBounds,
+} from './billingOccurrences';
+import { toLocalDateOnly } from './nextBillingDate';
 import type { Subscription } from './subscription';
-import { getEffectiveSubscriptionPrice } from './subscriptionPrice';
 
-const MAX_BILLING_ITERATIONS = 600;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-function estimateStartCycleIndex(subscription: Subscription, monthStart: Date): number {
-  const start = toLocalDateOnly(subscription.startDate);
-  if (start >= monthStart) {
-    return 0;
-  }
-
-  switch (subscription.plan.cycle) {
-    case 'weekly':
-      return Math.max(
-        0,
-        Math.floor((monthStart.getTime() - start.getTime()) / (7 * MS_PER_DAY)) - 1
-      );
-    case 'monthly':
-      return Math.max(
-        0,
-        (monthStart.getFullYear() - start.getFullYear()) * 12 +
-          (monthStart.getMonth() - start.getMonth()) -
-          1
-      );
-    case 'yearly':
-      return Math.max(0, monthStart.getFullYear() - start.getFullYear() - 1);
-  }
-}
-
-function monthBounds(year: number, month: number): { start: Date; end: Date } {
-  return {
-    start: new Date(year, month - 1, 1),
-    end: new Date(year, month, 0),
-  };
-}
-
-function isRelevantForMonth(subscription: Subscription, year: number, month: number): boolean {
-  if (subscription.status === 'paused') {
-    return false;
-  }
-
-  const { start, end } = monthBounds(year, month);
-
-  if (subscription.startDate > end) {
-    return false;
-  }
-
-  if (subscription.cancelledAt) {
-    const cancelled = toLocalDateOnly(subscription.cancelledAt);
-    if (cancelled < start) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
- * 指定月に発生する請求回数分の合計額を返す（週額は月内の複数回を合算）。
- */
-export function computeBillingTotalForMonth(
-  subscription: Subscription,
-  year: number,
-  month: number
-): number {
-  if (!isRelevantForMonth(subscription, year, month)) {
-    return 0;
-  }
-
-  const { start: monthStart, end: monthEnd } = monthBounds(year, month);
-  const charge = getEffectiveSubscriptionPrice(subscription);
-  const cancelled =
-    subscription.cancelledAt != null ? toLocalDateOnly(subscription.cancelledAt) : null;
-
-  let total = 0;
-
-  const startIndex = estimateStartCycleIndex(subscription, monthStart);
-  for (let step = 0, n = startIndex; step < MAX_BILLING_ITERATIONS; step += 1, n += 1) {
-    const billingDate = addBillingCycle(subscription.startDate, subscription.plan.cycle, n);
-    if (billingDate > monthEnd) {
-      break;
-    }
-    if (billingDate >= monthStart && billingDate <= monthEnd) {
-      if (cancelled == null || billingDate <= cancelled) {
-        total += charge;
-      }
-    }
-  }
-
-  return total;
-}
+export { computeBillingTotalForMonth } from './billingOccurrences';
 
 export interface YearMonth {
   year: number;
@@ -163,7 +78,7 @@ export function computeMonthlySpendingTrend(
       (sum, sub) => sum + computeBillingTotalForMonth(sub, yearMonth.year, yearMonth.month),
       0
     );
-    const monthStart = new Date(yearMonth.year, yearMonth.month - 1, 1);
+    const monthStart = monthBounds(yearMonth.year, yearMonth.month).start;
     const isProjected = monthStart > toLocalDateOnly(today);
 
     return {
