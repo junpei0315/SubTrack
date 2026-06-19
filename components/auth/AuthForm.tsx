@@ -1,14 +1,16 @@
 import { useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
+  Text,
   TextInput,
   View,
   type KeyboardTypeOptions,
 } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { AppColors } from '@/constants/colors';
+import { toAuthUserMessage } from '@/src/domain/auth';
 
 interface AuthFormProps {
   submitLabel: string;
@@ -32,17 +34,13 @@ export function AuthForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const tint = useThemeColor({}, 'tint');
-  const text = useThemeColor({}, 'text');
-  const icon = useThemeColor({}, 'icon');
-
   const handleSubmit = async () => {
     setErrorMessage(null);
     setIsSubmitting(true);
     try {
       await onSubmit(email, password);
     } catch (error) {
-      setErrorMessage(toMessage(error));
+      setErrorMessage(toAuthUserMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -54,7 +52,7 @@ export function AuthForm({
     try {
       await onGoogleSignIn();
     } catch (error) {
-      const message = toMessage(error);
+      const message = toAuthUserMessage(error);
       // キャンセルはエラー表示しない。
       if (message) {
         setErrorMessage(message);
@@ -72,9 +70,6 @@ export function AuthForm({
         onChangeText={setEmail}
         placeholder="you@example.com"
         keyboardType="email-address"
-        textColor={text}
-        borderColor={icon}
-        placeholderColor={icon}
         editable={!isSubmitting}
       />
       <FormField
@@ -83,61 +78,44 @@ export function AuthForm({
         onChangeText={setPassword}
         placeholder="8 文字以上の英数字"
         secureTextEntry
-        textColor={text}
-        borderColor={icon}
-        placeholderColor={icon}
         editable={!isSubmitting}
       />
 
       {errorMessage ? (
-        <ThemedText className="text-sm" lightColor="#c0392b" darkColor="#ff6b6b">
-          {errorMessage}
-        </ThemedText>
+        <Text className="text-sm text-error-alt">{errorMessage}</Text>
       ) : null}
       {successMessage ? (
-        <ThemedText className="text-sm" lightColor="#1e8449" darkColor="#5fd07d">
-          {successMessage}
-        </ThemedText>
+        <Text className="text-sm text-success">{successMessage}</Text>
       ) : null}
 
       <Pressable
         accessibilityRole="button"
         disabled={isSubmitting}
         onPress={handleSubmit}
-        className="items-center justify-center rounded-lg py-3.5"
-        style={({ pressed }) => ({
-          backgroundColor: tint,
-          opacity: isSubmitting || pressed ? 0.7 : 1,
-        })}
+        className={`items-center justify-center rounded-full py-4 ${isSubmitting ? 'bg-white/[0.08]' : 'bg-accent'}`}
+        style={({ pressed }) => ({ opacity: pressed && !isSubmitting ? 0.85 : 1 })}
       >
         {isSubmitting ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={AppColors.text} />
         ) : (
-          <ThemedText className="text-base font-bold" lightColor="#fff" darkColor="#11181C">
-            {submitLabel}
-          </ThemedText>
+          <Text className="text-base font-bold text-foreground">{submitLabel}</Text>
         )}
       </Pressable>
 
       <View className="flex-row items-center gap-2">
-        <View className="h-px flex-1 opacity-50" style={{ backgroundColor: icon }} />
-        <ThemedText className="text-xs" lightColor={icon} darkColor={icon}>
-          または
-        </ThemedText>
-        <View className="h-px flex-1 opacity-50" style={{ backgroundColor: icon }} />
+        <View className="h-px flex-1 bg-white/[0.08]" />
+        <Text className="text-xs text-subtle">または</Text>
+        <View className="h-px flex-1 bg-white/[0.08]" />
       </View>
 
       <Pressable
         accessibilityRole="button"
         disabled={isSubmitting}
         onPress={handleGoogle}
-        className="items-center justify-center rounded-lg border py-3.5"
-        style={({ pressed }) => ({
-          borderColor: icon,
-          opacity: isSubmitting || pressed ? 0.7 : 1,
-        })}
+        className="items-center justify-center rounded-full border border-white/10 bg-white/[0.08] py-4"
+        style={({ pressed }) => ({ opacity: isSubmitting || pressed ? 0.7 : 1 })}
       >
-        <ThemedText className="text-base font-semibold">Google で続ける</ThemedText>
+        <Text className="text-base font-semibold text-foreground">Google で続ける</Text>
       </Pressable>
 
       {footer ? <View className="mt-2 items-center">{footer}</View> : null}
@@ -153,9 +131,6 @@ interface FormFieldProps {
   keyboardType?: KeyboardTypeOptions;
   secureTextEntry?: boolean;
   editable?: boolean;
-  textColor: string;
-  borderColor: string;
-  placeholderColor: string;
 }
 
 function FormField({
@@ -166,36 +141,30 @@ function FormField({
   keyboardType,
   secureTextEntry,
   editable,
-  textColor,
-  borderColor,
-  placeholderColor,
 }: FormFieldProps) {
   return (
     <View className="gap-1.5">
-      <ThemedText className="text-sm font-semibold">{label}</ThemedText>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={placeholderColor}
-        keyboardType={keyboardType}
-        secureTextEntry={secureTextEntry}
-        editable={editable}
-        autoCapitalize="none"
-        autoCorrect={false}
-        className="rounded-lg border px-3 py-3 text-base"
-        style={{ color: textColor, borderColor }}
-      />
+      <Text className="text-sm font-semibold text-foreground">{label}</Text>
+      <View className="min-h-12 flex-row items-center rounded-xl border border-white/10 bg-card px-4">
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={AppColors.whiteMuted40}
+          keyboardType={keyboardType}
+          secureTextEntry={secureTextEntry}
+          editable={editable}
+          autoCapitalize="none"
+          autoCorrect={false}
+          selectionColor={AppColors.accent}
+          underlineColorAndroid="transparent"
+          {...(Platform.OS === 'android'
+            ? { includeFontPadding: false, textAlignVertical: 'center' as const }
+            : {})}
+          className="flex-1 border-0 p-0 text-base leading-5 text-foreground outline-none"
+          style={Platform.OS === 'android' ? { paddingVertical: 0 } : undefined}
+        />
+      </View>
     </View>
   );
-}
-
-function toMessage(error: unknown): string {
-  if (error instanceof Error) {
-    if (error.name === 'AuthCancelledError') {
-      return '';
-    }
-    return error.message;
-  }
-  return '予期しないエラーが発生しました';
 }

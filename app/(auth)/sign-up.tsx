@@ -1,14 +1,14 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 
 // 関連機能: F-14（アカウント管理）/ 新規登録
 export default function SignUpRoute() {
+  const insets = useSafeAreaInsets();
   const { signUpWithEmail, signInWithGoogle } = useAuth();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -22,17 +22,20 @@ export default function SignUpRoute() {
   };
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="flex-grow justify-center"
-        keyboardShouldPersistTaps="handled"
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ThemedView className="gap-2 p-6">
-          <ThemedText type="title">新規登録</ThemedText>
-          <ThemedText className="mb-4">アカウントを作成して始めましょう</ThemedText>
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="flex-grow justify-center px-5 py-6"
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="gap-1.5 pb-6">
+            <Text className="text-2xl font-bold text-foreground">新規登録</Text>
+            <Text className="text-sm text-subtle">アカウントを作成して始めましょう</Text>
+          </View>
 
           <AuthForm
             submitLabel="登録する"
@@ -41,12 +44,14 @@ export default function SignUpRoute() {
             successMessage={successMessage}
             footer={
               <Link href="/(auth)/sign-in">
-                <ThemedText type="link">すでにアカウントをお持ちの方はこちら</ThemedText>
+                <Text className="text-base font-semibold text-accent">
+                  すでにアカウントをお持ちの方はこちら
+                </Text>
               </Link>
             }
           />
-        </ThemedView>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
