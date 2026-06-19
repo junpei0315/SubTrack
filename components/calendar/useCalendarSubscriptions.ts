@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { getMonthlySubscriptions } from '@/src/application/getMonthlySubscriptions';
 import type { Subscription } from '@/src/domain/subscription';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
@@ -16,27 +15,17 @@ export function useCalendarSubscriptions() {
   // 矢印連打などで複数 fetch が走ったとき、最新リクエストの結果だけを反映するためのガード。
   const requestIdRef = useRef(0);
 
-  // 前後の月も読み込み、月またぎの週・隣月セルにも支払日アイコンを表示できるようにする
-  const loadSubscriptions = useCallback(async (date: Date) => {
+  const loadSubscriptions = useCallback(async () => {
     const requestId = ++requestIdRef.current;
-    const months = [-1, 0, 1].map((offset) => {
-      const d = new Date(date.getFullYear(), date.getMonth() + offset, 1);
-      return { year: d.getFullYear(), month: d.getMonth() + 1 };
-    });
-    const results = await Promise.all(
-      months.map(({ year, month }) =>
-        getMonthlySubscriptions(subscriptionRepositorySupabase, year, month)
-      )
-    );
-    // 後着の古いリクエストで最新表示を上書きしない。
+    const results = await subscriptionRepositorySupabase.findAll();
     if (requestId === requestIdRef.current) {
-      setSubscriptions(results.flat());
+      setSubscriptions(results.filter((sub) => sub.status === 'active'));
     }
   }, []);
 
   useEffect(() => {
-    void loadSubscriptions(currentDate);
-  }, [currentDate, loadSubscriptions]);
+    void loadSubscriptions();
+  }, [loadSubscriptions]);
 
   // 月表示で月を移動するとき、selectedDate も移動先の月へ寄せる。
   // 週表示は selectedDate 基準で描画するため、同期しないとヘッダー月と表示週がずれる。

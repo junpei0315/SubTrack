@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { AppColors } from '@/constants/colors';
+import { hasBillingOnDate } from '@/src/domain/billingOccurrences';
 import { formatLocalDate } from '@/src/domain/localDate';
 import type { Subscription } from '@/src/domain/subscription';
 
@@ -37,10 +38,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
   } = useCalendarSubscriptions();
 
   const buildDay = (date: Date): CalendarDay => {
-    const dateString = formatLocalDate(date);
-    const daySubscriptions = subscriptions.filter(
-      (sub) => sub.status === 'active' && formatLocalDate(sub.nextBillingDate) === dateString
-    );
+    const daySubscriptions = subscriptions.filter((sub) => hasBillingOnDate(sub, date));
     return {
       date,
       day: date.getDate(),
