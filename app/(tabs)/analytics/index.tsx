@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import { GenreBreakdownSection } from '@/components/analytics/GenreBreakdownSection';
@@ -11,12 +11,17 @@ import { AppColors } from '@/constants/colors';
 
 // 関連機能: F-06（ジャンル別内訳） / F-07（支出推移） / F-11（未使用アラート）
 export default function AnalyticsRoute() {
+  const hasFocusedRef = useRef(false);
   const { genreBreakdown, spendingTrend, unusedAlerts, isLoading, errorMessage, reload } =
     useAnalytics();
 
   useFocusEffect(
     useCallback(() => {
-      void reload();
+      if (hasFocusedRef.current) {
+        void reload();
+        return;
+      }
+      hasFocusedRef.current = true;
     }, [reload])
   );
 

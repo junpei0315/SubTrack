@@ -7,6 +7,31 @@ import type { Subscription } from './subscription';
 import { getEffectiveSubscriptionPrice } from './subscriptionPrice';
 
 const MAX_BILLING_ITERATIONS = 600;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function estimateStartCycleIndex(subscription: Subscription, monthStart: Date): number {
+  const start = toLocalDateOnly(subscription.startDate);
+  if (start >= monthStart) {
+    return 0;
+  }
+
+  switch (subscription.plan.cycle) {
+    case 'weekly':
+      return Math.max(
+        0,
+        Math.floor((monthStart.getTime() - start.getTime()) / (7 * MS_PER_DAY)) - 1
+      );
+    case 'monthly':
+      return Math.max(
+        0,
+        (monthStart.getFullYear() - start.getFullYear()) * 12 +
+          (monthStart.getMonth() - start.getMonth()) -
+          1
+      );
+    case 'yearly':
+      return Math.max(0, monthStart.getFullYear() - start.getFullYear() - 1);
+  }
+}
 
 function monthBounds(year: number, month: number): { start: Date; end: Date } {
   return {
@@ -55,7 +80,8 @@ export function computeBillingTotalForMonth(
 
   let total = 0;
 
-  for (let n = 0; n < MAX_BILLING_ITERATIONS; n++) {
+  const startIndex = estimateStartCycleIndex(subscription, monthStart);
+  for (let step = 0, n = startIndex; step < MAX_BILLING_ITERATIONS; step += 1, n += 1) {
     const billingDate = addBillingCycle(subscription.startDate, subscription.plan.cycle, n);
     if (billingDate > monthEnd) {
       break;

@@ -10,6 +10,10 @@ interface SpendingTrendSectionProps {
 }
 
 export const SpendingTrendSection: React.FC<SpendingTrendSectionProps> = ({ trend }) => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
   const points = useMemo(
     () =>
       (trend?.points ?? []).map((point) => ({
@@ -20,6 +24,14 @@ export const SpendingTrendSection: React.FC<SpendingTrendSectionProps> = ({ tren
       })),
     [trend]
   );
+
+  const currentActualPoint =
+    trend?.points.find(
+      (point) =>
+        !point.isProjected &&
+        point.yearMonth.year === currentYear &&
+        point.yearMonth.month === currentMonth
+    ) ?? trend?.points.find((point) => !point.isProjected);
 
   if (!trend || points.every((point) => point.amount === 0)) {
     return (
@@ -57,12 +69,7 @@ export const SpendingTrendSection: React.FC<SpendingTrendSectionProps> = ({ tren
       <View className="rounded-2xl bg-card px-4 py-3">
         <Text className="text-xs text-subtle">今月の想定支出</Text>
         <Text className="text-xl font-bold text-foreground">
-          {formatPrice(
-            trend.points.find((point) => !point.isProjected && point.label === '今月')?.amount ??
-              trend.points.find((point) => !point.isProjected)?.amount ??
-              0,
-            trend.currency
-          )}
+          {formatPrice(currentActualPoint?.amount ?? 0, trend.currency)}
         </Text>
       </View>
     </View>

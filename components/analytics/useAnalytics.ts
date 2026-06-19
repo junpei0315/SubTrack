@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth/AuthProvider';
 import { getGenreSpendingBreakdown } from '@/src/application/getGenreSpendingBreakdown';
@@ -29,10 +29,15 @@ const INITIAL_STATE: AnalyticsState = {
 export function useAnalytics() {
   const { session } = useAuth();
   const [state, setState] = useState<AnalyticsState>(INITIAL_STATE);
+  const latestRequestIdRef = useRef(0);
 
   const reload = useCallback(async () => {
+    const requestId = ++latestRequestIdRef.current;
     const userId = session?.user.id;
     if (!userId) {
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
       setState({ ...INITIAL_STATE, isLoading: false });
       return;
     }
@@ -50,6 +55,10 @@ export function useAnalytics() {
         ),
       ]);
 
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
+
       setState({
         genreBreakdown,
         spendingTrend,
@@ -58,6 +67,9 @@ export function useAnalytics() {
         errorMessage: null,
       });
     } catch {
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
       setState({
         genreBreakdown: null,
         spendingTrend: null,

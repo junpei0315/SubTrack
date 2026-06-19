@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getActiveBillingTotal } from '@/src/application/getActiveBillingTotal';
 import type { BillingTotal } from '@/src/domain/billingTotals';
@@ -13,18 +13,26 @@ export function useMonthlySpending() {
   const [total, setTotal] = useState<BillingTotal>(EMPTY_TOTAL);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
 
   const loadTotal = useCallback(async (targetPeriod: SpendingPeriod) => {
+    const requestId = ++requestIdRef.current;
     setIsLoading(true);
     setErrorMessage(null);
     try {
       const result = await getActiveBillingTotal(subscriptionRepositorySupabase, targetPeriod);
-      setTotal(result);
+      if (requestId === requestIdRef.current) {
+        setTotal(result);
+      }
     } catch {
-      setTotal(EMPTY_TOTAL);
-      setErrorMessage('合計支出の取得に失敗しました');
+      if (requestId === requestIdRef.current) {
+        setTotal(EMPTY_TOTAL);
+        setErrorMessage('合計支出の取得に失敗しました');
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
