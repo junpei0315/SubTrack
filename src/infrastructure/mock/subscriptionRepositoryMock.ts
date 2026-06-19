@@ -121,32 +121,11 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
   },
 
   async create(input: CreateSubscriptionInput): Promise<Subscription> {
-    const now = new Date();
-    return {
-      id: `sub-mock-${now.getTime()}`,
-      userId: input.userId,
-      planId: input.planId,
-      service: {
-        id: 'svc-mock',
-        name: 'Mock Service',
-        iconName: 'circle',
-        category: 'other',
-      },
-      plan: {
-        id: input.planId,
-        serviceId: 'svc-mock',
-        name: 'Mock Plan',
-        price: input.customPrice ?? 0,
-        currency: 'JPY',
-        cycle: 'monthly',
-      },
-      customPrice: input.customPrice,
-      nextBillingDate: input.nextBillingDate,
-      startDate: input.startDate,
-      status: 'active',
-      createdAt: now,
-      updatedAt: now,
-    };
+    return buildMockCreated(input);
+  },
+
+  async createMany(inputs: CreateSubscriptionInput[]): Promise<Subscription[]> {
+    return inputs.map((input) => buildMockCreated(input));
   },
 
   async updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription> {
@@ -180,3 +159,32 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
     // モックは永続化しないため、存在確認のみ行う。
   },
 };
+
+function buildMockCreated(input: CreateSubscriptionInput): Subscription {
+  const now = new Date();
+  return {
+    id: `sub-mock-${now.getTime()}-${input.planId}`,
+    userId: input.userId,
+    planId: input.planId,
+    service: {
+      id: 'svc-mock',
+      name: 'Mock Service',
+      iconName: 'circle',
+      category: 'other',
+    },
+    plan: {
+      id: input.planId,
+      serviceId: 'svc-mock',
+      name: 'Mock Plan',
+      price: input.customPrice ?? 0,
+      currency: 'JPY',
+      cycle: 'monthly',
+    },
+    customPrice: input.customPrice,
+    nextBillingDate: input.nextBillingDate,
+    startDate: input.startDate,
+    status: 'active',
+    createdAt: now,
+    updatedAt: now,
+  };
+}

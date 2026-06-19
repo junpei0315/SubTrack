@@ -22,6 +22,8 @@ export interface SubscriptionRepository {
   findByBillingMonth(year: number, month: number): Promise<Subscription[]>;
   findById(id: string): Promise<Subscription | null>;
   create(input: CreateSubscriptionInput): Promise<Subscription>;
+  /** 複数契約をまとめて登録する（初回オンボーディングの一括登録など）。 */
+  createMany(inputs: CreateSubscriptionInput[]): Promise<Subscription[]>;
   updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription>;
   delete(id: string): Promise<void>;
 }

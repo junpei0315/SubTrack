@@ -11,6 +11,7 @@ import '../global.css';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
+import { OnboardingProvider, useOnboarding } from '@/components/onboarding/OnboardingProvider';
 import { AppColors } from '@/constants/colors';
 import { useDevAuthReady } from '@/hooks/useDevAuthReady';
 
@@ -45,9 +46,15 @@ function isAuthRoute(segments: string[]): boolean {
   return AUTH_ROUTE_NAMES.has(segments[0] ?? '');
 }
 
-// 認証状態に応じて (auth) / (tabs) のどちらを表示すべきかを制御する。
+// Web ではグループ名が URL に出ないため、`/welcome` は segments が ['welcome'] になる。
+function isOnboardingRoute(segments: string[]): boolean {
+  return segments[0] === '(onboarding)' || segments[0] === 'welcome';
+}
+
+// 認証・オンボーディング状態に応じて (auth) / (onboarding) / (tabs) を制御する。
 function useProtectedRoute(): void {
   const { session, isLoading } = useAuth();
+  const { isResolving, needsOnboarding } = useOnboarding();
   const segments = useSegments();
   const router = useRouter();
 
@@ -56,20 +63,37 @@ function useProtectedRoute(): void {
       return;
     }
     const onAuthScreen = isAuthRoute(segments);
+    const onOnboardingScreen = isOnboardingRoute(segments);
 
-    if (!session && !onAuthScreen) {
-      router.replace('/(auth)/sign-in');
-    } else if (session && onAuthScreen) {
+    if (!session) {
+      if (!onAuthScreen) {
+        router.replace('/(auth)/sign-in');
+      }
+      return;
+    }
+
+    // ログイン済み。プロフィール（オンボーディング状態）の解決を待つ。
+    if (isResolving) {
+      return;
+    }
+
+    if (needsOnboarding) {
+      if (!onOnboardingScreen) {
+        router.replace('/(onboarding)/welcome');
+      }
+    } else if (onAuthScreen || onOnboardingScreen) {
       router.replace('/(tabs)/home');
     }
-  }, [session, isLoading, segments, router]);
+  }, [session, isLoading, isResolving, needsOnboarding, segments, router]);
 }
 
 function RootNavigator() {
   const { isLoading } = useAuth();
   useProtectedRoute();
 
-  // セッション復元中は (tabs) をマウントしない（未ログイン時の home フラッシュ防止）。
+  // セッション復元中のみ (tabs) をマウントしない（未ログイン時の home フラッシュ防止）。
+  // オンボーディング判定中はナビゲーターをアンマウントしない。アンマウントすると
+  // Web で URL とナビゲーション状態の同期が壊れ、パスを変えても画面が追従しなくなる。
   if (isLoading) {
     return null;
   }
@@ -78,6 +102,7 @@ function RootNavigator() {
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       <Stack.Screen name="+not-found" options={{ title: 'Not Found' }} />
     </Stack>
@@ -96,13 +121,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={blackNavigationTheme}>
       <AuthProvider>
-        <View style={styles.root}>
-          <RootNavigator />
-          {!isSplashDone ? (
-            <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
-          ) : null}
-        </View>
-        <StatusBar style="light" />
+        <OnboardingProvider>
+          <View style={styles.root}>
+            <RootNavigator />
+            {!isSplashDone ? (
+              <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
+            ) : null}
+          </View>
+          <StatusBar style="light" />
+        </OnboardingProvider>
       </AuthProvider>
     </ThemeProvider>
   );
