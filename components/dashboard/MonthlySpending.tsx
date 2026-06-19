@@ -13,7 +13,7 @@ const PERIOD_OPTIONS: { value: SpendingPeriod; label: string }[] = [
 
 export const MonthlySpending: React.FC = () => {
   const { period, setPeriod, total, isLoading, errorMessage } = useMonthlySpending();
-  const titleText = period === 'month' ? '今月の合計支出' : '今年の合計支出';
+  const titleText = period === 'month' ? '月額換算の合計支出' : '年額換算の合計支出';
 
   return (
     <View className="mb-4 self-stretch">

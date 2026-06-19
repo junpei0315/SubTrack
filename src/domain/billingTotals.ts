@@ -2,17 +2,14 @@
  * 請求額の合計計算に関する純粋関数。
  * ドメイン層なので React / Supabase 等には依存しない。
  *
- * 「次回請求日（nextBillingDate）が対象月にあるサブスクの料金を合計する」ことを
- * ここに閉じ込め、サブスクの取得元（DB / モック）や個々の金額の変動に依存させない。
- *
  * 関連機能: F-05（合計金額表示）
  */
 
+import { getMonthlyNormalizedPrice, getYearlyNormalizedPrice } from './normalizeBilling';
 import type { Subscription } from './subscription';
-import { getEffectiveSubscriptionPrice } from './subscriptionPrice';
 
-export interface MonthlyBillingTotal {
-  /** 合計金額（対象月に請求されるサブスクの料金合計） */
+export interface BillingTotal {
+  /** 合計金額 */
   amount: number;
   /** 合計に使った通貨コード（混在時は最初に出現した通貨を採用） */
   currency: string;
@@ -20,30 +17,15 @@ export interface MonthlyBillingTotal {
   count: number;
 }
 
-/**
- * 次回請求日が指定の年月にあるかどうかを判定する（端末ローカルタイム基準）。
- */
-function isBilledInMonth(date: Date, year: number, month: number): boolean {
-  return date.getFullYear() === year && date.getMonth() + 1 === month;
-}
+/** @deprecated F-05 統一のため BillingTotal を使用 */
+export type MonthlyBillingTotal = BillingTotal;
 
-/**
- * 指定した年月（month は 1〜12）に請求されるサブスクの料金合計を計算する。
- *
- * - `status === 'active'` のサブスクのみを対象にする（paused / cancelled は除外）。
- * - 次回請求日（nextBillingDate）がその月にあるものだけを合計する。
- * - 通貨換算は行わない（F-13 の範囲）。混在時は最初の通貨を採用する。
- */
-export function computeMonthlyBillingTotal(
+function sumActiveNormalized(
   subscriptions: Subscription[],
-  year: number,
-  month: number
-): MonthlyBillingTotal {
-  const targets = subscriptions.filter(
-    (sub) => sub.status === 'active' && isBilledInMonth(sub.nextBillingDate, year, month)
-  );
-
-  const amount = targets.reduce((sum, sub) => sum + getEffectiveSubscriptionPrice(sub), 0);
+  normalize: (sub: Subscription) => number
+): BillingTotal {
+  const targets = subscriptions.filter((sub) => sub.status === 'active');
+  const amount = targets.reduce((sum, sub) => sum + normalize(sub), 0);
   const currency = targets[0]?.plan.currency ?? 'JPY';
 
   return {
@@ -51,4 +33,31 @@ export function computeMonthlyBillingTotal(
     currency,
     count: targets.length,
   };
+}
+
+/**
+ * 契約中サブスクの月額換算合計（F-05 月額表示）。
+ * 月額 + 年額÷12 + 週額×4.3
+ */
+export function computeActiveMonthlyTotal(subscriptions: Subscription[]): BillingTotal {
+  return sumActiveNormalized(subscriptions, getMonthlyNormalizedPrice);
+}
+
+/**
+ * 契約中サブスクの年額換算合計（F-05 年額表示）。
+ * 年額 + 月額×12 + 週額×52
+ */
+export function computeActiveYearlyTotal(subscriptions: Subscription[]): BillingTotal {
+  return sumActiveNormalized(subscriptions, getYearlyNormalizedPrice);
+}
+
+/**
+ * @deprecated computeActiveMonthlyTotal を使用する
+ */
+export function computeMonthlyBillingTotal(
+  subscriptions: Subscription[],
+  _year: number,
+  _month: number
+): BillingTotal {
+  return computeActiveMonthlyTotal(subscriptions);
 }
