@@ -108,6 +108,13 @@ const services = [
     ['広告つきABEMAプレミアム｜Disney+プレミアム', 2000, 'JPY', M],
     ['ABEMAプレミアム｜Disney+プレミアム', 2190, 'JPY', M],
   ] },
+  { name: 'FANZA', cat: CAT.video, logoKey: 'fanza', plans: [
+    ['FANZA TV（DMMプレミアム）', 550, 'JPY', M],
+    ['FANZA TV Plus', 1628, 'JPY', M],
+    ['見放題ch', 3980, 'JPY', M],
+    ['見放題chデラックス', 8980, 'JPY', M],
+    ['VR ch', 2800, 'JPY', M],
+  ] },
   { name: 'YouTube Premium', cat: CAT.video, logoKey: 'youtube', plans: [
     ['個人', 1280, 'JPY', M],
     ['ファミリー', 2280, 'JPY', M],
@@ -274,7 +281,7 @@ const services = [
   { name: 'Audible', cat: CAT.ebook, logoKey: 'audible', plans: [
     ['月額', 1500, 'JPY', M],
   ] },
-  { name: 'dマガジン', cat: CAT.ebook, logoKey: null, plans: [
+  { name: 'dマガジン', cat: CAT.ebook, logoKey: 'dmagazine', plans: [
     ['月額', 580, 'JPY', M],
   ] },
   { name: 'コミックシーモア', cat: CAT.ebook, logoKey: null, plans: [
