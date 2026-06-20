@@ -1,25 +1,27 @@
 -- dマガジン: logo_key を設定
-UPDATE preset_services
+UPDATE services
 SET logo_key = 'dmagazine',
     logo_uri = NULL
 WHERE id = 'b1000001-0001-4001-8001-000000000034';
 
 -- FANZA: プリセットサービス・プラン追加（2026-06 時点の税込月額）
-INSERT INTO preset_services (id, name, category_id, logo_key, logo_uri)
+INSERT INTO services (id, name, category_id, logo_key, logo_uri, icon_name)
 VALUES (
   'b1000001-0001-4001-8001-000000000054',
   'FANZA',
   2,
   'fanza',
+  NULL,
   NULL
 )
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   category_id = EXCLUDED.category_id,
   logo_key = EXCLUDED.logo_key,
-  logo_uri = EXCLUDED.logo_uri;
+  logo_uri = EXCLUDED.logo_uri,
+  icon_name = EXCLUDED.icon_name;
 
-INSERT INTO preset_plans (id, service_id, name, price, currency, cycle_id)
+INSERT INTO plans (id, service_id, name, price, currency, cycle_id)
 VALUES
   (
     'b2000001-0001-4001-8001-000000000211',
