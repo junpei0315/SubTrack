@@ -284,7 +284,7 @@ const services = [
   { name: 'dマガジン', cat: CAT.ebook, logoKey: 'dmagazine', plans: [
     ['月額', 580, 'JPY', M],
   ] },
-  { name: 'コミックシーモア', cat: CAT.ebook, logoKey: null, plans: [
+  { name: 'コミックシーモア', cat: CAT.ebook, logoKey: 'cmoa', plans: [
     ['読み放題フル', 1480, 'JPY', M],
   ] },
   { name: 'pixivプレミアム', cat: CAT.design, logoKey: 'pixiv', plans: [
