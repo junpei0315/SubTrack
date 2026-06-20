@@ -17,6 +17,7 @@ const SERVICE_LOGOS: Record<string, ImageSourcePropType> = {
   chatgpt: require('@/assets/services/chatgpt.jpeg'),
   chocozap: require('@/assets/services/chocozap.jpeg'),
   claude: require('@/assets/services/claude.jpeg'),
+  cmoa: require('@/assets/services/cmoa.jpeg'),
   cocacola: require('@/assets/services/cocacola.jpeg'),
   'cocos-jpn.co': require('@/assets/services/cocos-jpn.co.jpeg'),
   cursor: require('@/assets/services/cursor.jpeg'),
