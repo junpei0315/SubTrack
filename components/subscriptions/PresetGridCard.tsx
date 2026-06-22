@@ -4,22 +4,24 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { AppColors } from '@/constants/colors';
 import type { PresetService } from '@/src/domain/preset';
 
-interface OnboardingPresetCardProps {
+import { resolveServiceLogo } from './serviceLogos';
+
+interface PresetGridCardProps {
   preset: PresetService;
   width: number;
-  selected: boolean;
-  onPress: () => void;
+  /** 指定時は選択インジケータを表示（オンボーディングの複数選択用）。 */
+  selected?: boolean;
+  onPress?: (preset: PresetService) => void;
 }
 
 /**
- * 初回オンボーディングのサブスク一括選択で使うグリッドカード。
- * 価格は表示せず、タップでボトムシート（別UI）を開いてプラン選択する。
+ * プリセット選択の3列グリッド用カード。
+ * 価格は表示せず、タップでモーダルを開いてプラン選択する。
  */
-export const OnboardingPresetCard: React.FC<OnboardingPresetCardProps> = ({
+export const PresetGridCard: React.FC<PresetGridCardProps> = ({
   preset,
   width,
   selected,
@@ -27,10 +29,11 @@ export const OnboardingPresetCard: React.FC<OnboardingPresetCardProps> = ({
 }) => {
   const logoSource = resolveServiceLogo(preset.logoKey, preset.logoUri);
   const initial = preset.name.charAt(0).toUpperCase();
+  const showSelection = selected !== undefined;
 
   const handlePress = () => {
     void Haptics.selectionAsync();
-    onPress();
+    onPress?.(preset);
   };
 
   return (
@@ -55,13 +58,15 @@ export const OnboardingPresetCard: React.FC<OnboardingPresetCardProps> = ({
           )}
         </View>
 
-        <View
-          className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
-            selected ? 'border-accent bg-accent' : 'border-border-muted'
-          }`}
-        >
-          {selected ? <MaterialIcons name="check" size={14} color={AppColors.text} /> : null}
-        </View>
+        {showSelection ? (
+          <View
+            className={`h-6 w-6 items-center justify-center rounded-full border-2 ${
+              selected ? 'border-accent bg-accent' : 'border-border-muted'
+            }`}
+          >
+            {selected ? <MaterialIcons name="check" size={14} color={AppColors.text} /> : null}
+          </View>
+        ) : null}
       </View>
 
       <View className="gap-0.5">

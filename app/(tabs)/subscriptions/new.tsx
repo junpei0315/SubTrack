@@ -1,18 +1,10 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  RefreshControl,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuth } from '@/components/auth/AuthProvider';
-import { GenreSelector } from '@/components/subscriptions/GenreSelector';
+import { filterPresets } from '@/components/subscriptions/filterPresets';
 import {
   ManualSubscriptionForm,
   type ManualSubscriptionFormValues,
@@ -21,14 +13,13 @@ import {
   PresetDetailModal,
   type PresetSelection,
 } from '@/components/subscriptions/PresetDetailModal';
-import { PresetListItem } from '@/components/subscriptions/PresetListItem';
-import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
+import { PresetGridList } from '@/components/subscriptions/PresetGridList';
+import { PresetPickerFilters } from '@/components/subscriptions/PresetPickerFilters';
 import { useCreateCustomSubscription } from '@/components/subscriptions/useCreateCustomSubscription';
 import { useCreateSubscriptionFromPreset } from '@/components/subscriptions/useCreateSubscriptionFromPreset';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { showAlert } from '@/components/ui/confirm';
-import { AppColors } from '@/constants/colors';
-import { getGenreLabel, type GenreId } from '@/src/domain/genre';
+import { type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
 
 // 関連機能: F-01（プリセット選択で一括登録）/ F-02（カスタム新規追加）
@@ -101,61 +92,28 @@ function PresetAddSection() {
     }
   };
 
-  const filtered = useMemo(() => {
-    const keyword = query.trim().toLowerCase();
-    const genreLabel = genreFilter ? getGenreLabel(genreFilter) : null;
-
-    return presets.filter((preset) => {
-      const matchesGenre = genreLabel === null || preset.genre === genreLabel;
-      const matchesKeyword = !keyword || preset.name.toLowerCase().includes(keyword);
-      return matchesGenre && matchesKeyword;
-    });
-  }, [presets, query, genreFilter]);
+  const filtered = useMemo(
+    () => filterPresets(presets, query, genreFilter),
+    [presets, query, genreFilter]
+  );
 
   return (
     <View className="flex-1">
-      <View className="gap-4 px-4 pt-4">
-        <SubscriptionSearchBar value={query} onChangeText={setQuery} />
-      </View>
+      <PresetPickerFilters
+        query={query}
+        onQueryChange={setQuery}
+        genreFilter={genreFilter}
+        onGenreChange={setGenreFilter}
+      />
 
-      <View className="pt-2">
-        <GenreSelector selectedId={genreFilter} onChange={setGenreFilter} includeAll />
-        <Text className="px-4 pt-2 text-lg font-bold text-foreground">
-          {genreFilter ? getGenreLabel(genreFilter) : '全て'}
-        </Text>
-      </View>
-
-      {isLoading && presets.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={AppColors.accent} />
-        </View>
-      ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <PresetListItem preset={item} onPress={setSelectedPreset} />
-          )}
-          contentContainerClassName="flex-grow p-4"
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={reload}
-              tintColor={AppColors.accent}
-            />
-          }
-          ListEmptyComponent={
-            <View className="flex-1 items-center justify-center py-20">
-              {errorMessage ? (
-                <Text className="text-sm text-accent">{errorMessage}</Text>
-              ) : (
-                <Text className="text-sm text-subtle">該当するサブスクがありません</Text>
-              )}
-            </View>
-          }
-        />
-      )}
+      <PresetGridList
+        presets={filtered}
+        isLoading={isLoading}
+        errorMessage={errorMessage}
+        onPresetPress={setSelectedPreset}
+        onReload={reload}
+        refreshable
+      />
 
       <PresetDetailModal
         preset={selectedPreset}
