@@ -3,39 +3,32 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/components/auth/AuthProvider';
 import { OnboardingPlanModal } from '@/components/onboarding/OnboardingPlanModal';
-import { OnboardingPresetCard } from '@/components/onboarding/OnboardingPresetCard';
 import { useOnboarding } from '@/components/onboarding/OnboardingProvider';
 import { useOnboardingRegister } from '@/components/onboarding/useOnboardingRegister';
-import { GenreSelector } from '@/components/subscriptions/GenreSelector';
-import { SubscriptionSearchBar } from '@/components/subscriptions/SubscriptionSearchBar';
+import { filterPresets } from '@/components/subscriptions/filterPresets';
+import { PresetGridList } from '@/components/subscriptions/PresetGridList';
+import { PresetPickerFilters } from '@/components/subscriptions/PresetPickerFilters';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { AppColors } from '@/constants/colors';
 import type { PresetSelectionInput } from '@/src/application/createSubscriptionsFromPresets';
-import { getGenreLabel, type GenreId } from '@/src/domain/genre';
+import { type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
 
-const GRID_COLUMNS = 3;
-const GRID_GAP = 12;
-const GRID_HORIZONTAL_PADDING = 20;
+interface OnboardingPresetSelection {
+  planId: string;
+  startDate: Date;
+}
 
 export default function OnboardingWelcomeRoute() {
   const insets = useSafeAreaInsets();
-  const { width: screenWidth } = useWindowDimensions();
-  const cardWidth = useMemo(
-    () =>
-      (screenWidth - GRID_HORIZONTAL_PADDING * 2 - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS,
-    [screenWidth]
-  );
   const { session } = useAuth();
   const { markCompletedLocally } = useOnboarding();
   const { presets, isLoading, errorMessage, reload } = usePresetList();
@@ -43,8 +36,10 @@ export default function OnboardingWelcomeRoute() {
 
   const [query, setQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
-  /** サービス ID → 選択したプラン ID */
-  const [selectedPlans, setSelectedPlans] = useState<Map<string, string>>(() => new Map());
+  /** サービス ID → 選択したプランと支払い開始日 */
+  const [selectedPlans, setSelectedPlans] = useState<Map<string, OnboardingPresetSelection>>(
+    () => new Map()
+  );
   const [activePreset, setActivePreset] = useState<PresetService | null>(null);
 
   const selectablePresets = useMemo(
@@ -52,25 +47,19 @@ export default function OnboardingWelcomeRoute() {
     [presets]
   );
 
-  const filtered = useMemo(() => {
-    const keyword = query.trim().toLowerCase();
-    const genreLabel = genreFilter ? getGenreLabel(genreFilter) : null;
+  const filtered = useMemo(
+    () => filterPresets(selectablePresets, query, genreFilter),
+    [selectablePresets, query, genreFilter]
+  );
 
-    return selectablePresets.filter((preset) => {
-      const matchesGenre = genreLabel === null || preset.genre === genreLabel;
-      const matchesKeyword = !keyword || preset.name.toLowerCase().includes(keyword);
-      return matchesGenre && matchesKeyword;
-    });
-  }, [selectablePresets, query, genreFilter]);
-
-  const selectPlan = (preset: PresetService, planId: string | null) => {
+  const selectPlan = (preset: PresetService, selection: OnboardingPresetSelection | null) => {
     setSelectedPlans((prev) => {
       const next = new Map(prev);
-      if (!planId) {
+      if (!selection) {
         next.delete(preset.id);
         return next;
       }
-      next.set(preset.id, planId);
+      next.set(preset.id, selection);
       return next;
     });
   };
@@ -78,19 +67,22 @@ export default function OnboardingWelcomeRoute() {
   const selectedCount = selectedPlans.size;
 
   const buildSelections = (): PresetSelectionInput[] => {
-    const today = new Date();
     const selections: PresetSelectionInput[] = [];
 
     selectablePresets.forEach((preset) => {
-      const planId = selectedPlans.get(preset.id);
-      if (!planId) {
+      const selection = selectedPlans.get(preset.id);
+      if (!selection) {
         return;
       }
-      const plan = preset.plans.find((p) => p.id === planId);
+      const plan = preset.plans.find((p) => p.id === selection.planId);
       if (!plan) {
         return;
       }
-      selections.push({ planId: plan.id, cycle: plan.cycle, startDate: today });
+      selections.push({
+        planId: plan.id,
+        cycle: plan.cycle,
+        startDate: selection.startDate,
+      });
     });
 
     return selections;
@@ -126,63 +118,33 @@ export default function OnboardingWelcomeRoute() {
         </Text>
       </View>
 
-      <View className="px-5 pt-2">
-        <SubscriptionSearchBar value={query} onChangeText={setQuery} />
-      </View>
+      <PresetPickerFilters
+        query={query}
+        onQueryChange={setQuery}
+        genreFilter={genreFilter}
+        onGenreChange={setGenreFilter}
+      />
 
-      <View className="pt-2">
-        <GenreSelector selectedId={genreFilter} onChange={setGenreFilter} includeAll />
-      </View>
-
-      {isLoading && presets.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={AppColors.accent} />
-        </View>
-      ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          renderItem={({ item }) => (
-            <OnboardingPresetCard
-              preset={item}
-              width={cardWidth}
-              selected={selectedPlans.has(item.id)}
-              onPress={() => setActivePreset(item)}
-            />
-          )}
-          columnWrapperClassName="justify-start gap-3"
-          contentContainerClassName="gap-3 p-5 pb-4"
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View className="flex-1 items-center justify-center py-20">
-              {errorMessage ? (
-                <View className="items-center gap-3">
-                  <Text className="text-sm text-accent">{errorMessage}</Text>
-                  <TouchableOpacity
-                    onPress={reload}
-                    className="rounded-full bg-white/[0.08] px-5 py-2.5"
-                  >
-                    <Text className="text-sm font-semibold text-foreground">再読み込み</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <Text className="text-sm text-subtle">該当するサブスクがありません</Text>
-              )}
-            </View>
-          }
-        />
-      )}
+      <PresetGridList
+        presets={filtered}
+        isLoading={isLoading}
+        errorMessage={errorMessage}
+        onPresetPress={setActivePreset}
+        onReload={reload}
+        getSelected={(preset) => selectedPlans.has(preset.id)}
+        showEmptyReloadButton
+      />
 
       <OnboardingPlanModal
         preset={activePreset}
         visible={activePreset !== null}
-        selectedPlanId={activePreset ? selectedPlans.get(activePreset.id) ?? null : null}
+        selectedPlanId={activePreset ? selectedPlans.get(activePreset.id)?.planId ?? null : null}
+        selectedStartDate={activePreset ? selectedPlans.get(activePreset.id)?.startDate ?? null : null}
         isSubmitting={isSubmitting}
         onClose={() => setActivePreset(null)}
-        onConfirm={(planId) => {
+        onConfirm={(selection) => {
           if (activePreset) {
-            selectPlan(activePreset, planId);
+            selectPlan(activePreset, selection);
           }
           setActivePreset(null);
         }}
