@@ -16,9 +16,8 @@ export async function syncSubscriptionNotifications(input: {
   const preferences = await input.preferencesRepository.load();
   const permission = await input.scheduler.getPermissionStatus();
 
-  await input.scheduler.cancelSubTrackNotifications();
-
   if (!preferences.enabled || permission !== 'granted') {
+    await input.scheduler.cancelSubTrackNotifications();
     return;
   }
 
@@ -36,5 +35,6 @@ export async function syncSubscriptionNotifications(input: {
     unusedAlerts,
   });
 
+  await input.scheduler.cancelSubTrackNotifications();
   await input.scheduler.schedule(items);
 }

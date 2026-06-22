@@ -32,8 +32,12 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const refreshPermissionStatus = useCallback(async () => {
-    const status = await expoNotificationScheduler.getPermissionStatus();
-    setPermissionStatus(status);
+    try {
+      const status = await expoNotificationScheduler.getPermissionStatus();
+      setPermissionStatus(status);
+    } catch {
+      setPermissionStatus('undetermined');
+    }
   }, []);
 
   const syncNotifications = useCallback(async () => {
@@ -53,8 +57,8 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
 
   const persistEnabled = useCallback(
     async (enabled: boolean) => {
-      setIsEnabled(enabled);
       await notificationPreferencesStorage.save({ enabled });
+      setIsEnabled(enabled);
       await syncNotifications();
     },
     [syncNotifications]
@@ -63,11 +67,19 @@ export function useNotificationSettings(): UseNotificationSettingsResult {
   useEffect(() => {
     let isMounted = true;
 
-    void notificationPreferencesStorage.load().then((loaded) => {
-      if (isMounted) {
-        setIsEnabled(loaded.enabled);
+    void (async () => {
+      try {
+        const loaded = await notificationPreferencesStorage.load();
+        if (isMounted) {
+          setIsEnabled(loaded.enabled);
+        }
+      } catch {
+        if (isMounted) {
+          setIsEnabled(false);
+        }
       }
-    });
+    })();
+
     void refreshPermissionStatus();
 
     return () => {

@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useNotifications } from '@/components/notifications/NotificationProvider';
 
 export interface UseHeaderParams {
-  /** 通知アイコン押下時のハンドラ（未指定時は何もしない）。 */
+  /** 通知アイコン押下時のハンドラ（未指定時は通知設定モーダルを開く）。 */
   onPressNotifications?: () => void;
   /** 設定アイコン押下時のハンドラ（未指定なら設定画面へ遷移）。 */
   onPressSettings?: () => void;
