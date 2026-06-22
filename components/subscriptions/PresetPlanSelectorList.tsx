@@ -36,11 +36,15 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
   <View className="gap-2.5">
     {plans.map((plan) => {
       const isSelected = plan.id === selectedPlanId;
+      const priceLabel = `${formatPrice(plan.price, plan.currency)} / ${cycleLabel(plan.cycle)}`;
       return (
         <TouchableOpacity
           key={plan.id}
           activeOpacity={0.8}
           disabled={disabled}
+          accessibilityRole="button"
+          accessibilityState={isSelected ? { selected: true } : {}}
+          accessibilityLabel={`${plan.name}、${priceLabel}`}
           onPress={() => {
             void Haptics.selectionAsync();
             onSelectPlan(plan);

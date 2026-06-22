@@ -17,7 +17,7 @@ import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { PresetPlanSelectorList } from '@/components/subscriptions/PresetPlanSelectorList';
 import { SubscriptionStartDateField } from '@/components/subscriptions/SubscriptionStartDateField';
 import { AppColors } from '@/constants/colors';
-import type { PresetService } from '@/src/domain/preset';
+import type { PresetPlan, PresetService } from '@/src/domain/preset';
 
 interface OnboardingPlanSelection {
   planId: string;
@@ -32,6 +32,14 @@ interface OnboardingPlanModalProps {
   isSubmitting?: boolean;
   onClose: () => void;
   onConfirm: (selection: OnboardingPlanSelection | null) => void;
+}
+
+function resolveInitialPlanId(plans: PresetPlan[], preferredId: string | null): string | null {
+  const fallback = plans[0]?.id ?? null;
+  if (!preferredId) {
+    return fallback;
+  }
+  return plans.some((plan) => plan.id === preferredId) ? preferredId : fallback;
 }
 
 /**
@@ -52,11 +60,10 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
   const [startDate, setStartDate] = useState<Date>(() => new Date());
 
   useEffect(() => {
-    if (!visible) {
+    if (!visible || !preset) {
       return;
     }
-    const defaultPlanId = selectedPlanId ?? preset?.plans[0]?.id ?? null;
-    setLocalSelectedId(defaultPlanId);
+    setLocalSelectedId(resolveInitialPlanId(preset.plans, selectedPlanId));
     setStartDate(selectedStartDate ?? new Date());
   }, [visible, selectedPlanId, selectedStartDate, preset]);
 
@@ -64,13 +71,13 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
   const initial = preset?.name.charAt(0).toUpperCase() ?? '';
   const logoSource = preset ? resolveServiceLogo(preset.logoKey, preset.logoUri) : undefined;
 
-  const canConfirm = preset != null && !isSubmitting;
-  const canClear = localSelectedId != null && !isSubmitting;
-
   const selectedPlan = useMemo(
     () => (preset ? preset.plans.find((p) => p.id === localSelectedId) ?? null : null),
     [preset, localSelectedId]
   );
+
+  const canConfirm = preset != null && !isSubmitting;
+  const canClear = selectedPlan != null && !isSubmitting;
 
   if (!preset) {
     return null;
@@ -137,7 +144,7 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
               onSelectPlan={(plan) => setLocalSelectedId(plan.id)}
             />
 
-            {localSelectedId != null ? (
+            {selectedPlan != null ? (
               <SubscriptionStartDateField
                 value={startDate}
                 onChange={setStartDate}
@@ -150,7 +157,7 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
             className="gap-2 border-t border-border bg-background-darker px-5 pt-3"
             style={{ paddingBottom: Math.max(insets.bottom, 12) + 8 }}
           >
-            {localSelectedId != null ? (
+            {selectedPlan != null ? (
               <TouchableOpacity
                 activeOpacity={0.85}
                 disabled={!canClear}
@@ -171,7 +178,7 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
               onPress={() => {
                 void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 onConfirm(
-                  localSelectedId != null ? { planId: localSelectedId, startDate } : null
+                  selectedPlan ? { planId: selectedPlan.id, startDate } : null
                 );
               }}
               className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${
