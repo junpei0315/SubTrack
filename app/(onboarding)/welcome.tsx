@@ -22,6 +22,11 @@ import type { PresetSelectionInput } from '@/src/application/createSubscriptions
 import { type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
 
+interface OnboardingPresetSelection {
+  planId: string;
+  startDate: Date;
+}
+
 export default function OnboardingWelcomeRoute() {
   const insets = useSafeAreaInsets();
   const { session } = useAuth();
@@ -31,8 +36,10 @@ export default function OnboardingWelcomeRoute() {
 
   const [query, setQuery] = useState('');
   const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
-  /** サービス ID → 選択したプラン ID */
-  const [selectedPlans, setSelectedPlans] = useState<Map<string, string>>(() => new Map());
+  /** サービス ID → 選択したプランと支払い開始日 */
+  const [selectedPlans, setSelectedPlans] = useState<Map<string, OnboardingPresetSelection>>(
+    () => new Map()
+  );
   const [activePreset, setActivePreset] = useState<PresetService | null>(null);
 
   const selectablePresets = useMemo(
@@ -45,14 +52,14 @@ export default function OnboardingWelcomeRoute() {
     [selectablePresets, query, genreFilter]
   );
 
-  const selectPlan = (preset: PresetService, planId: string | null) => {
+  const selectPlan = (preset: PresetService, selection: OnboardingPresetSelection | null) => {
     setSelectedPlans((prev) => {
       const next = new Map(prev);
-      if (!planId) {
+      if (!selection) {
         next.delete(preset.id);
         return next;
       }
-      next.set(preset.id, planId);
+      next.set(preset.id, selection);
       return next;
     });
   };
@@ -60,19 +67,22 @@ export default function OnboardingWelcomeRoute() {
   const selectedCount = selectedPlans.size;
 
   const buildSelections = (): PresetSelectionInput[] => {
-    const today = new Date();
     const selections: PresetSelectionInput[] = [];
 
     selectablePresets.forEach((preset) => {
-      const planId = selectedPlans.get(preset.id);
-      if (!planId) {
+      const selection = selectedPlans.get(preset.id);
+      if (!selection) {
         return;
       }
-      const plan = preset.plans.find((p) => p.id === planId);
+      const plan = preset.plans.find((p) => p.id === selection.planId);
       if (!plan) {
         return;
       }
-      selections.push({ planId: plan.id, cycle: plan.cycle, startDate: today });
+      selections.push({
+        planId: plan.id,
+        cycle: plan.cycle,
+        startDate: selection.startDate,
+      });
     });
 
     return selections;
@@ -128,12 +138,13 @@ export default function OnboardingWelcomeRoute() {
       <OnboardingPlanModal
         preset={activePreset}
         visible={activePreset !== null}
-        selectedPlanId={activePreset ? selectedPlans.get(activePreset.id) ?? null : null}
+        selectedPlanId={activePreset ? selectedPlans.get(activePreset.id)?.planId ?? null : null}
+        selectedStartDate={activePreset ? selectedPlans.get(activePreset.id)?.startDate ?? null : null}
         isSubmitting={isSubmitting}
         onClose={() => setActivePreset(null)}
-        onConfirm={(planId) => {
+        onConfirm={(selection) => {
           if (activePreset) {
-            selectPlan(activePreset, planId);
+            selectPlan(activePreset, selection);
           }
           setActivePreset(null);
         }}

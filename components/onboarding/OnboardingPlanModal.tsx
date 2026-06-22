@@ -14,18 +14,25 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
+import { SubscriptionStartDateField } from '@/components/subscriptions/SubscriptionStartDateField';
 import { AppColors } from '@/constants/colors';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
 import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan, PresetService } from '@/src/domain/preset';
 
+interface OnboardingPlanSelection {
+  planId: string;
+  startDate: Date;
+}
+
 interface OnboardingPlanModalProps {
   preset: PresetService | null;
   visible: boolean;
   selectedPlanId: string | null;
+  selectedStartDate?: Date | null;
   isSubmitting?: boolean;
   onClose: () => void;
-  onConfirm: (planId: string | null) => void;
+  onConfirm: (selection: OnboardingPlanSelection | null) => void;
 }
 
 const CYCLE_SUFFIX: Record<string, string> = {
@@ -46,19 +53,23 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
   preset,
   visible,
   selectedPlanId,
+  selectedStartDate = null,
   isSubmitting = false,
   onClose,
   onConfirm,
 }) => {
   const insets = useSafeAreaInsets();
   const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date>(() => new Date());
 
   useEffect(() => {
     if (!visible) {
       return;
     }
-    setLocalSelectedId(selectedPlanId);
-  }, [visible, selectedPlanId]);
+    const defaultPlanId = selectedPlanId ?? preset?.plans[0]?.id ?? null;
+    setLocalSelectedId(defaultPlanId);
+    setStartDate(selectedStartDate ?? new Date());
+  }, [visible, selectedPlanId, selectedStartDate, preset]);
 
   const plans = preset?.plans ?? [];
   const initial = preset?.name.charAt(0).toUpperCase() ?? '';
@@ -171,6 +182,14 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
                 );
               })}
             </View>
+
+            {localSelectedId != null ? (
+              <SubscriptionStartDateField
+                value={startDate}
+                onChange={setStartDate}
+                disabled={isSubmitting}
+              />
+            ) : null}
           </ScrollView>
 
           <View
@@ -197,7 +216,9 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
               disabled={!canConfirm}
               onPress={() => {
                 void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                onConfirm(localSelectedId);
+                onConfirm(
+                  localSelectedId != null ? { planId: localSelectedId, startDate } : null
+                );
               }}
               className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${
                 canConfirm ? 'bg-accent' : 'bg-white/[0.08]'
