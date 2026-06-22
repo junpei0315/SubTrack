@@ -11,6 +11,7 @@ import '../global.css';
 
 import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
+import { ExchangeRateProvider } from '@/components/currency/ExchangeRateProvider';
 import { OnboardingProvider, useOnboarding } from '@/components/onboarding/OnboardingProvider';
 import { AppColors } from '@/constants/colors';
 import { useDevAuthReady } from '@/hooks/useDevAuthReady';
@@ -121,15 +122,17 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={blackNavigationTheme}>
       <AuthProvider>
-        <OnboardingProvider>
-          <View style={styles.root}>
-            <RootNavigator />
-            {!isSplashDone ? (
-              <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
-            ) : null}
-          </View>
-          <StatusBar style="light" />
-        </OnboardingProvider>
+        <ExchangeRateProvider>
+          <OnboardingProvider>
+            <View style={styles.root}>
+              <RootNavigator />
+              {!isSplashDone ? (
+                <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
+              ) : null}
+            </View>
+            <StatusBar style="light" />
+          </OnboardingProvider>
+        </ExchangeRateProvider>
       </AuthProvider>
     </ThemeProvider>
   );

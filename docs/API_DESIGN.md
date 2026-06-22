@@ -77,9 +77,11 @@
 | ------------------ | -------- | ------------------------- | ----------------------------------------------------------------- | ------------ | -------- |
 | `line-webhook`     | POST     | `/functions/v1/line-webhook`     | LINE Webhook 受け口。署名検証 → 連携コード照合 / postback で利用記録 | false        | F-08     |
 | `line-daily-push`  | POST     | `/functions/v1/line-daily-push`  | 連携済みユーザーへ「使った/使ってない」ボタンを毎日プッシュ          | false        | F-08     |
+| `fx-rates`         | GET/POST | `/functions/v1/fx-rates`           | 為替レート取得（Frankfurter プロキシ・1 日キャッシュ）                     | true         | F-13     |
 
 - `line-webhook` は LINE の署名（`X-Line-Signature`）で保護するため JWT 検証は無効化する。
 - `line-daily-push` は cron（pg_cron / 外部スケジューラ）から呼び、`CRON_SECRET`（任意）で簡易保護する。
+- `fx-rates` はログインユーザーの JWT で保護する。未デプロイ時はクライアントが Frankfurter API へフォールバックする。
 - 詳細・セットアップ手順は [`supabase/functions/README.md`](../supabase/functions/README.md)。
 
 ---
@@ -111,6 +113,7 @@
 
 | 日付       | 変更内容                                                |
 | ---------- | ------------------------------------------------------- |
+| 2026-06-22 | F-13 為替レート取得 Edge Function（fx-rates）を追記 |
 | 2026-06-06 | LINE 連携の Edge Functions（line-webhook / line-daily-push）を追記 |
 | 2026-05-15 | Edge Functions の採用方針・PostgREST との住み分けを追記 |
 | （追記）   |                                                         |

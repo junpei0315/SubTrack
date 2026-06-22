@@ -6,6 +6,7 @@ import {
   computeBillingTotalForMonth,
   monthBounds,
 } from './billingOccurrences';
+import { convertToJpy, DISPLAY_CURRENCY, type ExchangeRates } from './exchangeRate';
 import { toLocalDateOnly } from './nextBillingDate';
 import type { Subscription } from './subscription';
 
@@ -52,6 +53,7 @@ export interface MonthlySpendingTrendOptions {
  */
 export function computeMonthlySpendingTrend(
   subscriptions: Subscription[],
+  rates: ExchangeRates,
   options: MonthlySpendingTrendOptions = {}
 ): MonthlySpendingTrend {
   const today = options.today ?? new Date();
@@ -71,13 +73,13 @@ export function computeMonthlySpendingTrend(
   const activeOrCancelled = subscriptions.filter(
     (sub) => sub.status === 'active' || sub.status === 'cancelled'
   );
-  const currency = activeOrCancelled[0]?.plan.currency ?? 'JPY';
+  const currency = DISPLAY_CURRENCY;
 
   const points: MonthlySpendingPoint[] = months.map((yearMonth) => {
-    const amount = activeOrCancelled.reduce(
-      (sum, sub) => sum + computeBillingTotalForMonth(sub, yearMonth.year, yearMonth.month),
-      0
-    );
+    const amount = activeOrCancelled.reduce((sum, sub) => {
+      const monthTotal = computeBillingTotalForMonth(sub, yearMonth.year, yearMonth.month);
+      return sum + convertToJpy(monthTotal, sub.plan.currency, rates);
+    }, 0);
     const monthStart = monthBounds(yearMonth.year, yearMonth.month).start;
     const isProjected = monthStart > toLocalDateOnly(today);
 

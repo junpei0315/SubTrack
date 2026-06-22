@@ -3,10 +3,10 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { MarqueeText } from '@/components/ui/MarqueeText';
 import { AppColors } from '@/constants/colors';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
-import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan } from '@/src/domain/preset';
 
 const CYCLE_SUFFIX: Record<string, string> = {
@@ -32,11 +32,15 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
   selectedPlanId,
   disabled = false,
   onSelectPlan,
-}) => (
+}) => {
+  const { formatInJpy } = useExchangeRates();
+
+  return (
   <View className="gap-2.5">
     {plans.map((plan) => {
       const isSelected = plan.id === selectedPlanId;
-      const priceLabel = `${formatPrice(plan.price, plan.currency)} / ${cycleLabel(plan.cycle)}`;
+      const formattedPrice = formatInJpy(plan.price, plan.currency);
+      const priceLabel = `${formattedPrice} / ${cycleLabel(plan.cycle)}`;
       return (
         <TouchableOpacity
           key={plan.id}
@@ -64,7 +68,7 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
             <MarqueeText text={plan.name} active={isSelected} className="flex-1" />
           </View>
           <Text className="pl-3 text-[15px] font-bold text-foreground">
-            {formatPrice(plan.price, plan.currency)}
+            {formattedPrice}
             <Text className="text-[13px] font-semibold text-subtle">
               {' '}
               / {cycleLabel(plan.cycle)}
@@ -74,4 +78,5 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
       );
     })}
   </View>
-);
+  );
+};

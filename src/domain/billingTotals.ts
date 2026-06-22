@@ -5,6 +5,7 @@
  * 関連機能: F-05（合計金額表示）
  */
 
+import { convertToJpy, DISPLAY_CURRENCY, type ExchangeRates } from './exchangeRate';
 import { getMonthlyNormalizedPrice, getYearlyNormalizedPrice } from './normalizeBilling';
 import type { Subscription } from './subscription';
 
@@ -22,15 +23,19 @@ export type MonthlyBillingTotal = BillingTotal;
 
 function sumActiveNormalized(
   subscriptions: Subscription[],
-  normalize: (sub: Subscription) => number
+  normalize: (sub: Subscription) => number,
+  rates: ExchangeRates
 ): BillingTotal {
   const targets = subscriptions.filter((sub) => sub.status === 'active');
-  const amount = targets.reduce((sum, sub) => sum + normalize(sub), 0);
-  const currency = targets[0]?.plan.currency ?? 'JPY';
+  const amount = targets.reduce(
+    (sum, sub) =>
+      sum + convertToJpy(normalize(sub), sub.plan.currency, rates),
+    0
+  );
 
   return {
     amount,
-    currency,
+    currency: DISPLAY_CURRENCY,
     count: targets.length,
   };
 }
@@ -39,16 +44,22 @@ function sumActiveNormalized(
  * 契約中サブスクの月額換算合計（F-05 月額表示）。
  * 月額 + 年額÷12 + 週額×4.3
  */
-export function computeActiveMonthlyTotal(subscriptions: Subscription[]): BillingTotal {
-  return sumActiveNormalized(subscriptions, getMonthlyNormalizedPrice);
+export function computeActiveMonthlyTotal(
+  subscriptions: Subscription[],
+  rates: ExchangeRates
+): BillingTotal {
+  return sumActiveNormalized(subscriptions, getMonthlyNormalizedPrice, rates);
 }
 
 /**
  * 契約中サブスクの年額換算合計（F-05 年額表示）。
  * 年額 + 月額×12 + 週額×52
  */
-export function computeActiveYearlyTotal(subscriptions: Subscription[]): BillingTotal {
-  return sumActiveNormalized(subscriptions, getYearlyNormalizedPrice);
+export function computeActiveYearlyTotal(
+  subscriptions: Subscription[],
+  rates: ExchangeRates
+): BillingTotal {
+  return sumActiveNormalized(subscriptions, getYearlyNormalizedPrice, rates);
 }
 
 /**
@@ -56,8 +67,9 @@ export function computeActiveYearlyTotal(subscriptions: Subscription[]): Billing
  */
 export function computeMonthlyBillingTotal(
   subscriptions: Subscription[],
+  rates: ExchangeRates,
   _year: number,
   _month: number
 ): BillingTotal {
-  return computeActiveMonthlyTotal(subscriptions);
+  return computeActiveMonthlyTotal(subscriptions, rates);
 }

@@ -3,8 +3,8 @@ import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
-import { formatPrice } from '@/src/domain/money';
 import { getMonthlyNormalizedPrice } from '@/src/domain/normalizeBilling';
 import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
 
@@ -37,6 +37,7 @@ export const UnusedAlertsSection: React.FC<UnusedAlertsSectionProps> = ({ alerts
 
 function UnusedAlertCard({ alert }: { alert: UnusedSubscriptionAlert }) {
   const router = useRouter();
+  const { formatInJpy } = useExchangeRates();
   const { subscription, lastUsedDate, daysSinceLastUse } = alert;
   const monthlyAmount = getMonthlyNormalizedPrice(subscription);
   const logoSource = resolveServiceLogo(
@@ -80,7 +81,7 @@ function UnusedAlertCard({ alert }: { alert: UnusedSubscriptionAlert }) {
       </View>
 
       <Text className="text-sm font-semibold text-foreground">
-        {formatPrice(monthlyAmount, subscription.plan.currency)}
+        {formatInJpy(monthlyAmount, subscription.plan.currency)}
       </Text>
     </Pressable>
   );

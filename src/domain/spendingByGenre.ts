@@ -2,6 +2,7 @@
  * ジャンル別支出の内訳（F-06）。
  */
 
+import { convertToJpy, DISPLAY_CURRENCY, type ExchangeRates } from './exchangeRate';
 import { getMonthlyNormalizedPrice } from './normalizeBilling';
 import type { Subscription } from './subscription';
 
@@ -28,20 +29,21 @@ const OTHER_GENRE_LABEL = 'その他';
 const SMALL_SEGMENT_THRESHOLD = 0.05;
 
 export function computeGenreSpendingBreakdown(
-  subscriptions: Subscription[]
+  subscriptions: Subscription[],
+  rates: ExchangeRates
 ): GenreSpendingBreakdown {
   const active = subscriptions.filter((sub) => sub.status === 'active');
 
   if (active.length === 0) {
-    return { totalMonthlyAmount: 0, currency: 'JPY', items: [] };
+    return { totalMonthlyAmount: 0, currency: DISPLAY_CURRENCY, items: [] };
   }
 
-  const currency = active[0]?.plan.currency ?? 'JPY';
+  const currency = DISPLAY_CURRENCY;
   const byGenre = new Map<string, GenreSpendingSubscription[]>();
 
   for (const sub of active) {
     const genre = sub.service.category || OTHER_GENRE_LABEL;
-    const amount = getMonthlyNormalizedPrice(sub);
+    const amount = convertToJpy(getMonthlyNormalizedPrice(sub), sub.plan.currency, rates);
     const list = byGenre.get(genre) ?? [];
     list.push({ id: sub.id, serviceName: sub.service.name, amount });
     byGenre.set(genre, list);

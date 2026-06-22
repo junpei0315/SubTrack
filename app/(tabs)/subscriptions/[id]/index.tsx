@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { SubscriptionStatusBadge } from '@/components/subscriptions/SubscriptionStatusBadge';
@@ -14,7 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { AppColors } from '@/constants/colors';
 import { getSubscriptionById } from '@/src/application/getSubscriptionById';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
-import { formatPrice } from '@/src/domain/money';
+import { getMonthlyNormalizedPrice } from '@/src/domain/normalizeBilling';
 import type { Subscription } from '@/src/domain/subscription';
 import { getEffectiveSubscriptionPrice } from '@/src/domain/subscriptionPrice';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
@@ -23,6 +24,7 @@ import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/su
 // 関連機能: F-04（削除導線） / F-09（使用頻度・1回あたりコスト）
 export default function SubscriptionDetailRoute() {
   const router = useRouter();
+  const { formatInJpy, convertInJpy } = useExchangeRates();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -103,6 +105,9 @@ export default function SubscriptionDetailRoute() {
   const logoSource = resolveServiceLogo(service.logoKey, service.logoUri);
   const initial = service.name.charAt(0).toUpperCase();
   const price = getEffectiveSubscriptionPrice(subscription);
+  const monthlyPriceYen =
+    convertInJpy(getMonthlyNormalizedPrice(subscription), plan.currency) ??
+    getMonthlyNormalizedPrice(subscription);
 
   return (
     <ScrollView
@@ -141,7 +146,7 @@ export default function SubscriptionDetailRoute() {
             </Text>
             <View className="mt-1 flex-row items-baseline gap-2">
               <Text className="text-lg font-bold text-foreground">
-                {formatPrice(price, plan.currency)}
+                {formatInJpy(price, plan.currency)}
               </Text>
               <Text className="text-sm font-semibold text-accent">
                 {getBillingCycleLabel(plan.cycle)}
@@ -161,7 +166,7 @@ export default function SubscriptionDetailRoute() {
         />
         <UsageFrequencyTracker
           usedDateKeys={usedDateKeys}
-          monthlyPriceYen={price}
+          monthlyPriceYen={monthlyPriceYen}
           onRecordUsagePress={() => {
             void recordToday();
           }}
