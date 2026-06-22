@@ -14,11 +14,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
+import { PresetPlanSelectorList } from '@/components/subscriptions/PresetPlanSelectorList';
 import { SubscriptionStartDateField } from '@/components/subscriptions/SubscriptionStartDateField';
 import { AppColors } from '@/constants/colors';
-import { getBillingCycleLabel } from '@/src/domain/billingCycle';
-import { formatPrice } from '@/src/domain/money';
-import type { PresetPlan, PresetService } from '@/src/domain/preset';
+import type { PresetService } from '@/src/domain/preset';
 
 interface OnboardingPlanSelection {
   planId: string;
@@ -33,16 +32,6 @@ interface OnboardingPlanModalProps {
   isSubmitting?: boolean;
   onClose: () => void;
   onConfirm: (selection: OnboardingPlanSelection | null) => void;
-}
-
-const CYCLE_SUFFIX: Record<string, string> = {
-  monthly: '月',
-  yearly: '年',
-  weekly: '週',
-};
-
-function cycleLabel(cycle: PresetPlan['cycle']): string {
-  return CYCLE_SUFFIX[cycle] ?? getBillingCycleLabel(cycle);
 }
 
 /**
@@ -141,47 +130,12 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
             </View>
 
             <Text className="pb-3 pt-6 text-base font-bold text-foreground">プランを選択</Text>
-            <View className="gap-2.5">
-              {plans.map((plan) => {
-                const isSelected = plan.id === localSelectedId;
-                return (
-                  <TouchableOpacity
-                    key={plan.id}
-                    activeOpacity={0.85}
-                    disabled={isSubmitting}
-                    onPress={() => {
-                      void Haptics.selectionAsync();
-                      setLocalSelectedId((prev) => (prev === plan.id ? prev : plan.id));
-                    }}
-                    className={`flex-row items-center justify-between rounded-2xl border p-4 ${
-                      isSelected ? 'border-accent bg-accent/10' : 'border-border bg-card'
-                    }`}
-                  >
-                    <View className="flex-1 flex-row items-center gap-3">
-                      <View
-                        className={`h-5 w-5 items-center justify-center rounded-full border-2 ${
-                          isSelected ? 'border-accent bg-accent' : 'border-border-muted'
-                        }`}
-                      >
-                        {isSelected ? (
-                          <MaterialIcons name="check" size={12} color={AppColors.text} />
-                        ) : null}
-                      </View>
-                      <Text className="flex-1 text-[15px] font-semibold text-foreground" numberOfLines={3}>
-                        {plan.name}
-                      </Text>
-                    </View>
-                    <Text className="pl-3 text-[15px] font-bold text-foreground">
-                      {formatPrice(plan.price, plan.currency)}
-                      <Text className="text-[13px] font-semibold text-subtle">
-                        {' '}
-                        / {cycleLabel(plan.cycle)}
-                      </Text>
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <PresetPlanSelectorList
+              plans={plans}
+              selectedPlanId={localSelectedId}
+              disabled={isSubmitting}
+              onSelectPlan={(plan) => setLocalSelectedId(plan.id)}
+            />
 
             {localSelectedId != null ? (
               <SubscriptionStartDateField

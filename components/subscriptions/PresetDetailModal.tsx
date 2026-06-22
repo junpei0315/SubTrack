@@ -1,12 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Animated,
-  Easing,
-  type LayoutChangeEvent,
   Modal,
   Pressable,
   ScrollView,
@@ -22,6 +19,7 @@ import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan, PresetService } from '@/src/domain/preset';
 
 import { resolveServiceLogo } from './serviceLogos';
+import { PresetPlanSelectorList } from './PresetPlanSelectorList';
 import { SubscriptionStartDateField } from './SubscriptionStartDateField';
 
 export interface PresetSelection {
@@ -87,7 +85,6 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   const currency = selectedPlan?.currency ?? preset.plans[0]?.currency ?? 'JPY';
 
   const handleSelectPlan = (plan: PresetPlan) => {
-    void Haptics.selectionAsync();
     setSelectedPlanId(plan.id);
     setPriceText(String(plan.price));
   };
@@ -165,46 +162,12 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
             </View>
 
             <Text className="pb-3 pt-7 text-base font-bold text-foreground">プランを選択</Text>
-            <View className="gap-2.5">
-              {preset.plans.map((plan) => {
-                const isSelected = plan.id === selectedPlanId;
-                return (
-                  <TouchableOpacity
-                    key={plan.id}
-                    activeOpacity={0.8}
-                    disabled={isSubmitting}
-                    onPress={() => handleSelectPlan(plan)}
-                    className={`flex-row items-center justify-between rounded-2xl border p-4 ${
-                      isSelected ? 'border-accent bg-accent/10' : 'border-border bg-card'
-                    }`}
-                  >
-                    <View className="flex-1 flex-row items-center gap-3">
-                      <View
-                        className={`h-5 w-5 items-center justify-center rounded-full border-2 ${
-                          isSelected ? 'border-accent bg-accent' : 'border-border-muted'
-                        }`}
-                      >
-                        {isSelected ? (
-                          <MaterialIcons name="check" size={12} color={AppColors.text} />
-                        ) : null}
-                      </View>
-                      <MarqueeText
-                        text={plan.name}
-                        active={isSelected}
-                        className="flex-1 text-[15px] font-semibold text-foreground"
-                      />
-                    </View>
-                    <Text className="pl-3 text-[15px] font-bold text-foreground">
-                      {formatPrice(plan.price, plan.currency)}
-                      <Text className="text-[13px] font-semibold text-subtle">
-                        {' '}
-                        / {CYCLE_SUFFIX[plan.cycle] ?? getBillingCycleLabel(plan.cycle)}
-                      </Text>
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <PresetPlanSelectorList
+              plans={preset.plans}
+              selectedPlanId={selectedPlanId}
+              disabled={isSubmitting}
+              onSelectPlan={handleSelectPlan}
+            />
 
             <View className="pb-3 pt-7">
               <Text className="text-base font-bold text-foreground">料金</Text>
@@ -268,91 +231,5 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
         </View>
       </View>
     </Modal>
-  );
-};
-
-interface MarqueeTextProps {
-  text: string;
-  /** はみ出している場合に自動スクロールを開始する（選択中のプランのみ true 想定） */
-  active: boolean;
-  className?: string;
-}
-
-const MARQUEE_TEXT_STYLE = {
-  color: AppColors.text,
-  fontSize: 15,
-  fontWeight: '600',
-} as const;
-
-/**
- * テキストがコンテナ幅をはみ出した場合に左右へ往復スクロールして全体を読めるようにする。
- */
-const MarqueeText: React.FC<MarqueeTextProps> = ({ text, active, className }) => {
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [textWidth, setTextWidth] = useState(0);
-  const translateX = useRef(new Animated.Value(0)).current;
-  const runIdRef = useRef(0);
-
-  const overflow = textWidth - containerWidth;
-  const shouldScroll = active && overflow > 1 && containerWidth > 0;
-
-  useEffect(() => {
-    const runId = ++runIdRef.current;
-    translateX.stopAnimation();
-    translateX.setValue(0);
-
-    if (!shouldScroll) {
-      return;
-    }
-
-    const duration = Math.max(overflow * 35, 1500);
-
-    const runCycle = () => {
-      if (runIdRef.current !== runId) {
-        return;
-      }
-      translateX.setValue(0);
-      Animated.sequence([
-        Animated.delay(900),
-        Animated.timing(translateX, {
-          toValue: -overflow,
-          duration,
-          easing: Easing.linear,
-          useNativeDriver: false,
-        }),
-        Animated.delay(900),
-      ]).start(({ finished }) => {
-        if (finished && runIdRef.current === runId) {
-          runCycle();
-        }
-      });
-    };
-    runCycle();
-
-    return () => {
-      runIdRef.current += 1;
-      translateX.stopAnimation();
-      translateX.setValue(0);
-    };
-  }, [shouldScroll, overflow, translateX]);
-
-  const handleContainerLayout = (event: LayoutChangeEvent) => {
-    setContainerWidth(event.nativeEvent.layout.width);
-  };
-
-  const handleTextLayout = (event: LayoutChangeEvent) => {
-    setTextWidth(event.nativeEvent.layout.width);
-  };
-
-  return (
-    <View className={className} style={{ overflow: 'hidden' }} onLayout={handleContainerLayout}>
-      <Animated.View
-        style={{ alignSelf: 'flex-start', flexDirection: 'row', transform: [{ translateX }] }}
-      >
-        <Text numberOfLines={1} onLayout={handleTextLayout} style={MARQUEE_TEXT_STYLE}>
-          {text}
-        </Text>
-      </Animated.View>
-    </View>
   );
 };
