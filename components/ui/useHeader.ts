@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
+import { useNotifications } from '@/components/notifications/NotificationProvider';
+
 export interface UseHeaderParams {
   /** 通知アイコン押下時のハンドラ（未指定時は何もしない）。 */
   onPressNotifications?: () => void;
@@ -18,11 +20,12 @@ export interface UseHeaderResult {
 
 /**
  * Header の振る舞い（ナビゲーション・アクション）を切り出すフック。
- * 通知は遷移先未実装のため props 未指定時は何もしない。
+ * 通知は props 未指定時に通知設定モーダルを開く。
  */
 export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
   const { onPressNotifications, onPressSettings, onPressAvatar } = params;
   const router = useRouter();
+  const { openSettingsModal } = useNotifications();
 
   const handlePressAvatar = useCallback(() => {
     if (onPressAvatar) {
@@ -33,8 +36,12 @@ export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
   }, [onPressAvatar, router]);
 
   const handlePressNotifications = useCallback(() => {
-    onPressNotifications?.();
-  }, [onPressNotifications]);
+    if (onPressNotifications) {
+      onPressNotifications();
+      return;
+    }
+    openSettingsModal();
+  }, [onPressNotifications, openSettingsModal]);
 
   const handlePressSettings = useCallback(() => {
     if (onPressSettings) {
