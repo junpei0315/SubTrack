@@ -18,8 +18,8 @@ import { getBillingCycleLabel } from '@/src/domain/billingCycle';
 import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan, PresetService } from '@/src/domain/preset';
 
-import { resolveServiceLogo } from './serviceLogos';
 import { PresetPlanSelectorList } from './PresetPlanSelectorList';
+import { resolveServiceLogo } from './serviceLogos';
 import { SubscriptionStartDateField } from './SubscriptionStartDateField';
 
 export interface PresetSelection {

@@ -3,8 +3,8 @@ import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { ContractPriceText } from '@/components/currency/ContractPriceText';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
-import { formatPrice } from '@/src/domain/money';
 import { getMonthlyNormalizedPrice } from '@/src/domain/normalizeBilling';
 import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
 
@@ -79,9 +79,11 @@ function UnusedAlertCard({ alert }: { alert: UnusedSubscriptionAlert }) {
         </Text>
       </View>
 
-      <Text className="text-sm font-semibold text-foreground">
-        {formatPrice(monthlyAmount, subscription.plan.currency)}
-      </Text>
+      <ContractPriceText
+        amount={monthlyAmount}
+        currency={subscription.plan.currency}
+        className="text-sm font-semibold text-foreground"
+      />
     </Pressable>
   );
 }

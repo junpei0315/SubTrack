@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getActiveBillingTotal } from '@/src/application/getActiveBillingTotal';
 import type { BillingTotal } from '@/src/domain/billingTotals';
+import { fxRateRepositorySupabase } from '@/src/infrastructure/supabase/fxRateRepositorySupabase';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
 export type SpendingPeriod = 'month' | 'year';
@@ -20,13 +21,20 @@ export function useMonthlySpending() {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const result = await getActiveBillingTotal(subscriptionRepositorySupabase, targetPeriod);
+      const result = await getActiveBillingTotal(
+        subscriptionRepositorySupabase,
+        fxRateRepositorySupabase,
+        targetPeriod
+      );
       if (requestId === requestIdRef.current) {
         setTotal(result);
       }
-    } catch {
+    } catch (error) {
       if (requestId === requestIdRef.current) {
         setTotal(EMPTY_TOTAL);
+        if (__DEV__) {
+          console.error('[useMonthlySpending] load failed', error);
+        }
         setErrorMessage('合計支出の取得に失敗しました');
       }
     } finally {

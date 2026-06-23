@@ -6,6 +6,7 @@ LINE 連携用の Edge Function 群（Deno）。利用実績（`usage_logs`）�
 | --- | --- | --- |
 | `line-webhook` | LINE の Webhook 受け口。連携コード照合 / postback での利用記録 | **false**（署名で保護） |
 | `line-daily-push` | 連携済みユーザーへ毎日「使った/使ってない」ボタンを送信 | false（`CRON_SECRET` で保護） |
+| `fx-rates` | 為替レート取得（Frankfurter プロキシ・1 日キャッシュ）。F-13 の JPY 換算に使用 | **true** |
 
 `_shared/` は共有ユーティリティ（署名検証・LINE API・service_role クライアント）。
 
@@ -31,6 +32,7 @@ supabase functions serve line-webhook --no-verify-jwt
 ```bash
 supabase functions deploy line-webhook --no-verify-jwt
 supabase functions deploy line-daily-push --no-verify-jwt
+supabase functions deploy fx-rates
 ```
 
 LINE Developers コンソールで Webhook URL に

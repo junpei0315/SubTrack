@@ -32,11 +32,13 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
   selectedPlanId,
   disabled = false,
   onSelectPlan,
-}) => (
+}) => {
+  return (
   <View className="gap-2.5">
     {plans.map((plan) => {
       const isSelected = plan.id === selectedPlanId;
-      const priceLabel = `${formatPrice(plan.price, plan.currency)} / ${cycleLabel(plan.cycle)}`;
+      const formattedPrice = formatPrice(plan.price, plan.currency);
+      const priceLabel = `${formattedPrice} / ${cycleLabel(plan.cycle)}`;
       return (
         <TouchableOpacity
           key={plan.id}
@@ -64,7 +66,7 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
             <MarqueeText text={plan.name} active={isSelected} className="flex-1" />
           </View>
           <Text className="pl-3 text-[15px] font-bold text-foreground">
-            {formatPrice(plan.price, plan.currency)}
+            {formattedPrice}
             <Text className="text-[13px] font-semibold text-subtle">
               {' '}
               / {cycleLabel(plan.cycle)}
@@ -74,4 +76,5 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
       );
     })}
   </View>
-);
+  );
+};

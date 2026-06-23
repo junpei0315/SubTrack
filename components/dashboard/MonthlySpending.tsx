@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
+import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { AppColors } from '@/constants/colors';
 import { formatPrice } from '@/src/domain/money';
 
@@ -13,6 +14,7 @@ const PERIOD_OPTIONS: { value: SpendingPeriod; label: string }[] = [
 
 export const MonthlySpending: React.FC = () => {
   const { period, setPeriod, total, isLoading, errorMessage } = useMonthlySpending();
+  const { staleMessage } = useExchangeRates();
   const titleText = period === 'month' ? '月額換算の合計支出' : '年額換算の合計支出';
 
   return (
@@ -45,9 +47,14 @@ export const MonthlySpending: React.FC = () => {
       ) : errorMessage ? (
         <Text className="text-sm text-accent">{errorMessage}</Text>
       ) : (
-        <Text className="text-[36px] font-bold text-foreground">
-          {formatPrice(total.amount, total.currency)}
-        </Text>
+        <>
+          <Text className="text-[36px] font-bold text-foreground">
+            {formatPrice(total.amount, total.currency)}
+          </Text>
+          {staleMessage ? (
+            <Text className="mt-1 text-xs text-subtle">{staleMessage}</Text>
+          ) : null}
+        </>
       )}
     </View>
   );

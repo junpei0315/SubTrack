@@ -7,6 +7,7 @@ import { getUnusedSubscriptionAlerts } from '@/src/application/getUnusedSubscrip
 import type { MonthlySpendingTrend } from '@/src/domain/monthlySpendingTrend';
 import type { GenreSpendingBreakdown } from '@/src/domain/spendingByGenre';
 import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
+import { fxRateRepositorySupabase } from '@/src/infrastructure/supabase/fxRateRepositorySupabase';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 import { usageLogRepositorySupabase } from '@/src/infrastructure/supabase/usageLogRepositorySupabase';
 
@@ -46,8 +47,8 @@ export function useAnalytics() {
 
     try {
       const [genreBreakdown, spendingTrend, unusedAlerts] = await Promise.all([
-        getGenreSpendingBreakdown(subscriptionRepositorySupabase),
-        getMonthlySpendingTrend(subscriptionRepositorySupabase),
+        getGenreSpendingBreakdown(subscriptionRepositorySupabase, fxRateRepositorySupabase),
+        getMonthlySpendingTrend(subscriptionRepositorySupabase, fxRateRepositorySupabase),
         getUnusedSubscriptionAlerts(
           subscriptionRepositorySupabase,
           usageLogRepositorySupabase,

@@ -6,6 +6,7 @@ import { GenreBreakdownSection } from '@/components/analytics/GenreBreakdownSect
 import { SpendingTrendSection } from '@/components/analytics/SpendingTrendSection';
 import { UnusedAlertsSection } from '@/components/analytics/UnusedAlertsSection';
 import { useAnalytics } from '@/components/analytics/useAnalytics';
+import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { ThemedView } from '@/components/themed-view';
 import { AppColors } from '@/constants/colors';
 
@@ -14,6 +15,7 @@ export default function AnalyticsRoute() {
   const hasFocusedRef = useRef(false);
   const { genreBreakdown, spendingTrend, unusedAlerts, isLoading, errorMessage, reload } =
     useAnalytics();
+  const { staleMessage } = useExchangeRates();
 
   useFocusEffect(
     useCallback(() => {
@@ -42,6 +44,9 @@ export default function AnalyticsRoute() {
           <Text className="text-sm text-accent">{errorMessage}</Text>
         ) : (
           <>
+            {staleMessage ? (
+              <Text className="text-xs text-subtle">{staleMessage}</Text>
+            ) : null}
             <UnusedAlertsSection alerts={unusedAlerts} />
             <GenreBreakdownSection breakdown={genreBreakdown} />
             <SpendingTrendSection trend={spendingTrend} />
