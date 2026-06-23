@@ -70,7 +70,17 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
             target: route.key,
             canPreventDefault: true,
           });
-          if (!isActive && !event.defaultPrevented) {
+          if (event.defaultPrevented) {
+            return;
+          }
+
+          // ネストした Stack（new 等）が残らないよう、常に一覧へ戻す。
+          if (name === 'subscriptions') {
+            router.navigate('/subscriptions');
+            return;
+          }
+
+          if (!isActive) {
             navigation.navigate(route.name);
           }
         };
