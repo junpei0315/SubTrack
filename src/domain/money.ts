@@ -9,7 +9,13 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   JPY: '\u00a5',
   USD: '$',
   EUR: '\u20ac',
+  GBP: '\u00a3',
 };
+
+/** 表示用の通貨記号。未登録のときは通貨コードを返す。 */
+export function getCurrencySymbol(currency: string): string {
+  return CURRENCY_SYMBOLS[currency] ?? currency;
+}
 
 /**
  * 価格を通貨記号つきの文字列に整形する（例: 1490 / JPY -> "¥1,490"）。
@@ -18,5 +24,5 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 export function formatPrice(price: number, currency: string): string {
   const grouped = price.toLocaleString('en-US');
   const symbol = CURRENCY_SYMBOLS[currency];
-  return symbol ? `${symbol}${grouped}` : `${grouped} ${currency}`;
+  return symbol != null ? `${symbol}${grouped}` : `${grouped} ${currency}`;
 }

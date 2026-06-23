@@ -145,13 +145,14 @@ export default function SubscriptionDetailRoute() {
             <Text className="text-[15px] text-subtle" numberOfLines={2}>
               {plan.name}
             </Text>
-            <View className="mt-1 flex-row items-baseline gap-2">
+            <View className="mt-1 flex-row items-start gap-2">
               <ContractPriceText
                 amount={price}
                 currency={plan.currency}
+                align="start"
                 className="text-lg font-bold text-foreground"
               />
-              <Text className="text-sm font-semibold text-accent">
+              <Text className="pt-0.5 text-sm font-semibold text-accent">
                 {getBillingCycleLabel(plan.cycle)}
               </Text>
             </View>

@@ -1,8 +1,10 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { Pressable, Text, type TextProps } from 'react-native';
+import { Pressable, Text, View, type TextProps } from 'react-native';
 
+import { AppColors } from '@/constants/colors';
 import { DISPLAY_CURRENCY, formatDisplayPrice } from '@/src/domain/exchangeRate';
-import { formatPrice } from '@/src/domain/money';
+import { formatPrice, getCurrencySymbol } from '@/src/domain/money';
 
 import { useExchangeRates } from './ExchangeRateProvider';
 
@@ -11,6 +13,12 @@ interface ContractPriceTextProps extends TextProps {
   currency: string;
   /** 外貨のときタップで円換算表示に切り替え可能にする（既定: true） */
   toggleable?: boolean;
+  /** ヒント行の揃え（一覧は end、詳細は start） */
+  align?: 'start' | 'end';
+}
+
+function currencyToggleHint(currency: string): string {
+  return `タップで${getCurrencySymbol(currency)}表示`;
 }
 
 /**
@@ -21,6 +29,7 @@ export function ContractPriceText({
   amount,
   currency,
   toggleable = true,
+  align = 'end',
   className,
   ...textProps
 }: ContractPriceTextProps) {
@@ -36,11 +45,17 @@ export function ContractPriceText({
     return formatDisplayPrice(amount, currency, rates);
   }, [amount, currency, isForeign, rates, showJpy]);
 
+  const jpyToggleHint = currencyToggleHint(DISPLAY_CURRENCY);
+  const contractToggleHint = currencyToggleHint(currency);
+  const toggleHint = showJpy ? contractToggleHint : jpyToggleHint;
+
   const accessibilityLabel = canToggle
     ? showJpy
-      ? `${label}、タップで契約通貨表示に戻す`
-      : `${label}、タップで円換算表示に切り替え`
+      ? `${label}、${contractToggleHint}`
+      : `${label}、${jpyToggleHint}`
     : label;
+
+  const alignClass = align === 'start' ? 'items-start' : 'items-end';
 
   if (!canToggle) {
     return (
@@ -56,10 +71,15 @@ export function ContractPriceText({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={6}
+      className={alignClass}
     >
-      <Text className={className} {...textProps}>
-        {label}
-      </Text>
+      <View className={`flex-row items-center gap-0.5 ${align === 'end' ? 'justify-end' : ''}`}>
+        <Text className={className} {...textProps}>
+          {label}
+        </Text>
+        <MaterialIcons name="swap-horiz" size={13} color={AppColors.mutedDark} />
+      </View>
+      <Text className="mt-0.5 text-[10px] text-subtle">{toggleHint}</Text>
     </Pressable>
   );
 }
