@@ -28,7 +28,7 @@ const webFixedTabBarStyle: ViewStyle | undefined =
         left: 0,
         right: 0,
         zIndex: 50,
-      } as ViewStyle)
+      } as unknown as ViewStyle)
     : undefined;
 
 export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
