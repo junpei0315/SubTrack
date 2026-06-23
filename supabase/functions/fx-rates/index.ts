@@ -5,6 +5,11 @@ const FRANKFURTER_LATEST_URL = 'https://api.frankfurter.app/latest';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 10_000;
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 interface FrankfurterLatestResponse {
   date: string;
   rates: Record<string, number>;
@@ -17,6 +22,16 @@ interface ExchangeRatesPayload {
 
 let cachedRates: ExchangeRatesPayload | null = null;
 let cachedAt = 0;
+
+function jsonResponse(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...CORS_HEADERS,
+      'Content-Type': 'application/json',
+    },
+  });
+}
 
 function buildToJpyRatesFromEurBase(eurRates: Record<string, number>): Record<string, number> {
   const jpyPerEur = eurRates.JPY;
@@ -58,18 +73,12 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
+      headers: CORS_HEADERS,
     });
   }
 
   if (req.method !== 'GET' && req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'method_not_allowed', message: 'GET or POST only' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'method_not_allowed', message: 'GET or POST only' }, 405);
   }
 
   try {
@@ -81,21 +90,15 @@ Deno.serve(async (req: Request) => {
       cachedAt = now;
     }
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         rates: cachedRates,
         cached: isCacheValid,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      },
+      200
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: 'fx_rates_failed', message }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'fx_rates_failed', message }, 502);
   }
 });

@@ -33,7 +33,7 @@ export function ContractPriceText({
   className,
   ...textProps
 }: ContractPriceTextProps) {
-  const { rates } = useExchangeRates();
+  const { rates, isLoading } = useExchangeRates();
   const [showJpy, setShowJpy] = useState(false);
   const isForeign = currency !== DISPLAY_CURRENCY;
   const canToggle = toggleable && isForeign;
@@ -42,8 +42,11 @@ export function ContractPriceText({
     if (!isForeign || !showJpy) {
       return formatPrice(amount, currency);
     }
+    if (isLoading && rates == null) {
+      return '換算中…';
+    }
     return formatDisplayPrice(amount, currency, rates);
-  }, [amount, currency, isForeign, rates, showJpy]);
+  }, [amount, currency, isForeign, isLoading, rates, showJpy]);
 
   const jpyToggleHint = currencyToggleHint(DISPLAY_CURRENCY);
   const contractToggleHint = currencyToggleHint(currency);
@@ -67,7 +70,10 @@ export function ContractPriceText({
 
   return (
     <Pressable
-      onPress={() => setShowJpy((prev) => !prev)}
+      onPress={(event) => {
+        event.stopPropagation?.();
+        setShowJpy((prev) => !prev);
+      }}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={6}
