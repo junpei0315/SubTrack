@@ -22,13 +22,13 @@ const ADD_BUTTON_ROUTES = ['home', 'subscriptions'] as const;
 
 const webFixedTabBarStyle: ViewStyle | undefined =
   Platform.OS === 'web'
-    ? {
+    ? ({
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 50,
-      }
+      } as ViewStyle)
     : undefined;
 
 export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
