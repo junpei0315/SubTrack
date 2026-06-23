@@ -53,37 +53,39 @@ function UnusedAlertCard({ alert }: { alert: UnusedSubscriptionAlert }) {
   }, [lastUsedDate]);
 
   return (
-    <Pressable
-      onPress={() => router.push(`/subscriptions/${subscription.id}`)}
-      className="flex-row items-center gap-3 rounded-2xl border border-[rgba(220,5,45,0.35)] bg-card px-4 py-3 active:opacity-80"
-      accessibilityRole="button"
-      accessibilityLabel={`${subscription.service.name}を見直す`}
-    >
-      <View className="h-11 w-11 overflow-hidden rounded-xl bg-surface">
-        {logoSource ? (
-          <Image source={logoSource} className="h-full w-full" contentFit="cover" />
-        ) : (
-          <View className="h-full w-full items-center justify-center">
-            <Text className="text-base font-bold text-foreground">{initial}</Text>
-          </View>
-        )}
-      </View>
+    <View className="flex-row items-center gap-3 rounded-2xl border border-[rgba(220,5,45,0.35)] bg-card px-4 py-3">
+      <Pressable
+        onPress={() => router.push(`/subscriptions/${subscription.id}`)}
+        className="min-w-0 flex-1 flex-row items-center gap-3 active:opacity-80"
+        accessibilityRole="button"
+        accessibilityLabel={`${subscription.service.name}を見直す`}
+      >
+        <View className="h-11 w-11 overflow-hidden rounded-xl bg-surface">
+          {logoSource ? (
+            <Image source={logoSource} className="h-full w-full" contentFit="cover" />
+          ) : (
+            <View className="h-full w-full items-center justify-center">
+              <Text className="text-base font-bold text-foreground">{initial}</Text>
+            </View>
+          )}
+        </View>
 
-      <View className="min-w-0 flex-1 gap-0.5">
-        <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
-          {subscription.service.name}
-        </Text>
-        <Text className="text-xs text-subtle">{subtitle}</Text>
-        <Text className="text-xs text-accent">
-          {daysSinceLastUse != null ? `${daysSinceLastUse}日間未利用` : '未利用'}
-        </Text>
-      </View>
+        <View className="min-w-0 flex-1 gap-0.5">
+          <Text className="text-sm font-bold text-foreground" numberOfLines={1}>
+            {subscription.service.name}
+          </Text>
+          <Text className="text-xs text-subtle">{subtitle}</Text>
+          <Text className="text-xs text-accent">
+            {daysSinceLastUse != null ? `${daysSinceLastUse}日間未利用` : '未利用'}
+          </Text>
+        </View>
+      </Pressable>
 
       <ContractPriceText
         amount={monthlyAmount}
         currency={subscription.plan.currency}
         className="text-sm font-semibold text-foreground"
       />
-    </Pressable>
+    </View>
   );
 }

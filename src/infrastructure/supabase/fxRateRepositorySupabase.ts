@@ -99,12 +99,18 @@ async function resolveFreshRates(): Promise<ExchangeRateSnapshot> {
     const rates = await fetchFromEdgeFunction();
     await persistRates(rates);
     return { rates, isStale: false };
-  } catch {
+  } catch (edgeError) {
+    if (__DEV__) {
+      console.warn('[fx] Edge Function failed, trying Frankfurter', edgeError);
+    }
     try {
       const rates = await fetchFromFrankfurter();
       await persistRates(rates);
       return { rates, isStale: false };
-    } catch {
+    } catch (directError) {
+      if (__DEV__) {
+        console.warn('[fx] Frankfurter direct failed, using cache/fallback', directError);
+      }
       const stored = await loadStoredExchangeRates();
       if (stored) {
         return { rates: stored.rates, isStale: true };
