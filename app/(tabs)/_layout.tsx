@@ -1,10 +1,12 @@
 import { Tabs } from 'expo-router';
 import { ChartColumn, CreditCard, House } from 'lucide-react-native';
 import React from 'react';
+import { Platform } from 'react-native';
 
-import { Footer } from '@/components/navigation/Footer';
+import { Footer, WEB_TAB_BAR_LAYOUT_HEIGHT } from '@/components/navigation/Footer';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { Header } from '@/components/ui/header';
+import { AppColors } from '@/constants/colors';
 
 export const unstable_settings = {
   initialRouteName: 'home',
@@ -17,6 +19,32 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: true,
           header: () => <Header />,
+          tabBarStyle:
+            Platform.OS === 'web'
+              ? {
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 0,
+                  overflow: 'visible',
+                  backgroundColor: 'transparent',
+                  borderTopWidth: 0,
+                  elevation: 0,
+                }
+              : {
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: AppColors.backgroundDarker,
+                  borderTopWidth: 0,
+                  elevation: 0,
+                },
+          sceneStyle: {
+            backgroundColor: AppColors.background,
+            ...(Platform.OS === 'web' ? { paddingBottom: WEB_TAB_BAR_LAYOUT_HEIGHT } : {}),
+          },
         }}
         tabBar={(props) => <Footer {...props} />}
       >

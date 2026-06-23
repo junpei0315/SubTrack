@@ -53,7 +53,7 @@ export function convertToJpy(amount: number, fromCurrency: string, rates: Exchan
 
   const rate = rates.toJpy[fromCurrency];
   if (rate == null) {
-    return roundJpyAmount(amount);
+    throw new Error(`Unsupported currency for JPY conversion: ${fromCurrency}`);
   }
 
   return roundJpyAmount(amount * rate);
@@ -93,7 +93,7 @@ export const FALLBACK_EXCHANGE_RATES: ExchangeRates = {
     EUR: 163,
     GBP: 190,
   },
-  asOfDate: 'fallback',
+  asOfDate: '1970-01-01',
 };
 
 export function createFallbackExchangeRateSnapshot(): ExchangeRateSnapshot {

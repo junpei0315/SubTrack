@@ -20,8 +20,10 @@ export async function getActiveBillingTotal(
   fxRateRepository: FxRateRepository,
   period: BillingPeriod
 ): Promise<BillingTotal> {
-  const subscriptions = await repository.findAll();
-  const { rates } = await getExchangeRates(fxRateRepository);
+  const [subscriptions, { rates }] = await Promise.all([
+    repository.findAll(),
+    getExchangeRates(fxRateRepository),
+  ]);
 
   return period === 'year'
     ? computeActiveYearlyTotal(subscriptions, rates)

@@ -13,9 +13,9 @@ import {
   View,
 } from 'react-native';
 
-import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { AppColors } from '@/constants/colors';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
+import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan, PresetService } from '@/src/domain/preset';
 
 import { PresetPlanSelectorList } from './PresetPlanSelectorList';
@@ -56,7 +56,6 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const { formatInJpy } = useExchangeRates();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [priceText, setPriceText] = useState('');
   const [startDate, setStartDate] = useState<Date>(() => new Date());
@@ -201,7 +200,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
             </View>
             {priceChanged && selectedPlan ? (
               <Text className="pt-2 text-[13px] text-accent">
-                プリセット価格 {formatInJpy(selectedPlan.price, selectedPlan.currency)} から変更されました
+                プリセット価格 {formatPrice(selectedPlan.price, selectedPlan.currency)} から変更されました
               </Text>
             ) : null}
 

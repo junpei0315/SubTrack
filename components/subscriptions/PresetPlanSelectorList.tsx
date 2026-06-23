@@ -3,10 +3,10 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { MarqueeText } from '@/components/ui/MarqueeText';
 import { AppColors } from '@/constants/colors';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
+import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan } from '@/src/domain/preset';
 
 const CYCLE_SUFFIX: Record<string, string> = {
@@ -33,13 +33,11 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
   disabled = false,
   onSelectPlan,
 }) => {
-  const { formatInJpy } = useExchangeRates();
-
   return (
   <View className="gap-2.5">
     {plans.map((plan) => {
       const isSelected = plan.id === selectedPlanId;
-      const formattedPrice = formatInJpy(plan.price, plan.currency);
+      const formattedPrice = formatPrice(plan.price, plan.currency);
       const priceLabel = `${formattedPrice} / ${cycleLabel(plan.cycle)}`;
       return (
         <TouchableOpacity

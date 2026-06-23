@@ -39,6 +39,7 @@ export function ExchangeRateProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!session) {
+      requestIdRef.current += 1;
       setRates(null);
       setIsStale(false);
       setIsLoading(false);
@@ -80,7 +81,11 @@ export function ExchangeRateProvider({ children }: { children: React.ReactNode }
       if (!rates) {
         return null;
       }
-      return convertToJpy(amount, fromCurrency, rates);
+      try {
+        return convertToJpy(amount, fromCurrency, rates);
+      } catch {
+        return null;
+      }
     },
     [rates]
   );

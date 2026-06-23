@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ContractPriceText } from '@/components/currency/ContractPriceText';
 import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
@@ -24,7 +25,7 @@ import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/su
 // 関連機能: F-04（削除導線） / F-09（使用頻度・1回あたりコスト）
 export default function SubscriptionDetailRoute() {
   const router = useRouter();
-  const { formatInJpy, convertInJpy } = useExchangeRates();
+  const { convertInJpy } = useExchangeRates();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -145,9 +146,11 @@ export default function SubscriptionDetailRoute() {
               {plan.name}
             </Text>
             <View className="mt-1 flex-row items-baseline gap-2">
-              <Text className="text-lg font-bold text-foreground">
-                {formatInJpy(price, plan.currency)}
-              </Text>
+              <ContractPriceText
+                amount={price}
+                currency={plan.currency}
+                className="text-lg font-bold text-foreground"
+              />
               <Text className="text-sm font-semibold text-accent">
                 {getBillingCycleLabel(plan.cycle)}
               </Text>

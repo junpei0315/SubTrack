@@ -16,6 +16,7 @@ import { loadStoredExchangeRates, saveStoredExchangeRates } from '../fx/exchange
 
 const FRANKFURTER_LATEST_URL = 'https://api.frankfurter.app/latest';
 const CLIENT_REFRESH_MS = 60 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 10_000;
 
 let memorySnapshot: ExchangeRateSnapshot | null = null;
 let memoryFetchedAt = 0;
@@ -31,8 +32,35 @@ interface FxRatesEdgeResponse {
   cached?: boolean;
 }
 
+async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 async function fetchFromFrankfurter(): Promise<ExchangeRates> {
-  const response = await fetch(FRANKFURTER_LATEST_URL);
+  const response = await fetchWithTimeout(FRANKFURTER_LATEST_URL, FETCH_TIMEOUT_MS);
   if (!response.ok) {
     throw new Error(`Frankfurter API failed: ${response.status}`);
   }
@@ -45,7 +73,10 @@ async function fetchFromFrankfurter(): Promise<ExchangeRates> {
 }
 
 async function fetchFromEdgeFunction(): Promise<ExchangeRates> {
-  const { data, error } = await supabase.functions.invoke<FxRatesEdgeResponse>('fx-rates');
+  const { data, error } = await withTimeout(
+    supabase.functions.invoke<FxRatesEdgeResponse>('fx-rates'),
+    FETCH_TIMEOUT_MS
+  );
   if (error) {
     throw error;
   }

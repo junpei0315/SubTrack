@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
+import { ContractPriceText } from '@/components/currency/ContractPriceText';
 import { formatBillingDate, getBillingCycleLabel } from '@/src/domain/billingCycle';
 import type { Subscription } from '@/src/domain/subscription';
 import { getEffectiveSubscriptionPrice } from '@/src/domain/subscriptionPrice';
@@ -20,7 +20,6 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
   onPress,
 }) => {
   const { service, plan, nextBillingDate, status, cancelledAt } = subscription;
-  const { formatInJpy } = useExchangeRates();
   const isPaused = status === 'paused';
   const isCancelled = status === 'cancelled';
   const isDimmed = isPaused || isCancelled;
@@ -58,9 +57,11 @@ export const SubscriptionListItem: React.FC<SubscriptionListItemProps> = ({
       </View>
 
       <View className="items-end gap-0.5">
-        <Text className="text-base font-bold text-foreground">
-          {formatInJpy(getEffectiveSubscriptionPrice(subscription), plan.currency)}
-        </Text>
+        <ContractPriceText
+          amount={getEffectiveSubscriptionPrice(subscription)}
+          currency={plan.currency}
+          className="text-base font-bold text-foreground"
+        />
         <Text className="text-xs font-semibold text-accent">{getBillingCycleLabel(plan.cycle)}</Text>
         {isPaused ? <Text className="mt-0.5 text-[11px] text-subtle">停止中</Text> : null}
         {isCancelled ? <Text className="mt-0.5 text-[11px] text-subtle">解約済み</Text> : null}

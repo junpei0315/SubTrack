@@ -3,6 +3,7 @@
 
 const FRANKFURTER_LATEST_URL = 'https://api.frankfurter.app/latest';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 10_000;
 
 interface FrankfurterLatestResponse {
   date: string;
@@ -34,16 +35,23 @@ function buildToJpyRatesFromEurBase(eurRates: Record<string, number>): Record<st
 }
 
 async function fetchLatestRates(): Promise<ExchangeRatesPayload> {
-  const response = await fetch(FRANKFURTER_LATEST_URL);
-  if (!response.ok) {
-    throw new Error(`Frankfurter API failed: ${response.status}`);
-  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-  const data = (await response.json()) as FrankfurterLatestResponse;
-  return {
-    toJpy: buildToJpyRatesFromEurBase(data.rates),
-    asOfDate: data.date,
-  };
+  try {
+    const response = await fetch(FRANKFURTER_LATEST_URL, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`Frankfurter API failed: ${response.status}`);
+    }
+
+    const data = (await response.json()) as FrankfurterLatestResponse;
+    return {
+      toJpy: buildToJpyRatesFromEurBase(data.rates),
+      asOfDate: data.date,
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 Deno.serve(async (req: Request) => {
