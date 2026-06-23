@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { cssInterop } from 'nativewind';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import '../global.css';
@@ -119,19 +120,21 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={blackNavigationTheme}>
-      <AuthProvider>
-        <OnboardingProvider>
-          <View style={styles.root}>
-            <RootNavigator />
-            {!isSplashDone ? (
-              <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
-            ) : null}
-          </View>
-          <StatusBar style="light" />
-        </OnboardingProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider value={blackNavigationTheme}>
+        <AuthProvider>
+          <OnboardingProvider>
+            <View style={styles.root}>
+              <RootNavigator />
+              {!isSplashDone ? (
+                <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
+              ) : null}
+            </View>
+            <StatusBar style="light" />
+          </OnboardingProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 

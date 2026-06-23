@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "subsc-app",
+    "name": "SubTrack",
     "slug": "subsc-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,7 +23,16 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "bundler": "metro",
+      "favicon": "./assets/images/favicon.png",
+      "name": "SubTrack",
+      "shortName": "SubTrack",
+      "lang": "ja",
+      "display": "standalone",
+      "themeColor": "#000000",
+      "backgroundColor": "#000000",
+      "startUrl": "/",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",
@@ -50,6 +59,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fc5a4cb9-5162-48b6-9f35-4b7bc951f832"
+      }
+    },
+    "owner": "x13467980"
   }
 }
