@@ -18,9 +18,15 @@ import { PresetPickerFilters } from '@/components/subscriptions/PresetPickerFilt
 import { useCreateCustomSubscription } from '@/components/subscriptions/useCreateCustomSubscription';
 import { useCreateSubscriptionFromPreset } from '@/components/subscriptions/useCreateSubscriptionFromPreset';
 import { usePresetList } from '@/components/subscriptions/usePresetList';
+import { useSubscriptionList } from '@/components/subscriptions/useSubscriptionList';
 import { showAlert } from '@/components/ui/confirm';
 import { type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
+import {
+  getRegisteredPlanIds,
+  isPlanRegistered,
+  isPresetFullyRegistered,
+} from '@/src/domain/registeredPlanIds';
 
 // 関連機能: F-01（プリセット選択で一括登録）/ F-02（カスタム新規追加）
 // プリセットから追加 と 手動入力 をページ遷移なしで切り替える。
@@ -66,12 +72,23 @@ function PresetAddSection() {
   const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<PresetService | null>(null);
   const { presets, isLoading, errorMessage, reload } = usePresetList();
+  const { subscriptions } = useSubscriptionList();
   const { create, isSubmitting } = useCreateSubscriptionFromPreset();
+
+  const registeredPlanIds = useMemo(
+    () => getRegisteredPlanIds(subscriptions),
+    [subscriptions]
+  );
 
   const handleConfirm = async (selection: PresetSelection) => {
     const userId = session?.user.id;
     if (!userId) {
       Alert.alert('ログインが必要です', '再度ログインしてからお試しください。');
+      return;
+    }
+
+    if (isPlanRegistered(selection.plan.id, registeredPlanIds)) {
+      showAlert('登録できません', 'このプランはすでに登録されています。');
       return;
     }
 
@@ -112,6 +129,7 @@ function PresetAddSection() {
         errorMessage={errorMessage}
         onPresetPress={setSelectedPreset}
         onReload={reload}
+        isPresetDisabled={(preset) => isPresetFullyRegistered(preset, registeredPlanIds)}
         refreshable
       />
 
@@ -119,6 +137,7 @@ function PresetAddSection() {
         preset={selectedPreset}
         visible={selectedPreset !== null}
         isSubmitting={isSubmitting}
+        registeredPlanIds={registeredPlanIds}
         onClose={() => setSelectedPreset(null)}
         onConfirm={handleConfirm}
       />

@@ -14,6 +14,7 @@ interface PresetGridCardProps {
   width: number;
   /** 指定時は選択インジケータを表示（オンボーディングの複数選択用）。 */
   selected?: boolean;
+  disabled?: boolean;
   onPress?: (preset: PresetService) => void;
 }
 
@@ -25,6 +26,7 @@ export const PresetGridCard: React.FC<PresetGridCardProps> = ({
   preset,
   width,
   selected,
+  disabled = false,
   onPress,
 }) => {
   const logoSource = resolveServiceLogo(preset.logoKey, preset.logoUri);
@@ -32,6 +34,9 @@ export const PresetGridCard: React.FC<PresetGridCardProps> = ({
   const showSelection = selected !== undefined;
 
   const handlePress = () => {
+    if (disabled) {
+      return;
+    }
     void Haptics.selectionAsync();
     onPress?.(preset);
   };
@@ -39,12 +44,20 @@ export const PresetGridCard: React.FC<PresetGridCardProps> = ({
   return (
     <Pressable
       onPress={handlePress}
+      disabled={disabled}
       accessibilityRole="button"
-      accessibilityState={selected ? { selected: true } : {}}
-      accessibilityLabel={preset.name}
+      accessibilityState={{
+        ...(selected ? { selected: true } : {}),
+        ...(disabled ? { disabled: true } : {}),
+      }}
+      accessibilityLabel={disabled ? `${preset.name}、登録済み` : preset.name}
       style={{ width, aspectRatio: 1 }}
       className={`justify-between rounded-2xl border p-3 ${
-        selected ? 'border-accent bg-accent/10' : 'border-border bg-card'
+        disabled
+          ? 'border-border bg-card opacity-50'
+          : selected
+            ? 'border-accent bg-accent/10'
+            : 'border-border bg-card'
       }`}
     >
       <View className="flex-row items-start justify-between">
@@ -70,11 +83,14 @@ export const PresetGridCard: React.FC<PresetGridCardProps> = ({
       </View>
 
       <View className="gap-0.5">
-        <Text className="text-[13px] font-bold text-foreground" numberOfLines={2}>
+        <Text
+          className={`text-[13px] font-bold ${disabled ? 'text-subtle' : 'text-foreground'}`}
+          numberOfLines={2}
+        >
           {preset.name}
         </Text>
         <Text className="text-[11px] text-subtle" numberOfLines={1}>
-          {preset.genre}
+          {disabled ? '登録済み' : preset.genre}
         </Text>
       </View>
     </Pressable>
