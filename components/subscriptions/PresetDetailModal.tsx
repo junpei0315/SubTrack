@@ -35,6 +35,8 @@ interface PresetDetailModalProps {
   preset: PresetService | null;
   visible: boolean;
   isSubmitting?: boolean;
+  /** 契約一覧の取得が成功し、登録済み判定が信頼できる状態か。 */
+  registeredPlanIdsReady?: boolean;
   registeredPlanIds?: ReadonlySet<string>;
   onClose: () => void;
   onConfirm: (selection: PresetSelection) => void;
@@ -55,6 +57,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   preset,
   visible,
   isSubmitting = false,
+  registeredPlanIdsReady = true,
   registeredPlanIds,
   onClose,
   onConfirm,
@@ -68,7 +71,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     [preset, selectedPlanId]
   );
 
-  // モーダルを開くたびに初期状態へ戻す（未登録の最初のプランを選択、開始日は今日）。
+  // モーダルを開いた／別プリセットに切り替えたときだけフォームを初期化する。
   useEffect(() => {
     if (!visible || !preset) {
       return;
@@ -78,7 +81,20 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     setSelectedPlanId(firstPlan?.id ?? null);
     setPriceText(firstPlan ? String(firstPlan.price) : '');
     setStartDate(new Date());
-  }, [visible, preset, registeredPlanIds]);
+  }, [visible, preset?.id]);
+
+  // 登録状況の後追い反映: 現在の選択が登録済みになった場合のみ差し替える。
+  useEffect(() => {
+    if (!visible || !preset || !registeredPlanIds || !selectedPlanId) {
+      return;
+    }
+    if (!registeredPlanIds.has(selectedPlanId)) {
+      return;
+    }
+    const fallback = findFirstAvailablePlan(preset.plans, registeredPlanIds);
+    setSelectedPlanId(fallback?.id ?? null);
+    setPriceText(fallback ? String(fallback.price) : '');
+  }, [visible, preset, registeredPlanIds, selectedPlanId]);
 
   if (!preset) {
     return null;
@@ -102,7 +118,11 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   const isSelectedPlanRegistered =
     selectedPlan != null && (registeredPlanIds?.has(selectedPlan.id) ?? false);
   const canConfirm =
-    selectedPlan != null && isPriceValid && !isSubmitting && !isSelectedPlanRegistered;
+    registeredPlanIdsReady &&
+    selectedPlan != null &&
+    isPriceValid &&
+    !isSubmitting &&
+    !isSelectedPlanRegistered;
 
   const handleConfirm = () => {
     if (!selectedPlan || !isPriceValid) {

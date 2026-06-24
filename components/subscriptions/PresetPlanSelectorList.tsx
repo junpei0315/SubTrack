@@ -51,17 +51,21 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
           accessibilityRole="button"
           accessibilityState={{
             ...(isSelected ? { selected: true } : {}),
-            ...(isRegistered ? { disabled: true } : {}),
+            ...(isDisabled ? { disabled: true } : {}),
           }}
           accessibilityLabel={
-            isRegistered ? `${plan.name}、登録済み` : `${plan.name}、${priceLabel}`
+            isRegistered
+              ? `${plan.name}、登録済み`
+              : isDisabled
+                ? `${plan.name}、${priceLabel}、選択不可`
+                : `${plan.name}、${priceLabel}`
           }
           onPress={() => {
             void Haptics.selectionAsync();
             onSelectPlan(plan);
           }}
           className={`flex-row items-center justify-between rounded-2xl border p-4 ${
-            isRegistered
+            isDisabled
               ? 'border-border bg-card opacity-50'
               : isSelected
                 ? 'border-accent bg-accent/10'
@@ -79,14 +83,14 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
             <MarqueeText
               text={plan.name}
               active={isSelected}
-              className={`flex-1 ${isRegistered ? 'text-subtle' : ''}`}
+              className={`flex-1 ${isDisabled ? 'text-subtle' : ''}`}
             />
             {isRegistered ? (
               <Text className="shrink-0 text-xs font-semibold text-subtle">登録済み</Text>
             ) : null}
           </View>
           <Text
-            className={`pl-3 text-[15px] font-bold ${isRegistered ? 'text-subtle' : 'text-foreground'}`}
+            className={`pl-3 text-[15px] font-bold ${isDisabled ? 'text-subtle' : 'text-foreground'}`}
           >
             {formattedPrice}
             <Text className="text-[13px] font-semibold text-subtle">

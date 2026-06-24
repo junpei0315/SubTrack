@@ -20,6 +20,7 @@ import { useCreateSubscriptionFromPreset } from '@/components/subscriptions/useC
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { useSubscriptionList } from '@/components/subscriptions/useSubscriptionList';
 import { showAlert } from '@/components/ui/confirm';
+import { DUPLICATE_PLAN_ERROR } from '@/src/application/createSubscriptionFromPreset';
 import { type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
 import {
@@ -72,18 +73,42 @@ function PresetAddSection() {
   const [genreFilter, setGenreFilter] = useState<GenreId | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<PresetService | null>(null);
   const { presets, isLoading, errorMessage, reload } = usePresetList();
-  const { subscriptions } = useSubscriptionList();
+  const {
+    subscriptions,
+    isLoading: isLoadingSubscriptions,
+    errorMessage: subscriptionsError,
+    reload: reloadSubscriptions,
+  } = useSubscriptionList();
   const { create, isSubmitting } = useCreateSubscriptionFromPreset();
 
+  const isRegisteredStateReady = !isLoadingSubscriptions && subscriptionsError === null;
+
   const registeredPlanIds = useMemo(
-    () => getRegisteredPlanIds(subscriptions),
-    [subscriptions]
+    () => (isRegisteredStateReady ? getRegisteredPlanIds(subscriptions) : new Set<string>()),
+    [subscriptions, isRegisteredStateReady]
   );
+
+  const handlePresetPress = (preset: PresetService) => {
+    if (!isRegisteredStateReady) {
+      return;
+    }
+    setSelectedPreset(preset);
+  };
+
+  const handleReload = () => {
+    void reload();
+    void reloadSubscriptions();
+  };
 
   const handleConfirm = async (selection: PresetSelection) => {
     const userId = session?.user.id;
     if (!userId) {
       Alert.alert('ログインが必要です', '再度ログインしてからお試しください。');
+      return;
+    }
+
+    if (!isRegisteredStateReady) {
+      showAlert('読み込み中です', '登録状況の確認が完了するまでお待ちください。');
       return;
     }
 
@@ -104,7 +129,11 @@ function PresetAddSection() {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSelectedPreset(null);
       router.back();
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message === DUPLICATE_PLAN_ERROR) {
+        showAlert('登録できません', 'このプランはすでに登録されています。');
+        return;
+      }
       Alert.alert('登録に失敗しました', '通信環境を確認して再度お試しください。');
     }
   };
@@ -125,11 +154,13 @@ function PresetAddSection() {
 
       <PresetGridList
         presets={filtered}
-        isLoading={isLoading}
-        errorMessage={errorMessage}
-        onPresetPress={setSelectedPreset}
-        onReload={reload}
-        isPresetDisabled={(preset) => isPresetFullyRegistered(preset, registeredPlanIds)}
+        isLoading={isLoading || isLoadingSubscriptions}
+        errorMessage={errorMessage ?? subscriptionsError}
+        onPresetPress={handlePresetPress}
+        onReload={handleReload}
+        isPresetDisabled={(preset) =>
+          isRegisteredStateReady && isPresetFullyRegistered(preset, registeredPlanIds)
+        }
         refreshable
       />
 
@@ -137,7 +168,8 @@ function PresetAddSection() {
         preset={selectedPreset}
         visible={selectedPreset !== null}
         isSubmitting={isSubmitting}
-        registeredPlanIds={registeredPlanIds}
+        registeredPlanIdsReady={isRegisteredStateReady}
+        registeredPlanIds={isRegisteredStateReady ? registeredPlanIds : undefined}
         onClose={() => setSelectedPreset(null)}
         onConfirm={handleConfirm}
       />

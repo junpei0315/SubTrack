@@ -1,7 +1,10 @@
 import type { BillingCycle } from '@/src/domain/billingCycle';
 import { calcNextBillingDate } from '@/src/domain/nextBillingDate';
+import { getRegisteredPlanIds, isPlanRegistered } from '@/src/domain/registeredPlanIds';
 import type { Subscription } from '@/src/domain/subscription';
 import type { CreateSubscriptionInput, SubscriptionRepository } from '@/src/ports/subscriptionRepository';
+
+export const DUPLICATE_PLAN_ERROR = 'DUPLICATE_PLAN';
 
 export interface CreateSubscriptionFromPresetParams {
   userId: string;
@@ -34,6 +37,12 @@ export async function createSubscriptionFromPreset(
 ): Promise<Subscription> {
   assertValidPrice('price', params.price);
   assertValidPrice('planPrice', params.planPrice);
+
+  const existing = await repository.findAll();
+  const registeredPlanIds = getRegisteredPlanIds(existing);
+  if (isPlanRegistered(params.planId, registeredPlanIds)) {
+    throw new Error(DUPLICATE_PLAN_ERROR);
+  }
 
   const nextBillingDate = calcNextBillingDate(params.startDate, params.cycle);
 
