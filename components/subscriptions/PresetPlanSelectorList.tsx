@@ -23,6 +23,7 @@ interface PresetPlanSelectorListProps {
   plans: PresetPlan[];
   selectedPlanId: string | null;
   disabled?: boolean;
+  registeredPlanIds?: ReadonlySet<string>;
   onSelectPlan: (plan: PresetPlan) => void;
 }
 
@@ -31,28 +32,44 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
   plans,
   selectedPlanId,
   disabled = false,
+  registeredPlanIds,
   onSelectPlan,
 }) => {
   return (
   <View className="gap-2.5">
     {plans.map((plan) => {
-      const isSelected = plan.id === selectedPlanId;
+      const isRegistered = registeredPlanIds?.has(plan.id) ?? false;
+      const isSelected = !isRegistered && plan.id === selectedPlanId;
+      const isDisabled = disabled || isRegistered;
       const formattedPrice = formatPrice(plan.price, plan.currency);
       const priceLabel = `${formattedPrice} / ${cycleLabel(plan.cycle)}`;
       return (
         <TouchableOpacity
           key={plan.id}
           activeOpacity={0.8}
-          disabled={disabled}
+          disabled={isDisabled}
           accessibilityRole="button"
-          accessibilityState={isSelected ? { selected: true } : {}}
-          accessibilityLabel={`${plan.name}、${priceLabel}`}
+          accessibilityState={{
+            ...(isSelected ? { selected: true } : {}),
+            ...(isDisabled ? { disabled: true } : {}),
+          }}
+          accessibilityLabel={
+            isRegistered
+              ? `${plan.name}、登録済み`
+              : isDisabled
+                ? `${plan.name}、${priceLabel}、選択不可`
+                : `${plan.name}、${priceLabel}`
+          }
           onPress={() => {
             void Haptics.selectionAsync();
             onSelectPlan(plan);
           }}
           className={`flex-row items-center justify-between rounded-2xl border p-4 ${
-            isSelected ? 'border-accent bg-accent/10' : 'border-border bg-card'
+            isDisabled
+              ? 'border-border bg-card opacity-50'
+              : isSelected
+                ? 'border-accent bg-accent/10'
+                : 'border-border bg-card'
           }`}
         >
           <View className="flex-1 flex-row items-center gap-3">
@@ -63,9 +80,18 @@ export const PresetPlanSelectorList: React.FC<PresetPlanSelectorListProps> = ({
             >
               {isSelected ? <MaterialIcons name="check" size={12} color={AppColors.text} /> : null}
             </View>
-            <MarqueeText text={plan.name} active={isSelected} className="flex-1" />
+            <MarqueeText
+              text={plan.name}
+              active={isSelected}
+              className={`flex-1 ${isDisabled ? 'text-subtle' : ''}`}
+            />
+            {isRegistered ? (
+              <Text className="shrink-0 text-xs font-semibold text-subtle">登録済み</Text>
+            ) : null}
           </View>
-          <Text className="pl-3 text-[15px] font-bold text-foreground">
+          <Text
+            className={`pl-3 text-[15px] font-bold ${isDisabled ? 'text-subtle' : 'text-foreground'}`}
+          >
             {formattedPrice}
             <Text className="text-[13px] font-semibold text-subtle">
               {' '}

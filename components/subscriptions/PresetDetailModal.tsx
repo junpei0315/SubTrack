@@ -17,6 +17,7 @@ import { AppColors } from '@/constants/colors';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
 import { formatPrice } from '@/src/domain/money';
 import type { PresetPlan, PresetService } from '@/src/domain/preset';
+import { findFirstAvailablePlan } from '@/src/domain/registeredPlanIds';
 
 import { PresetPlanSelectorList } from './PresetPlanSelectorList';
 import { resolveServiceLogo } from './serviceLogos';
@@ -34,6 +35,9 @@ interface PresetDetailModalProps {
   preset: PresetService | null;
   visible: boolean;
   isSubmitting?: boolean;
+  /** 契約一覧の取得が成功し、登録済み判定が信頼できる状態か。 */
+  registeredPlanIdsReady?: boolean;
+  registeredPlanIds?: ReadonlySet<string>;
   onClose: () => void;
   onConfirm: (selection: PresetSelection) => void;
 }
@@ -53,6 +57,8 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   preset,
   visible,
   isSubmitting = false,
+  registeredPlanIdsReady = true,
+  registeredPlanIds,
   onClose,
   onConfirm,
 }) => {
@@ -65,16 +71,30 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     [preset, selectedPlanId]
   );
 
-  // モーダルを開くたびに初期状態へ戻す（最初のプランを選択、開始日は今日）。
+  // モーダルを開いた／別プリセットに切り替えたときだけフォームを初期化する。
   useEffect(() => {
     if (!visible || !preset) {
       return;
     }
-    const firstPlan = preset.plans[0] ?? null;
+    const registered = registeredPlanIds ?? new Set<string>();
+    const firstPlan = findFirstAvailablePlan(preset.plans, registered);
     setSelectedPlanId(firstPlan?.id ?? null);
     setPriceText(firstPlan ? String(firstPlan.price) : '');
     setStartDate(new Date());
-  }, [visible, preset]);
+  }, [visible, preset?.id]);
+
+  // 登録状況の後追い反映: 現在の選択が登録済みになった場合のみ差し替える。
+  useEffect(() => {
+    if (!visible || !preset || !registeredPlanIds || !selectedPlanId) {
+      return;
+    }
+    if (!registeredPlanIds.has(selectedPlanId)) {
+      return;
+    }
+    const fallback = findFirstAvailablePlan(preset.plans, registeredPlanIds);
+    setSelectedPlanId(fallback?.id ?? null);
+    setPriceText(fallback ? String(fallback.price) : '');
+  }, [visible, preset, registeredPlanIds, selectedPlanId]);
 
   if (!preset) {
     return null;
@@ -85,6 +105,9 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   const currency = selectedPlan?.currency ?? preset.plans[0]?.currency ?? 'JPY';
 
   const handleSelectPlan = (plan: PresetPlan) => {
+    if (registeredPlanIds?.has(plan.id)) {
+      return;
+    }
     setSelectedPlanId(plan.id);
     setPriceText(String(plan.price));
   };
@@ -92,7 +115,14 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   const parsedPrice = Number(priceText.replace(/[^0-9.]/g, ''));
   const isPriceValid = priceText.trim().length > 0 && !Number.isNaN(parsedPrice) && parsedPrice >= 0;
   const priceChanged = selectedPlan != null && isPriceValid && parsedPrice !== selectedPlan.price;
-  const canConfirm = selectedPlan != null && isPriceValid && !isSubmitting;
+  const isSelectedPlanRegistered =
+    selectedPlan != null && (registeredPlanIds?.has(selectedPlan.id) ?? false);
+  const canConfirm =
+    registeredPlanIdsReady &&
+    selectedPlan != null &&
+    isPriceValid &&
+    !isSubmitting &&
+    !isSelectedPlanRegistered;
 
   const handleConfirm = () => {
     if (!selectedPlan || !isPriceValid) {
@@ -166,6 +196,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
               plans={preset.plans}
               selectedPlanId={selectedPlanId}
               disabled={isSubmitting}
+              registeredPlanIds={registeredPlanIds}
               onSelectPlan={handleSelectPlan}
             />
 

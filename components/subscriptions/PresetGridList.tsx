@@ -24,6 +24,7 @@ interface PresetGridListProps {
   onPresetPress: (preset: PresetService) => void;
   onReload?: () => void;
   getSelected?: (preset: PresetService) => boolean;
+  isPresetDisabled?: (preset: PresetService) => boolean;
   refreshable?: boolean;
   showEmptyReloadButton?: boolean;
 }
@@ -36,6 +37,7 @@ export const PresetGridList: React.FC<PresetGridListProps> = ({
   onPresetPress,
   onReload,
   getSelected,
+  isPresetDisabled,
   refreshable = false,
   showEmptyReloadButton = false,
 }) => {
@@ -61,6 +63,7 @@ export const PresetGridList: React.FC<PresetGridListProps> = ({
           preset={item}
           width={cardWidth}
           selected={showSelection ? getSelected(item) : undefined}
+          disabled={isPresetDisabled?.(item) ?? false}
           onPress={onPresetPress}
         />
       )}
