@@ -11,10 +11,6 @@ import type { Subscription } from '@/src/domain/subscription';
 
 import { useCalendarSubscriptions } from './useCalendarSubscriptions';
 
-interface CalendarProps {
-  onDateSelect?: (date: Date) => void;
-}
-
 interface CalendarDay {
   date: Date;
   day: number;
@@ -25,7 +21,7 @@ interface CalendarDay {
 // 日曜始まり
 const DAYS_OF_WEEK = ['日', '月', '火', '水', '木', '金', '土'];
 
-export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
+export const Calendar: React.FC = () => {
   const {
     currentDate,
     selectedDate,
@@ -33,7 +29,6 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     subscriptions,
     goToPrev,
     goToNext,
-    selectDate,
     toggleExpanded,
   } = useCalendarSubscriptions();
 
@@ -84,15 +79,10 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     return weeks;
   };
 
-  const handleDatePress = (day: CalendarDay) => {
-    selectDate(day.date);
-    onDateSelect?.(day.date);
-  };
-
   const weeksToRender = isExpanded ? getMonthWeeks() : [getWeekDays(selectedDate)];
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const selectedDateString = formatLocalDate(selectedDate);
+  const todayString = formatLocalDate(new Date());
 
   const getIconName = (serviceName: string): keyof typeof MaterialIcons.glyphMap => {
     const iconMap: Record<string, keyof typeof MaterialIcons.glyphMap> = {
@@ -168,24 +158,19 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
             {weeksToRender.map((week, weekIndex) => (
               <View key={weekIndex} className="flex-row">
                 {week.map((day, dayIndex) => {
-                  const isSelected = formatLocalDate(day.date) === selectedDateString;
+                  const isToday = formatLocalDate(day.date) === todayString;
                   const isSunday = dayIndex === 0;
                   const isSaturday = dayIndex === 6;
                   return (
-                    <TouchableOpacity
-                      key={dayIndex}
-                      className="h-16 flex-1 items-center px-0.5 py-0.5"
-                      onPress={() => handleDatePress(day)}
-                      activeOpacity={0.7}
-                    >
+                    <View key={dayIndex} className="h-16 flex-1 items-center px-0.5 py-0.5">
                       <View
                         className={`h-full w-full items-center rounded-lg pt-1.5 ${
-                          isSelected ? 'bg-accent' : ''
+                          isToday ? 'bg-accent' : ''
                         }`}
                       >
                         <Text
-                          className={`text-base ${isSelected ? 'font-bold' : 'font-medium'} ${
-                            isSelected
+                          className={`text-base ${isToday ? 'font-bold' : 'font-medium'} ${
+                            isToday
                               ? 'text-foreground'
                               : !day.isCurrentMonth
                               ? 'text-border-muted opacity-50'
@@ -216,14 +201,14 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                                 key={`${sub.id}-${idx}`}
                                 name={getIconName(sub.service.name)}
                                 size={22}
-                                color={isSelected ? AppColors.text : AppColors.accent}
+                                color={isToday ? AppColors.text : AppColors.accent}
                               />
                             );
                           })}
                           {day.subscriptions.length > 2 && (
                             <Text
                               className={`text-[8px] ${
-                                isSelected ? 'text-foreground' : 'text-accent'
+                                isToday ? 'text-foreground' : 'text-accent'
                               }`}
                             >
                               +{day.subscriptions.length - 2}
@@ -231,7 +216,7 @@ export const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
                           )}
                         </View>
                       </View>
-                    </TouchableOpacity>
+                    </View>
                   );
                 })}
               </View>
