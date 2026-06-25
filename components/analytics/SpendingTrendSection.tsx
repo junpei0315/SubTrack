@@ -1,7 +1,10 @@
 import React, { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
+import { AnalyticsCard } from '@/components/analytics/AnalyticsCard';
+import { AnalyticsSection } from '@/components/analytics/AnalyticsSection';
 import { BarTrendChart } from '@/components/analytics/BarTrendChart';
+import { AppColors } from '@/constants/colors';
 import { formatPrice } from '@/src/domain/money';
 import type { MonthlySpendingTrend } from '@/src/domain/monthlySpendingTrend';
 
@@ -35,43 +38,50 @@ export const SpendingTrendSection: React.FC<SpendingTrendSectionProps> = ({ tren
 
   if (!trend || points.every((point) => point.amount === 0)) {
     return (
-      <View className="gap-2">
-        <Text className="text-base font-bold text-foreground">支出の推移</Text>
-        <Text className="text-sm text-subtle">表示できる契約データがありません</Text>
-      </View>
+      <AnalyticsSection
+        title="支出の推移"
+        subtitle="契約情報から算出した想定支出（実際の引き落とし履歴ではありません）"
+      >
+        <AnalyticsCard>
+          <Text className="text-sm text-subtle">表示できる契約データがありません</Text>
+        </AnalyticsCard>
+      </AnalyticsSection>
     );
   }
 
   return (
-    <View className="gap-3">
-      <View className="gap-1">
-        <Text className="text-base font-bold text-foreground">支出の推移</Text>
-        <Text className="text-xs text-subtle">
-          契約情報から算出した想定支出です（実際の引き落とし履歴ではありません）
+    <AnalyticsSection
+      title="支出の推移"
+      subtitle="契約情報から算出した想定支出（実際の引き落とし履歴ではありません）"
+    >
+      <AnalyticsCard className="gap-4">
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <BarTrendChart points={points} />
+        </ScrollView>
+
+        <View className="flex-row items-center gap-4">
+          <LegendDot color={AppColors.accentBrand} label="確定・過去" />
+          <LegendDot color="rgba(220, 5, 45, 0.35)" label="想定（未来）" />
+        </View>
+      </AnalyticsCard>
+
+      <AnalyticsCard>
+        <Text className="text-xs font-semibold uppercase tracking-wide text-muted">
+          今月の想定支出
         </Text>
-      </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <BarTrendChart points={points} />
-      </ScrollView>
-
-      <View className="flex-row items-center gap-4">
-        <View className="flex-row items-center gap-2">
-          <View className="h-2.5 w-2.5 rounded-sm bg-accent-brand" />
-          <Text className="text-xs text-subtle">確定・過去</Text>
-        </View>
-        <View className="flex-row items-center gap-2">
-          <View className="h-2.5 w-2.5 rounded-sm bg-accent-brand/35" />
-          <Text className="text-xs text-subtle">想定（未来）</Text>
-        </View>
-      </View>
-
-      <View className="rounded-2xl bg-card px-4 py-3">
-        <Text className="text-xs text-subtle">今月の想定支出</Text>
-        <Text className="text-xl font-bold text-foreground">
+        <Text className="mt-1 text-2xl font-bold text-foreground">
           {formatPrice(currentActualPoint?.amount ?? 0, trend.currency)}
         </Text>
-      </View>
-    </View>
+      </AnalyticsCard>
+    </AnalyticsSection>
   );
 };
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <View className="flex-row items-center gap-2">
+      <View className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: color }} />
+      <Text className="text-xs text-subtle">{label}</Text>
+    </View>
+  );
+}

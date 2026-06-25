@@ -21,12 +21,13 @@ export async function syncSubscriptionNotifications(input: {
     return;
   }
 
-  const [subscriptions, unusedAlerts] = await Promise.all([
+  const [subscriptions, { alerts: unusedAlerts }] = await Promise.all([
     input.subscriptionRepository.findAll(),
     getUnusedSubscriptionAlerts(
       input.subscriptionRepository,
       input.usageLogRepository,
-      input.userId
+      input.userId,
+      { requireAnyUsageLogs: true }
     ),
   ]);
 

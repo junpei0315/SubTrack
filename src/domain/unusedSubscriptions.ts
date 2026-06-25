@@ -3,6 +3,7 @@
  */
 
 import { parseLocalDate } from './localDate';
+import { toLocalDateOnly } from './nextBillingDate';
 import type { Subscription } from './subscription';
 
 export const DEFAULT_UNUSED_THRESHOLD_DAYS = 30;
@@ -22,6 +23,11 @@ export interface DetectUnusedSubscriptionsInput {
   lastUsedDateBySubscriptionId: ReadonlyMap<string, string>;
   /** ユーザーが一度でも利用チェックを使ったか */
   hasAnyUsageLogs: boolean;
+  /**
+   * true のとき、利用チェック未使用ユーザーにはアラートを出さない（F-11・通知向け）。
+   * 分析画面では false にし、サブスクごとの未利用を判定する。
+   */
+  requireAnyUsageLogs?: boolean;
   today?: Date;
 }
 
@@ -36,13 +42,27 @@ function daysBetween(from: Date, to: Date): number {
   return Math.floor((to.getTime() - from.getTime()) / msPerDay);
 }
 
+/** 未利用判定の基準日。契約開始日とアプリ登録日のうち、経過を測る起点として使う。 */
+function getSubscriptionElapsedDays(subscription: Subscription, todayOnly: Date): {
+  daysSinceStart: number;
+  daysSinceCreated: number;
+} {
+  const startOnly = toLocalDateOnly(subscription.startDate);
+  const createdOnly = toLocalDateOnly(subscription.createdAt);
+  return {
+    daysSinceStart: daysBetween(startOnly, todayOnly),
+    daysSinceCreated: daysBetween(createdOnly, todayOnly),
+  };
+}
+
 export function detectUnusedSubscriptions({
   subscriptions,
   lastUsedDateBySubscriptionId,
   hasAnyUsageLogs,
+  requireAnyUsageLogs = false,
   today = new Date(),
 }: DetectUnusedSubscriptionsInput): UnusedSubscriptionAlert[] {
-  if (!hasAnyUsageLogs) {
+  if (requireAnyUsageLogs && !hasAnyUsageLogs) {
     return [];
   }
 
@@ -55,16 +75,15 @@ export function detectUnusedSubscriptions({
     }
 
     const thresholdDays = getUnusedThresholdDays(subscription);
-    const registeredDays = daysBetween(
-      new Date(
-        subscription.createdAt.getFullYear(),
-        subscription.createdAt.getMonth(),
-        subscription.createdAt.getDate()
-      ),
+    const { daysSinceStart, daysSinceCreated } = getSubscriptionElapsedDays(
+      subscription,
       todayOnly
     );
 
-    if (registeredDays < thresholdDays) {
+    // 本当に新しい契約だけ猶予（アプリ登録・契約開始のどちらも threshold 未満）
+    const isWithinGracePeriod =
+      daysSinceCreated < thresholdDays && daysSinceStart < thresholdDays;
+    if (isWithinGracePeriod) {
       continue;
     }
 
@@ -72,7 +91,7 @@ export function detectUnusedSubscriptions({
     const daysSinceLastUse =
       lastUsedDate != null
         ? daysBetween(parseLocalDate(lastUsedDate), todayOnly)
-        : registeredDays;
+        : daysSinceStart;
 
     if (daysSinceLastUse >= thresholdDays) {
       alerts.push({

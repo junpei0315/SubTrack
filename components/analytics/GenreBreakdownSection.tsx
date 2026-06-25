@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
+import { AnalyticsCard } from '@/components/analytics/AnalyticsCard';
+import { AnalyticsSection } from '@/components/analytics/AnalyticsSection';
 import { getChartColor } from '@/components/analytics/chartColors';
 import { DonutChart } from '@/components/analytics/DonutChart';
 import { formatPrice } from '@/src/domain/money';
@@ -25,52 +27,52 @@ export const GenreBreakdownSection: React.FC<GenreBreakdownSectionProps> = ({ br
 
   if (!breakdown || breakdown.items.length === 0) {
     return (
-      <View className="gap-2">
-        <Text className="text-base font-bold text-foreground">ジャンル別の支出</Text>
-        <Text className="text-sm text-subtle">契約中のサブスクがありません</Text>
-      </View>
+      <AnalyticsSection title="ジャンル別の支出" subtitle="月額換算での内訳">
+        <AnalyticsCard>
+          <Text className="text-sm text-subtle">契約中のサブスクがありません</Text>
+        </AnalyticsCard>
+      </AnalyticsSection>
     );
   }
 
   return (
-    <View className="gap-4">
-      <View className="gap-1">
-        <Text className="text-base font-bold text-foreground">ジャンル別の支出</Text>
-        <Text className="text-sm text-subtle">月額換算での内訳</Text>
-      </View>
-
-      <View className="items-center">
-        <DonutChart segments={segments} />
-        <Text className="mt-3 text-2xl font-bold text-foreground">
-          {formatPrice(breakdown.totalMonthlyAmount, breakdown.currency)}
-        </Text>
-        <Text className="text-xs text-subtle">月額換算合計</Text>
-      </View>
+    <AnalyticsSection title="ジャンル別の支出" subtitle="月額換算での内訳">
+      <AnalyticsCard className="items-center gap-4">
+        <DonutChart segments={segments} size={184} />
+        <View className="items-center gap-0.5">
+          <Text className="text-3xl font-bold text-foreground">
+            {formatPrice(breakdown.totalMonthlyAmount, breakdown.currency)}
+          </Text>
+          <Text className="text-xs text-subtle">月額換算合計</Text>
+        </View>
+      </AnalyticsCard>
 
       <View className="gap-2">
         {breakdown.items.map((item, index) => (
           <Pressable
             key={item.genre}
             onPress={() => setSelectedGenre(item)}
-            className="flex-row items-center justify-between rounded-2xl bg-card px-4 py-3 active:opacity-80"
+            className="active:opacity-80"
             accessibilityRole="button"
             accessibilityLabel={`${item.genre} ${Math.round(item.percentage * 100)}パーセント`}
           >
-            <View className="min-w-0 flex-1 flex-row items-center gap-3">
-              <View
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: getChartColor(index) }}
-              />
-              <Text className="flex-1 text-sm font-semibold text-foreground" numberOfLines={1}>
-                {item.genre}
-              </Text>
-            </View>
-            <View className="items-end">
-              <Text className="text-sm font-bold text-foreground">
-                {formatPrice(item.amount, breakdown.currency)}
-              </Text>
-              <Text className="text-xs text-subtle">{Math.round(item.percentage * 100)}%</Text>
-            </View>
+            <AnalyticsCard className="flex-row items-center justify-between py-3">
+              <View className="min-w-0 flex-1 flex-row items-center gap-3">
+                <View
+                  className="h-3 w-3 rounded-full"
+                  style={{ backgroundColor: getChartColor(index) }}
+                />
+                <Text className="flex-1 text-sm font-semibold text-foreground" numberOfLines={1}>
+                  {item.genre}
+                </Text>
+              </View>
+              <View className="items-end">
+                <Text className="text-sm font-bold text-foreground">
+                  {formatPrice(item.amount, breakdown.currency)}
+                </Text>
+                <Text className="text-xs text-subtle">{Math.round(item.percentage * 100)}%</Text>
+              </View>
+            </AnalyticsCard>
           </Pressable>
         ))}
       </View>
@@ -80,7 +82,7 @@ export const GenreBreakdownSection: React.FC<GenreBreakdownSectionProps> = ({ br
         currency={breakdown.currency}
         onClose={() => setSelectedGenre(null)}
       />
-    </View>
+    </AnalyticsSection>
   );
 };
 
