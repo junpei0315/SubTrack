@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useRef, useState } from 'react';
 
 import type { Subscription } from '@/src/domain/subscription';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
@@ -19,15 +20,15 @@ export function useCalendarSubscriptions() {
     const requestId = ++requestIdRef.current;
     const results = await subscriptionRepositorySupabase.findAll();
     if (requestId === requestIdRef.current) {
-      setSubscriptions(
-        results.filter((sub) => sub.status === 'active' || sub.status === 'cancelled')
-      );
+      setSubscriptions(results.filter((sub) => sub.status === 'active'));
     }
   }, []);
 
-  useEffect(() => {
-    void loadSubscriptions();
-  }, [loadSubscriptions]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadSubscriptions();
+    }, [loadSubscriptions])
+  );
 
   // 月表示で月を移動するとき、selectedDate も移動先の月へ寄せる。
   // 週表示は selectedDate 基準で描画するため、同期しないとヘッダー月と表示週がずれる。
@@ -71,20 +72,6 @@ export function useCalendarSubscriptions() {
     goToWeek(1);
   }, [isExpanded, goToMonth, goToWeek]);
 
-  const selectDate = useCallback(
-    (date: Date) => {
-      const day = startOfDay(date);
-      setSelectedDate(day);
-      if (
-        day.getMonth() !== currentDate.getMonth() ||
-        day.getFullYear() !== currentDate.getFullYear()
-      ) {
-        setCurrentDate(new Date(day.getFullYear(), day.getMonth(), 1));
-      }
-    },
-    [currentDate]
-  );
-
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
@@ -96,7 +83,6 @@ export function useCalendarSubscriptions() {
     subscriptions,
     goToPrev,
     goToNext,
-    selectDate,
     toggleExpanded,
   };
 }
