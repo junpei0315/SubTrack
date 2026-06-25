@@ -16,6 +16,7 @@ interface AnalyticsState {
   genreBreakdown: GenreSpendingBreakdown | null;
   spendingTrend: MonthlySpendingTrend | null;
   unusedAlerts: UnusedSubscriptionAlert[];
+  hasUsageLogs: boolean;
   isLoading: boolean;
   errorMessage: string | null;
 }
@@ -24,6 +25,7 @@ const INITIAL_STATE: AnalyticsState = {
   genreBreakdown: null,
   spendingTrend: null,
   unusedAlerts: [],
+  hasUsageLogs: false,
   isLoading: true,
   errorMessage: null,
 };
@@ -47,7 +49,7 @@ export function useAnalytics() {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
 
     try {
-      const [genreBreakdown, spendingTrend, unusedAlerts] = await Promise.all([
+      const [genreBreakdown, spendingTrend, unusedResult] = await Promise.all([
         getGenreSpendingBreakdown(subscriptionRepositorySupabase, fxRateRepositorySupabase),
         getMonthlySpendingTrend(subscriptionRepositorySupabase, fxRateRepositorySupabase),
         getUnusedSubscriptionAlerts(
@@ -64,7 +66,8 @@ export function useAnalytics() {
       setState({
         genreBreakdown,
         spendingTrend,
-        unusedAlerts,
+        unusedAlerts: unusedResult.alerts,
+        hasUsageLogs: unusedResult.hasUsageLogs,
         isLoading: false,
         errorMessage: null,
       });
@@ -76,6 +79,7 @@ export function useAnalytics() {
         genreBreakdown: null,
         spendingTrend: null,
         unusedAlerts: [],
+        hasUsageLogs: false,
         isLoading: false,
         errorMessage: '分析データの取得に失敗しました',
       });
