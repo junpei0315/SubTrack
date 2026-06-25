@@ -1,6 +1,5 @@
-import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { formatPrice } from '@/src/domain/money';
@@ -22,62 +21,51 @@ export const SavingsPotentialSection: React.FC<SavingsPotentialSectionProps> = (
     if (!rates) {
       return null;
     }
-    return computeSavingsInsight(unusedAlerts, rates, hasUsageLogs);
-  }, [unusedAlerts, rates, hasUsageLogs]);
+    return computeSavingsInsight(unusedAlerts, rates);
+  }, [unusedAlerts, rates]);
 
   if (!insight) {
     return null;
   }
 
-  if (!insight.hasUsageLogs) {
-    return <UsageTrackingPrompt />;
-  }
-
   if (insight.monthlyAmountJpy <= 0) {
-    return <NoSavingsCard />;
+    return <NoSavingsCard hasUsageLogs={hasUsageLogs} />;
   }
 
-  return <SavingsCard insight={insight} />;
+  return <SavingsCard insight={insight} hasUsageLogs={hasUsageLogs} />;
 };
 
-function UsageTrackingPrompt() {
-  const router = useRouter();
-
-  return (
-    <View className="gap-2 rounded-2xl border border-border bg-card px-4 py-4">
-      <Text className="text-base font-bold text-foreground">見直しで浮く金額</Text>
-      <Text className="text-sm leading-5 text-subtle">
-        サブスク詳細で「使った」を記録すると、見直しで浮きそうな金額を提案できます。
-      </Text>
-      <Pressable
-        onPress={() => router.push('/subscriptions')}
-        className="mt-1 self-start rounded-full bg-surface px-4 py-2 active:opacity-80"
-        accessibilityRole="button"
-        accessibilityLabel="サブスクリプション一覧を開く"
-      >
-        <Text className="text-sm font-semibold text-foreground">サブスク一覧へ</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function NoSavingsCard() {
+function NoSavingsCard({ hasUsageLogs }: { hasUsageLogs: boolean }) {
   return (
     <View className="gap-1 rounded-2xl border border-border bg-card px-4 py-4">
       <Text className="text-base font-bold text-foreground">見直しで浮く金額</Text>
-      <Text className="text-sm text-subtle">今のところ、見直し候補はありません。</Text>
+      <Text className="text-sm text-subtle">
+        {hasUsageLogs
+          ? '今のところ、見直し候補はありません。'
+          : '登録から一定期間経過したサブスクのうち、見直し候補は今のところありません。'}
+      </Text>
     </View>
   );
 }
 
-function SavingsCard({ insight }: { insight: SavingsInsight }) {
+function SavingsCard({
+  insight,
+  hasUsageLogs,
+}: {
+  insight: SavingsInsight;
+  hasUsageLogs: boolean;
+}) {
   const topItems = insight.items.slice(0, 3);
 
   return (
     <View className="gap-4 rounded-2xl border border-[rgba(220,5,45,0.25)] bg-card px-4 py-4">
       <View className="gap-1">
         <Text className="text-base font-bold text-foreground">見直しで浮きそうな金額</Text>
-        <Text className="text-xs text-subtle">しばらく使っていないサブスクを見直した場合の目安です</Text>
+        <Text className="text-xs text-subtle">
+          {hasUsageLogs
+            ? 'しばらく使っていないサブスクを見直した場合の目安です'
+            : '利用記録がないサブスクを見直した場合の目安です（登録から一定期間経過）'}
+        </Text>
       </View>
 
       <View className="gap-1">

@@ -26,7 +26,8 @@ export async function syncSubscriptionNotifications(input: {
     getUnusedSubscriptionAlerts(
       input.subscriptionRepository,
       input.usageLogRepository,
-      input.userId
+      input.userId,
+      { requireAnyUsageLogs: true }
     ),
   ]);
 

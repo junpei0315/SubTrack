@@ -11,10 +11,16 @@ export interface UnusedSubscriptionAlertsResult {
   hasUsageLogs: boolean;
 }
 
+export interface GetUnusedSubscriptionAlertsOptions {
+  /** 通知など F-11 厳格モード。分析画面では false。 */
+  requireAnyUsageLogs?: boolean;
+}
+
 export async function getUnusedSubscriptionAlerts(
   subscriptionRepository: SubscriptionRepository,
   usageLogRepository: UsageLogRepository,
-  userId: string
+  userId: string,
+  options: GetUnusedSubscriptionAlertsOptions = {}
 ): Promise<UnusedSubscriptionAlertsResult> {
   const [subscriptions, usageRows] = await Promise.all([
     subscriptionRepository.findAll(),
@@ -28,6 +34,7 @@ export async function getUnusedSubscriptionAlerts(
       subscriptions,
       lastUsedDateBySubscriptionId: buildLastUsedDateMap(usageRows),
       hasAnyUsageLogs: hasUsageLogs,
+      requireAnyUsageLogs: options.requireAnyUsageLogs ?? false,
     }),
     hasUsageLogs,
   };

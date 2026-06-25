@@ -23,7 +23,6 @@ export interface SpendingEquivalent {
 }
 
 export interface SavingsInsight {
-  hasUsageLogs: boolean;
   monthlyAmountJpy: number;
   yearlyAmountJpy: number;
   items: SavingsInsightItem[];
@@ -73,19 +72,8 @@ export function buildSpendingEquivalents(
 
 export function computeSavingsInsight(
   alerts: UnusedSubscriptionAlert[],
-  rates: ExchangeRates,
-  hasUsageLogs: boolean
+  rates: ExchangeRates
 ): SavingsInsight {
-  if (!hasUsageLogs) {
-    return {
-      hasUsageLogs: false,
-      monthlyAmountJpy: 0,
-      yearlyAmountJpy: 0,
-      items: [],
-      equivalents: [],
-    };
-  }
-
   const items: SavingsInsightItem[] = [];
 
   for (const alert of alerts) {
@@ -108,7 +96,6 @@ export function computeSavingsInsight(
   const yearlyAmountJpy = monthlyAmountJpy * MONTHS_PER_YEAR;
 
   return {
-    hasUsageLogs: true,
     monthlyAmountJpy,
     yearlyAmountJpy,
     items,

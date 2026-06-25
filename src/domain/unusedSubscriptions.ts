@@ -22,6 +22,11 @@ export interface DetectUnusedSubscriptionsInput {
   lastUsedDateBySubscriptionId: ReadonlyMap<string, string>;
   /** ユーザーが一度でも利用チェックを使ったか */
   hasAnyUsageLogs: boolean;
+  /**
+   * true のとき、利用チェック未使用ユーザーにはアラートを出さない（F-11・通知向け）。
+   * 分析画面では false にし、サブスクごとの未利用を判定する。
+   */
+  requireAnyUsageLogs?: boolean;
   today?: Date;
 }
 
@@ -40,9 +45,10 @@ export function detectUnusedSubscriptions({
   subscriptions,
   lastUsedDateBySubscriptionId,
   hasAnyUsageLogs,
+  requireAnyUsageLogs = false,
   today = new Date(),
 }: DetectUnusedSubscriptionsInput): UnusedSubscriptionAlert[] {
-  if (!hasAnyUsageLogs) {
+  if (requireAnyUsageLogs && !hasAnyUsageLogs) {
     return [];
   }
 
