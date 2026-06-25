@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { useInvalidateSubscriptions } from '@/components/subscriptions/SubscriptionRefreshProvider';
 import {
   createCustomSubscription,
   type CreateCustomSubscriptionParams,
@@ -15,6 +16,7 @@ interface UseCreateCustomSubscriptionResult {
 
 export function useCreateCustomSubscription(): UseCreateCustomSubscriptionResult {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const invalidateSubscriptions = useInvalidateSubscriptions();
   const submittingRef = useRef(false);
 
   const create = useCallback(async (params: CreateCustomSubscriptionParams) => {
@@ -24,16 +26,18 @@ export function useCreateCustomSubscription(): UseCreateCustomSubscriptionResult
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      return await createCustomSubscription(
+      const subscription = await createCustomSubscription(
         customSubscriptionRepositorySupabase,
         subscriptionRepositorySupabase,
         params
       );
+      invalidateSubscriptions();
+      return subscription;
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, []);
+  }, [invalidateSubscriptions]);
 
   return { create, isSubmitting };
 }

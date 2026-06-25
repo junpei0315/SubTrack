@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { useReloadOnSubscriptionChange } from '@/components/subscriptions/useReloadOnSubscriptionChange';
 import { getSubscriptions } from '@/src/application/getSubscriptions';
 import type { Subscription } from '@/src/domain/subscription';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
@@ -33,6 +34,8 @@ export function useSubscriptionList(): UseSubscriptionListResult {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useReloadOnSubscriptionChange(load);
 
   return {
     subscriptions,

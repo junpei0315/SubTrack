@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useInvalidateSubscriptions } from '@/components/subscriptions/SubscriptionRefreshProvider';
 import { confirmDestructive, showAlert } from '@/components/ui/confirm';
 import {
   cancelSubscription,
@@ -30,6 +31,11 @@ export function useSubscriptionActions({
   onDeleted,
 }: UseSubscriptionActionsParams = {}): UseSubscriptionActionsResult {
   const [isBusy, setIsBusy] = useState(false);
+  const invalidateSubscriptions = useInvalidateSubscriptions();
+
+  const notifyChanged = () => {
+    invalidateSubscriptions();
+  };
 
   const run = async <T,>(task: () => Promise<T>, errorMessage: string): Promise<T | undefined> => {
     setIsBusy(true);
@@ -55,6 +61,7 @@ export function useSubscriptionActions({
     );
     if (updated) {
       onUpdated?.(updated);
+      notifyChanged();
     }
   };
 
@@ -65,6 +72,7 @@ export function useSubscriptionActions({
     );
     if (updated) {
       onUpdated?.(updated);
+      notifyChanged();
     }
   };
 
@@ -81,6 +89,7 @@ export function useSubscriptionActions({
           );
           if (updated) {
             onUpdated?.(updated);
+            notifyChanged();
           }
         })();
       },
@@ -100,6 +109,7 @@ export function useSubscriptionActions({
           }, '通信環境を確認して再度お試しください。一覧から削除されていません。');
           if (result) {
             onDeleted?.();
+            notifyChanged();
           }
         })();
       },

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useReloadOnSubscriptionChange } from '@/components/subscriptions/useReloadOnSubscriptionChange';
 import { getGenreSpendingBreakdown } from '@/src/application/getGenreSpendingBreakdown';
 import { getMonthlySpendingTrend } from '@/src/application/getMonthlySpendingTrend';
 import { getUnusedSubscriptionAlerts } from '@/src/application/getUnusedSubscriptionAlerts';
@@ -84,6 +85,8 @@ export function useAnalytics() {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useReloadOnSubscriptionChange(reload);
 
   return { ...state, reload };
 }
