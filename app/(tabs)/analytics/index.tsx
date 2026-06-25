@@ -36,12 +36,7 @@ export default function AnalyticsRoute() {
         <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor={AppColors.accent} />
       }
     >
-      <ThemedView className="flex-1 gap-8 px-4 pb-4 pt-3">
-        <View className="gap-1">
-          <Text className="text-2xl font-bold text-foreground">分析</Text>
-          <Text className="text-sm text-subtle">支出の内訳と、見直しで浮く余地をチェック</Text>
-        </View>
-
+      <ThemedView className="flex-1 gap-8 px-4 pb-4 pt-2">
         {isLoading && genreBreakdown == null ? (
           <View className="items-center py-16">
             <ActivityIndicator color={AppColors.accent} />
