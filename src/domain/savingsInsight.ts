@@ -11,14 +11,19 @@ const LUNCH_UNIT_YEN = 500;
 const COFFEE_UNIT_YEN = 400;
 const BOOK_UNIT_YEN = 1500;
 
+export type SpendingEquivalentKind = 'coffee' | 'lunch' | 'book' | 'savings';
+
 export interface SavingsInsightItem {
   subscriptionId: string;
   serviceName: string;
   monthlyAmountJpy: number;
   daysSinceLastUse: number | null;
+  logoKey: string | null;
+  logoUri: string | null;
 }
 
 export interface SpendingEquivalent {
+  kind: SpendingEquivalentKind;
   description: string;
 }
 
@@ -53,18 +58,21 @@ export function buildSpendingEquivalents(
 
   if (monthlyAmountJpy < LUNCH_UNIT_YEN) {
     const count = Math.max(1, Math.round(monthlyAmountJpy / COFFEE_UNIT_YEN));
-    equivalents.push({ description: `コーヒー約 ${count} 杯分 / 月` });
+    equivalents.push({ kind: 'coffee', description: `コーヒー約 ${count} 杯分 / 月` });
   } else {
     const lunchCount = Math.max(1, Math.round(monthlyAmountJpy / LUNCH_UNIT_YEN));
-    equivalents.push({ description: `ランチ約 ${lunchCount} 回分 / 月` });
+    equivalents.push({ kind: 'lunch', description: `ランチ約 ${lunchCount} 回分 / 月` });
   }
 
   if (yearlyAmountJpy >= BOOK_UNIT_YEN * 2) {
     const bookCount = Math.max(1, Math.round(yearlyAmountJpy / BOOK_UNIT_YEN));
-    equivalents.push({ description: `本約 ${bookCount} 冊分 / 年` });
+    equivalents.push({ kind: 'book', description: `本約 ${bookCount} 冊分 / 年` });
   } else if (yearlyAmountJpy >= 3000) {
     const thousands = Math.round(yearlyAmountJpy / 1000);
-    equivalents.push({ description: `年間で約 ${thousands.toLocaleString('ja-JP')} 千円の貯蓄に` });
+    equivalents.push({
+      kind: 'savings',
+      description: `年間で約 ${thousands.toLocaleString('ja-JP')} 千円の貯蓄に`,
+    });
   }
 
   return equivalents.slice(0, 2);
@@ -87,6 +95,8 @@ export function computeSavingsInsight(
       serviceName: alert.subscription.service.name,
       monthlyAmountJpy,
       daysSinceLastUse: alert.daysSinceLastUse,
+      logoKey: alert.subscription.service.logoKey ?? null,
+      logoUri: alert.subscription.service.logoUri ?? null,
     });
   }
 
