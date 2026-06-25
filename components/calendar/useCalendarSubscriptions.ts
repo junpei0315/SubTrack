@@ -27,6 +27,9 @@ export function useCalendarSubscriptions() {
   useFocusEffect(
     useCallback(() => {
       void loadSubscriptions();
+      return () => {
+        requestIdRef.current += 1;
+      };
     }, [loadSubscriptions])
   );
 
