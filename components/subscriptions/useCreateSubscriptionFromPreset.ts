@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { useInvalidateSubscriptions } from '@/components/subscriptions/SubscriptionRefreshProvider';
 import {
   createSubscriptionFromPreset,
   type CreateSubscriptionFromPresetParams,
@@ -14,6 +15,7 @@ interface UseCreateSubscriptionFromPresetResult {
 
 export function useCreateSubscriptionFromPreset(): UseCreateSubscriptionFromPresetResult {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const invalidateSubscriptions = useInvalidateSubscriptions();
   // state 反映前の連打による再入（二重 INSERT）を同期的に弾くためのガード。
   const submittingRef = useRef(false);
 
@@ -24,12 +26,14 @@ export function useCreateSubscriptionFromPreset(): UseCreateSubscriptionFromPres
     submittingRef.current = true;
     setIsSubmitting(true);
     try {
-      return await createSubscriptionFromPreset(subscriptionRepositorySupabase, params);
+      const subscription = await createSubscriptionFromPreset(subscriptionRepositorySupabase, params);
+      invalidateSubscriptions();
+      return subscription;
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
     }
-  }, []);
+  }, [invalidateSubscriptions]);
 
   return { create, isSubmitting };
 }

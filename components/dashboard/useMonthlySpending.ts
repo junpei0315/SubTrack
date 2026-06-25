@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useReloadOnSubscriptionChange } from '@/components/subscriptions/useReloadOnSubscriptionChange';
 import { getActiveBillingTotal } from '@/src/application/getActiveBillingTotal';
 import type { BillingTotal } from '@/src/domain/billingTotals';
 import { fxRateRepositorySupabase } from '@/src/infrastructure/supabase/fxRateRepositorySupabase';
@@ -47,6 +48,8 @@ export function useMonthlySpending() {
   useEffect(() => {
     void loadTotal(period);
   }, [period, loadTotal]);
+
+  useReloadOnSubscriptionChange(useCallback(() => loadTotal(period), [loadTotal, period]));
 
   return {
     period,

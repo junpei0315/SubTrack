@@ -1,6 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 
+import { useReloadOnSubscriptionChange } from '@/components/subscriptions/useReloadOnSubscriptionChange';
 import type { Subscription } from '@/src/domain/subscription';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
@@ -32,6 +33,8 @@ export function useCalendarSubscriptions() {
       };
     }, [loadSubscriptions])
   );
+
+  useReloadOnSubscriptionChange(loadSubscriptions);
 
   // 月表示で月を移動するとき、selectedDate も移動先の月へ寄せる。
   // 週表示は selectedDate 基準で描画するため、同期しないとヘッダー月と表示週がずれる。

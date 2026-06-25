@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 
 import { Footer, WEB_TAB_BAR_LAYOUT_HEIGHT } from '@/components/navigation/Footer';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
+import { SubscriptionRefreshProvider } from '@/components/subscriptions/SubscriptionRefreshProvider';
 import { Header } from '@/components/ui/header';
 import { AppColors } from '@/constants/colors';
 
@@ -14,8 +15,9 @@ export const unstable_settings = {
 
 export default function TabLayout() {
   return (
-    <NotificationProvider>
-      <Tabs
+    <SubscriptionRefreshProvider>
+      <NotificationProvider>
+        <Tabs
         screenOptions={{
           headerShown: true,
           header: () => <Header />,
@@ -70,7 +72,8 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen name="settings" options={{ href: null }} />
-      </Tabs>
-    </NotificationProvider>
+        </Tabs>
+      </NotificationProvider>
+    </SubscriptionRefreshProvider>
   );
 }
