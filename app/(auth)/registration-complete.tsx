@@ -3,11 +3,14 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
+import { useProductTour } from '@/components/productTour/ProductTourProvider';
+import { markProductTourPending } from '@/components/productTour/productTourStorage';
 
 // 新規登録直後: メール確認の案内を出しつつアプリへ進める画面
 export default function RegistrationCompleteRoute() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { startTour } = useProductTour();
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
@@ -31,7 +34,11 @@ export default function RegistrationCompleteRoute() {
 
               <Pressable
                 accessibilityRole="button"
-                onPress={() => router.replace('/(tabs)/home')}
+                onPress={() => {
+                  markProductTourPending();
+                  router.replace('/(tabs)/home');
+                  startTour();
+                }}
                 className="mt-2 items-center justify-center rounded-full bg-accent py-4 active:opacity-85"
               >
                 <Text className="text-base font-bold text-foreground">アプリをはじめる</Text>

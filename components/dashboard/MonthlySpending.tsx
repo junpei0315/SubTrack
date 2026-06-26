@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
+import { ProductTourAnchor } from '@/components/productTour/ProductTourAnchor';
 import { AppColors } from '@/constants/colors';
 import { formatPrice } from '@/src/domain/money';
 
@@ -18,7 +19,8 @@ export const MonthlySpending: React.FC = () => {
   const titleText = period === 'month' ? '月額換算の合計支出' : '年額換算の合計支出';
 
   return (
-    <View className="mb-4 self-stretch">
+    <ProductTourAnchor id="monthly-spending">
+      <View className="mb-4 self-stretch">
       <View className="mb-3 flex-row items-center justify-between">
         <Text className="text-sm font-medium text-muted">{titleText}</Text>
         <View className="flex-row rounded-full p-[3px]">
@@ -56,6 +58,7 @@ export const MonthlySpending: React.FC = () => {
           ) : null}
         </>
       )}
-    </View>
+      </View>
+    </ProductTourAnchor>
   );
 };

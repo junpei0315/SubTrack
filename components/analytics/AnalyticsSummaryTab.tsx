@@ -5,6 +5,7 @@ import { AnalyticsMetricCard } from '@/components/analytics/AnalyticsMetricCard'
 import { SavingsPotentialSection } from '@/components/analytics/SavingsPotentialSection';
 import { UnusedAlertsSection } from '@/components/analytics/UnusedAlertsSection';
 import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
+import { ProductTourAnchor } from '@/components/productTour/ProductTourAnchor';
 import { formatPrice } from '@/src/domain/money';
 import { computeSavingsInsight } from '@/src/domain/savingsInsight';
 import type { GenreSpendingBreakdown } from '@/src/domain/spendingByGenre';
@@ -39,7 +40,8 @@ export const AnalyticsSummaryTab: React.FC<AnalyticsSummaryTabProps> = ({
     insight != null ? formatPrice(insight.monthlyAmountJpy, 'JPY') : '—';
 
   return (
-    <View className="gap-6">
+    <ProductTourAnchor id="analytics-summary">
+      <View className="gap-6">
       <View className="flex-row gap-3">
         <AnalyticsMetricCard label="月額換算合計" value={monthlyTotalLabel} />
         <AnalyticsMetricCard
@@ -66,6 +68,7 @@ export const AnalyticsSummaryTab: React.FC<AnalyticsSummaryTabProps> = ({
           unusedAlerts.length > 0 ? `${unusedAlerts.length}件 未利用` : undefined
         }
       />
-    </View>
+      </View>
+    </ProductTourAnchor>
   );
 };
