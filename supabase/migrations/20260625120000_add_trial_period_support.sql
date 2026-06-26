@@ -15,16 +15,19 @@ COMMENT ON COLUMN subscriptions.trial_ends_on IS
     '052: お試し終了日（初回課金日）。未来日ならお試し中。NULL はお試しなし。';
 
 -- 動画・音楽の月額プリセットに 30 日お試しをデフォルト設定
-UPDATE plans p
+UPDATE plans
 SET default_trial_days = 30
-FROM services s
-JOIN categories c ON c.id = s.category_id
-JOIN cycles cy ON cy.id = p.cycle_id
-WHERE p.service_id = s.id
-  AND s.user_id IS NULL
-  AND c.name IN ('動画配信', '音楽')
-  AND cy.name = 'monthly'
-  AND p.default_trial_days IS NULL;
+WHERE id IN (
+    SELECT p.id
+    FROM plans p
+    JOIN services s ON p.service_id = s.id
+    JOIN categories c ON c.id = s.category_id
+    JOIN cycles cy ON cy.id = p.cycle_id
+    WHERE s.user_id IS NULL
+      AND c.name IN ('動画配信', '音楽')
+      AND cy.name = 'monthly'
+      AND p.default_trial_days IS NULL
+);
 
 -- create_custom_subscription にお試し終了日を追加
 DROP FUNCTION IF EXISTS public.create_custom_subscription(TEXT, TEXT, NUMERIC, TEXT, DATE, TEXT);
