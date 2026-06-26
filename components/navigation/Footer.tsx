@@ -1,6 +1,6 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { Platform, Pressable, Text, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,8 +34,17 @@ const webFixedTabBarStyle: ViewStyle | undefined =
 export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const segments = useSegments();
   const activeRouteName = state.routes[state.index]?.name;
-  const showAddButton = ADD_BUTTON_ROUTES.some((name) => name === activeRouteName);
+  const showAddButton = ADD_BUTTON_ROUTES.some((name) => {
+    if (name !== activeRouteName) {
+      return false;
+    }
+    if (name === 'subscriptions') {
+      return segments[segments.length - 1] === 'subscriptions';
+    }
+    return true;
+  });
 
   return (
     <View
