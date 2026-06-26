@@ -39,6 +39,10 @@ const MODE_TABS: { id: AddMode; label: string }[] = [
   { id: 'manual', label: '手動で入力' },
 ];
 
+function navigateToHomeAfterAdd(router: ReturnType<typeof useRouter>): void {
+  router.replace('/(tabs)/home');
+}
+
 export default function SubscriptionNewRoute() {
   const router = useRouter();
   const [mode, setMode] = useState<AddMode>('preset');
@@ -155,7 +159,7 @@ function PresetAddSection({
       });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSelectedPreset(null);
-      router.back();
+      navigateToHomeAfterAdd(router);
     } catch (error) {
       if (error instanceof Error && error.message === DUPLICATE_PLAN_ERROR) {
         showAlert('登録できません', 'このプランはすでに登録されています。');
@@ -227,7 +231,7 @@ function ManualAddSection() {
         trialEndsOn: values.trialEndsOn,
       });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      navigateToHomeAfterAdd(router);
     } catch (error) {
       if (error instanceof Error && error.message === 'DUPLICATE_SERVICE') {
         showAlert('登録できません', '同じ名前のサブスクがすでに登録されています。');
