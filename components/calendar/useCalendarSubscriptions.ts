@@ -12,7 +12,7 @@ function startOfDay(date: Date): Date {
 export function useCalendarSubscriptions() {
   const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   // 矢印連打などで複数 fetch が走ったとき、最新リクエストの結果だけを反映するためのガード。
   const requestIdRef = useRef(0);
