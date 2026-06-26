@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,13 +10,21 @@ import { useAuth } from '@/components/auth/AuthProvider';
 // 関連機能: F-14（アカウント管理）/ 新規登録
 export default function SignUpRoute() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { signUpWithEmail, signInWithGoogle } = useAuth();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleSignUp = async (email: string, password: string) => {
     const result = await signUpWithEmail(email, password);
+    if (result.hasSession) {
+      setSuccessMessage(null);
+      router.replace('/(auth)/registration-complete');
+      return;
+    }
     if (result.needsEmailConfirmation) {
-      setSuccessMessage('確認メールを送信しました。メール内のリンクから登録を完了してください。');
+      setSuccessMessage(
+        '確認メールを送信しました。メールをご確認ください。メール確認後にログインしてください。'
+      );
     } else {
       setSuccessMessage(null);
     }
