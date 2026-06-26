@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
+import { LayoutChangeEvent, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -33,10 +33,86 @@ const CELL_GAP = 4;
 const CELL_RADIUS = 3;
 const MIN_CELL_SIZE = 12;
 const MAX_CELL_SIZE = 24;
+const MONTH_LABEL_ROW_HEIGHT = 14;
+const WEEKDAY_LABEL_WIDTH = 14;
 // 月曜始まりの行に対応するラベル（月・水・金・日を表示）
-const WEEKDAY_LABELS = ['月', '', '水', '', '金', '', '日'];
+const WEEKDAY_LABELS = ['月', '', '水', '', '金', '', '日'] as const;
 
 const PLACEHOLDER = '—';
+
+function cellMarginBottom(dayIndex: number): number {
+  return dayIndex < WEEKDAY_LABELS.length - 1 ? CELL_GAP : 0;
+}
+
+function weekMarginRight(weekIndex: number, weekCount: number): number {
+  return weekIndex < weekCount - 1 ? CELL_GAP : 0;
+}
+
+interface HeatmapDayCellProps {
+  cellSize: number;
+  dayIndex: number;
+  inRange: boolean;
+  isFuture: boolean;
+  isUsed: boolean;
+  isToday: boolean;
+}
+
+function HeatmapDayCell({
+  cellSize,
+  dayIndex,
+  inRange,
+  isFuture,
+  isUsed,
+  isToday,
+}: HeatmapDayCellProps) {
+  if (!inRange) {
+    return (
+      <View
+        style={{
+          width: cellSize,
+          height: cellSize,
+          marginBottom: cellMarginBottom(dayIndex),
+        }}
+      />
+    );
+  }
+
+  const backgroundColor = isFuture
+    ? 'rgba(255,255,255,0.03)'
+    : isUsed
+      ? AppColors.accentBrand
+      : undefined;
+
+  return (
+    <View
+      style={{
+        width: cellSize,
+        height: cellSize,
+        marginBottom: cellMarginBottom(dayIndex),
+        borderRadius: CELL_RADIUS,
+        backgroundColor,
+        overflow: 'hidden',
+      }}
+      className={isUsed || isFuture ? undefined : 'bg-surface'}
+    >
+      {isToday ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            borderWidth: 1.5,
+            borderColor: AppColors.text,
+            borderRadius: CELL_RADIUS,
+          }}
+        />
+      ) : null}
+    </View>
+  );
+}
 
 export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   usedDateKeys,
@@ -50,6 +126,9 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
 }) => {
   const today = useMemo(() => todayProp ?? new Date(), [todayProp]);
   const todayKey = formatLocalDate(today);
+
+  const { width: screenWidth } = useWindowDimensions();
+  const estimatedGridWidth = Math.max(0, screenWidth - 88);
 
   const [anchorYear, setAnchorYear] = useState(today.getFullYear());
   const [anchorMonth, setAnchorMonth] = useState(today.getMonth() + 1);
@@ -90,12 +169,13 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
 
   const weekCount = view.weeks.length;
   const cellSize = useMemo(() => {
-    if (gridWidth <= 0 || weekCount <= 0) {
-      return MAX_CELL_SIZE;
+    const layoutWidth = gridWidth > 0 ? gridWidth : estimatedGridWidth;
+    if (layoutWidth <= 0 || weekCount <= 0) {
+      return MIN_CELL_SIZE;
     }
-    const raw = (gridWidth - CELL_GAP * (weekCount - 1)) / weekCount;
+    const raw = (layoutWidth - CELL_GAP * (weekCount - 1)) / weekCount;
     return Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, Math.floor(raw)));
-  }, [gridWidth, weekCount]);
+  }, [gridWidth, estimatedGridWidth, weekCount]);
 
   const usesDelta = (usedToday ? 1 : 0) - (view.isUsedToday ? 1 : 0);
   const usesThisMonth = view.usesThisMonth + usesDelta;
@@ -135,12 +215,15 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
     onUndoUsagePress?.();
   };
 
-  const onWeeksLayout = (event: LayoutChangeEvent) => {
-    setGridWidth(event.nativeEvent.layout.width);
+  const onGridLayout = (event: LayoutChangeEvent) => {
+    const nextWidth = Math.floor(event.nativeEvent.layout.width);
+    if (nextWidth > 0) {
+      setGridWidth(nextWidth);
+    }
   };
 
-  const cellStyle = { width: cellSize, height: cellSize, borderRadius: CELL_RADIUS };
-  const weekColumnStyle = { gap: CELL_GAP };
+  const gridHeight =
+    WEEKDAY_LABELS.length * cellSize + (WEEKDAY_LABELS.length - 1) * CELL_GAP;
 
   return (
     <View className={`w-full${className ? ` ${className}` : ''}`}>
@@ -165,52 +248,72 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
           </Pressable>
         </View>
 
-        <Animated.View className="flex-row gap-1.5" style={heatmapAnimatedStyle}>
-          <View className="justify-end gap-1">
-            {WEEKDAY_LABELS.map((label, index) => (
-              <View key={index} className="justify-center" style={{ height: cellSize }}>
-                <Text className="text-[9px] text-subtle" style={{ lineHeight: cellSize }}>
-                  {label}
-                </Text>
+        <Animated.View style={heatmapAnimatedStyle}>
+          <View className="flex-row">
+            <View style={{ width: WEEKDAY_LABEL_WIDTH, marginRight: 6 }}>
+              <View style={{ height: MONTH_LABEL_ROW_HEIGHT }} />
+              <View style={{ height: gridHeight }}>
+                {WEEKDAY_LABELS.map((label, dayIndex) =>
+                  label ? (
+                    <Text
+                      key={dayIndex}
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top:
+                          dayIndex * (cellSize + CELL_GAP) +
+                          (cellSize - 10) / 2,
+                        fontSize: 9,
+                        lineHeight: 10,
+                        color: AppColors.subtle,
+                      }}
+                    >
+                      {label}
+                    </Text>
+                  ) : null
+                )}
               </View>
-            ))}
-          </View>
-          <View className="flex-1">
-            <View className="relative" style={{ height: 14 }}>
-              {view.monthLabels.map((monthLabel) => (
-                <Text
-                  key={`${monthLabel.weekIndex}-${monthLabel.label}`}
-                  className="absolute text-[10px] font-semibold text-subtle"
-                  style={{ left: monthLabel.weekIndex * (cellSize + CELL_GAP) }}>
-                  {monthLabel.label}
-                </Text>
-              ))}
             </View>
-            <View className="flex-row justify-between" onLayout={onWeeksLayout}>
-              {view.weeks.map((week, weekIndex) => (
-                <View key={weekIndex} style={weekColumnStyle}>
-                  {week.map((cell, dayIndex) => {
-                    if (!cell.inRange) {
+
+            <View className="min-w-0 flex-1" onLayout={onGridLayout}>
+              <View
+                className="relative"
+                style={{ height: MONTH_LABEL_ROW_HEIGHT, marginBottom: 0 }}
+              >
+                {view.monthLabels.map((monthLabel) => (
+                  <Text
+                    key={`${monthLabel.weekIndex}-${monthLabel.label}`}
+                    className="absolute text-[10px] font-semibold text-subtle"
+                    style={{ left: monthLabel.weekIndex * (cellSize + CELL_GAP) }}
+                  >
+                    {monthLabel.label}
+                  </Text>
+                ))}
+              </View>
+
+              <View className="flex-row" style={{ height: gridHeight }}>
+                {view.weeks.map((week, weekIndex) => (
+                  <View
+                    key={weekIndex}
+                    style={{ marginRight: weekMarginRight(weekIndex, weekCount) }}
+                  >
+                    {week.map((cell, dayIndex) => {
+                      const isUsed = cell.isToday ? usedToday : cell.used;
                       return (
-                        <View key={dayIndex} className="bg-transparent" style={cellStyle} />
+                        <HeatmapDayCell
+                          key={dayIndex}
+                          cellSize={cellSize}
+                          dayIndex={dayIndex}
+                          inRange={cell.inRange}
+                          isFuture={cell.isFuture}
+                          isUsed={isUsed}
+                          isToday={cell.isToday}
+                        />
                       );
-                    }
-                    const isUsed = cell.isToday ? usedToday : cell.used;
-                    const cellClass = cell.isFuture
-                      ? 'bg-white/[0.03]'
-                      : isUsed
-                        ? 'bg-accent-brand'
-                        : 'bg-surface';
-                    return (
-                      <View
-                        key={dayIndex}
-                        className={`${cellClass}${cell.isToday ? ' border-[1.5px] border-foreground' : ''}`}
-                        style={cellStyle}
-                      />
-                    );
-                  })}
-                </View>
-              ))}
+                    })}
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         </Animated.View>
