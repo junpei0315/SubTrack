@@ -1,4 +1,3 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -13,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { SheetModalHeader } from '@/components/ui/sheet-modal-header';
 import { AppColors } from '@/constants/colors';
 import { getBillingCycleLabel } from '@/src/domain/billingCycle';
 import { formatPrice } from '@/src/domain/money';
@@ -45,6 +45,8 @@ interface PresetDetailModalProps {
   registeredPlanIdsReady?: boolean;
   registeredPlanIds?: ReadonlySet<string>;
   onClose: () => void;
+  /** ×ボタンでサブスク追加画面ごと閉じる（＋押下前の画面へ戻る）。 */
+  onDismissAll?: () => void;
   onConfirm: (selection: PresetSelection) => void;
 }
 
@@ -66,6 +68,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   registeredPlanIdsReady = true,
   registeredPlanIds,
   onClose,
+  onDismissAll,
   onConfirm,
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -141,6 +144,17 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     !isSubmitting &&
     !isSelectedPlanRegistered;
 
+  const handleDismissAll = () => {
+    if (isSubmitting) {
+      return;
+    }
+    if (onDismissAll) {
+      onDismissAll();
+      return;
+    }
+    onClose();
+  };
+
   const handleConfirm = () => {
     if (!selectedPlan || !isPriceValid) {
       return;
@@ -173,9 +187,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
         />
 
         <View className="h-[94%] overflow-hidden rounded-t-3xl bg-background-darker">
-          <View className="items-center pt-3">
-            <View className="h-1.5 w-12 rounded-full bg-white/20" />
-          </View>
+          <SheetModalHeader onClose={handleDismissAll} disabled={isSubmitting} />
 
           <ScrollView
             contentContainerClassName="px-5 pb-6 pt-4"
@@ -199,14 +211,6 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
                   {preset.genre}
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={onClose}
-                disabled={isSubmitting}
-                hitSlop={8}
-                className="h-9 w-9 items-center justify-center rounded-full bg-white/[0.08]"
-              >
-                <MaterialIcons name="close" size={20} color={AppColors.subtle} />
-              </TouchableOpacity>
             </View>
 
             <Text className="pb-3 pt-7 text-base font-bold text-foreground">プランを選択</Text>
