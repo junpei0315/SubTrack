@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { markProductTourPending } from '@/components/productTour/productTourStorage';
 
 // 関連機能: F-14（アカウント管理）/ 新規登録
 export default function SignUpRoute() {
@@ -17,6 +18,7 @@ export default function SignUpRoute() {
   const handleSignUp = async (email: string, password: string) => {
     const result = await signUpWithEmail(email, password);
     if (result.hasSession) {
+      markProductTourPending();
       setSuccessMessage(null);
       router.replace('/(auth)/registration-complete');
       return;

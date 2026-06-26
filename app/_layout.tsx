@@ -14,6 +14,9 @@ import { AuthProvider, useAuth } from '@/components/auth/AuthProvider';
 import { AnimatedSplashOverlay } from '@/components/branding/AnimatedSplashOverlay';
 import { ExchangeRateProvider } from '@/components/currency/ExchangeRateProvider';
 import { OnboardingProvider, useOnboarding } from '@/components/onboarding/OnboardingProvider';
+import { ProductTourAnchorRegistryProvider } from '@/components/productTour/ProductTourAnchorRegistry';
+import { ProductTourProvider, useProductTour } from '@/components/productTour/ProductTourProvider';
+import { isProductTourQueued } from '@/components/productTour/productTourStorage';
 import { AppColors } from '@/constants/colors';
 import { useDevAuthReady } from '@/hooks/useDevAuthReady';
 
@@ -75,6 +78,7 @@ function isOnboardingRoute(segments: string[]): boolean {
 function useProtectedRoute(): void {
   const { session, isLoading } = useAuth();
   const { isResolving, needsOnboarding } = useOnboarding();
+  const { isActive: isProductTourActive } = useProductTour();
   const segments = useSegments();
   const router = useRouter();
 
@@ -101,7 +105,7 @@ function useProtectedRoute(): void {
       return;
     }
 
-    if (needsOnboarding) {
+    if (needsOnboarding && !isProductTourActive && !isProductTourQueued()) {
       if (!onOnboardingScreen) {
         router.replace('/(onboarding)/welcome');
       }
@@ -112,7 +116,7 @@ function useProtectedRoute(): void {
       }
       router.replace('/(tabs)/home');
     }
-  }, [session, isLoading, isResolving, needsOnboarding, segments, router]);
+  }, [session, isLoading, isResolving, needsOnboarding, isProductTourActive, segments, router]);
 }
 
 function RootNavigator() {
@@ -152,13 +156,17 @@ export default function RootLayout() {
         <AuthProvider>
           <ExchangeRateProvider>
             <OnboardingProvider>
-              <View style={styles.root}>
-                <RootNavigator />
-                {!isSplashDone ? (
-                  <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
-                ) : null}
-              </View>
-              <StatusBar style="light" />
+              <ProductTourAnchorRegistryProvider>
+                <ProductTourProvider isAppReady={isSplashDone}>
+                  <View style={styles.root}>
+                    <RootNavigator />
+                    {!isSplashDone ? (
+                      <AnimatedSplashOverlay onFinish={() => setIsSplashDone(true)} />
+                    ) : null}
+                  </View>
+                  <StatusBar style="light" />
+                </ProductTourProvider>
+              </ProductTourAnchorRegistryProvider>
             </OnboardingProvider>
           </ExchangeRateProvider>
         </AuthProvider>

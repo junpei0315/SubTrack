@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SubTrackMark } from '@/components/branding/SubTrackMark';
+import { ProductTourAnchor } from '@/components/productTour/ProductTourAnchor';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -60,14 +61,16 @@ export const Header: React.FC<HeaderProps> = ({
       </View>
 
       <View style={styles.actions}>
-        <Pressable
-          onPress={handlePressNotifications}
-          accessibilityRole="button"
-          accessibilityLabel="通知"
-          hitSlop={8}
-        >
-          <Bell size={24} color={colors.headerText} />
-        </Pressable>
+        <ProductTourAnchor id="header-notifications">
+          <Pressable
+            onPress={handlePressNotifications}
+            accessibilityRole="button"
+            accessibilityLabel="通知"
+            hitSlop={8}
+          >
+            <Bell size={24} color={colors.headerText} />
+          </Pressable>
+        </ProductTourAnchor>
         <Pressable
           onPress={handlePressSettings}
           accessibilityRole="button"

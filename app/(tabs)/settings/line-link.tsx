@@ -1,5 +1,6 @@
 import { ScrollView } from 'react-native';
 
+import { ProductTourAnchor } from '@/components/productTour/ProductTourAnchor';
 import { LineLinkCard } from '@/components/settings/LineLinkCard';
 import { SettingsBackButton } from '@/components/settings/SettingsBackButton';
 import { ThemedText } from '@/components/themed-text';
@@ -11,7 +12,9 @@ export default function LineLinkSettingsRoute() {
       <ThemedView className="flex-1 gap-6 px-4 pb-6 pt-6">
         <SettingsBackButton />
         <ThemedText type="subtitle">LINE 連携</ThemedText>
-        <LineLinkCard />
+        <ProductTourAnchor id="line-link-card">
+          <LineLinkCard />
+        </ProductTourAnchor>
       </ThemedView>
     </ScrollView>
   );

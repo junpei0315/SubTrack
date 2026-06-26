@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { ProductTourAnchor } from '@/components/productTour/ProductTourAnchor';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { AppColors } from '@/constants/colors';
 import { hasBillingOnDate } from '@/src/domain/billingOccurrences';
@@ -113,7 +114,8 @@ export const Calendar: React.FC = () => {
   };
 
   return (
-    <View className="my-4">
+    <ProductTourAnchor id="payment-calendar">
+      <View className="my-4">
       <View className="mb-2 flex-row items-center justify-between px-1">
         <Text className="text-lg font-semibold text-foreground">お支払いカレンダー</Text>
         <TouchableOpacity
@@ -260,5 +262,6 @@ export const Calendar: React.FC = () => {
         onClose={closeDayModal}
       />
     </View>
+    </ProductTourAnchor>
   );
 };

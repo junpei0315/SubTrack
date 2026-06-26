@@ -3,6 +3,8 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 
+import { useProductTour } from '@/components/productTour/ProductTourProvider';
+import { ProductTourUsagePreview } from '@/components/productTour/ProductTourUsagePreview';
 import { SubscriptionListItem } from '@/components/subscriptions/SubscriptionListItem';
 import { useSubscriptionList } from '@/components/subscriptions/useSubscriptionList';
 import { AppColors } from '@/constants/colors';
@@ -12,6 +14,7 @@ type ListTab = 'active' | 'cancelled';
 
 export default function SubscriptionListRoute() {
   const router = useRouter();
+  const { currentStepId } = useProductTour();
   const { subscriptions, isLoading, errorMessage, reload } = useSubscriptionList();
   const [tab, setTab] = useState<ListTab>('active');
 
@@ -63,6 +66,9 @@ export default function SubscriptionListRoute() {
       <FlatList
         data={visible}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={
+          currentStepId === 'usage-heatmap' ? <ProductTourUsagePreview /> : null
+        }
         renderItem={({ item }) => (
           <SubscriptionListItem subscription={item} onPress={handlePress} />
         )}
