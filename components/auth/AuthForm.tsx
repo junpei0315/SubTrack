@@ -12,6 +12,8 @@ import {
 import { AppColors } from '@/constants/colors';
 import { toAuthUserMessage } from '@/src/domain/auth';
 
+import { GoogleMark } from './GoogleMark';
+
 interface AuthFormProps {
   submitLabel: string;
   onSubmit: (email: string, password: string) => Promise<void>;
@@ -112,9 +114,10 @@ export function AuthForm({
         accessibilityRole="button"
         disabled={isSubmitting}
         onPress={handleGoogle}
-        className="items-center justify-center rounded-full border border-white/10 bg-white/[0.08] py-4"
+        className="flex-row items-center justify-center gap-2.5 rounded-full border border-white/10 bg-white/[0.08] py-4"
         style={({ pressed }) => ({ opacity: isSubmitting || pressed ? 0.7 : 1 })}
       >
+        <GoogleMark size={20} />
         <Text className="text-base font-semibold text-foreground">Google で続ける</Text>
       </Pressable>
 

@@ -209,7 +209,11 @@ export function SubTrackAnimatedLogo({
           <ThemedText type="title" lightColor={SPLASH_TEXT_COLOR} darkColor={SPLASH_TEXT_COLOR}>
             Sub<Text style={{ color: COLORS.accent }}>Track</Text>
           </ThemedText>
-          <ThemedText lightColor={SPLASH_SUBTITLE_COLOR} darkColor={SPLASH_SUBTITLE_COLOR}>
+          <ThemedText
+            className="font-bold"
+            lightColor={SPLASH_SUBTITLE_COLOR}
+            darkColor={SPLASH_SUBTITLE_COLOR}
+          >
             Track Your Subscriptions
           </ThemedText>
         </AnimatedView>

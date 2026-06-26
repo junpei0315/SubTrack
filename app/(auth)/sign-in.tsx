@@ -2,6 +2,7 @@ import { Link } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -18,26 +19,29 @@ export default function SignInRoute() {
       >
         <ScrollView
           className="flex-1"
-          contentContainerClassName="flex-grow justify-center px-5 py-6"
+          contentContainerClassName="flex-grow justify-center px-5 py-8"
           keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-1.5 pb-6">
-            <Text className="text-2xl font-bold text-foreground">ログイン</Text>
-            <Text className="text-sm text-subtle">SubTrack へようこそ</Text>
-          </View>
+          <View className="gap-8">
+            <AuthBrandHeader />
 
-          <AuthForm
-            submitLabel="ログイン"
-            onSubmit={signInWithEmail}
-            onGoogleSignIn={signInWithGoogle}
-            footer={
-              <Link href="/(auth)/sign-up">
-                <Text className="text-base font-semibold text-accent">
-                  アカウントをお持ちでない方はこちら
-                </Text>
-              </Link>
-            }
-          />
+            <View className="gap-6">
+              <Text className="text-2xl font-bold text-foreground">ログイン</Text>
+
+              <AuthForm
+                submitLabel="ログイン"
+                onSubmit={signInWithEmail}
+                onGoogleSignIn={signInWithGoogle}
+                footer={
+                  <Link href="/(auth)/sign-up">
+                    <Text className="text-base font-semibold text-accent">
+                      アカウントをお持ちでない方はこちら
+                    </Text>
+                  </Link>
+                }
+              />
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
