@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -20,6 +20,7 @@ import { useCreateSubscriptionFromPreset } from '@/components/subscriptions/useC
 import { usePresetList } from '@/components/subscriptions/usePresetList';
 import { useSubscriptionList } from '@/components/subscriptions/useSubscriptionList';
 import { showAlert } from '@/components/ui/confirm';
+import { SheetModalHeader } from '@/components/ui/sheet-modal-header';
 import { DUPLICATE_PLAN_ERROR } from '@/src/application/createSubscriptionFromPreset';
 import { type GenreId } from '@/src/domain/genre';
 import type { PresetService } from '@/src/domain/preset';
@@ -39,11 +40,24 @@ const MODE_TABS: { id: AddMode; label: string }[] = [
 ];
 
 export default function SubscriptionNewRoute() {
+  const router = useRouter();
   const [mode, setMode] = useState<AddMode>('preset');
+  const [isPresetDetailVisible, setIsPresetDetailVisible] = useState(false);
+
+  const handleClose = () => {
+    if (process.env.EXPO_OS === 'ios') {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.back();
+  };
 
   return (
-    <View className="flex-1 bg-background">
-      <View className="flex-row gap-2 px-4 pt-4">
+    <View className="flex-1 bg-background-darker">
+      {!isPresetDetailVisible ? (
+        <SheetModalHeader onClose={handleClose} useSafeAreaTop />
+      ) : null}
+
+      <View className="flex-row gap-2 px-4">
         {MODE_TABS.map((tab) => {
           const isActive = tab.id === mode;
           return (
@@ -61,12 +75,20 @@ export default function SubscriptionNewRoute() {
         })}
       </View>
 
-      {mode === 'preset' ? <PresetAddSection /> : <ManualAddSection />}
+      {mode === 'preset' ? (
+        <PresetAddSection onDetailVisibleChange={setIsPresetDetailVisible} />
+      ) : (
+        <ManualAddSection />
+      )}
     </View>
   );
 }
 
-function PresetAddSection() {
+function PresetAddSection({
+  onDetailVisibleChange,
+}: {
+  onDetailVisibleChange?: (visible: boolean) => void;
+}) {
   const router = useRouter();
   const { session } = useAuth();
   const [query, setQuery] = useState('');
@@ -87,6 +109,10 @@ function PresetAddSection() {
     () => (isRegisteredStateReady ? getRegisteredPlanIds(subscriptions) : new Set<string>()),
     [subscriptions, isRegisteredStateReady]
   );
+
+  useEffect(() => {
+    onDetailVisibleChange?.(selectedPreset !== null);
+  }, [selectedPreset, onDetailVisibleChange]);
 
   const handlePresetPress = (preset: PresetService) => {
     if (!isRegisteredStateReady) {
@@ -172,6 +198,7 @@ function PresetAddSection() {
         registeredPlanIdsReady={isRegisteredStateReady}
         registeredPlanIds={isRegisteredStateReady ? registeredPlanIds : undefined}
         onClose={() => setSelectedPreset(null)}
+        onDismissAll={() => router.back()}
         onConfirm={handleConfirm}
       />
     </View>
