@@ -52,13 +52,17 @@ export default function SubscriptionNewRoute() {
     if (process.env.EXPO_OS === 'ios') {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    if (router.canDismiss()) {
+      router.dismiss();
+      return;
+    }
     router.back();
   };
 
   return (
     <View className="flex-1 bg-background-darker">
       {!isPresetDetailVisible ? (
-        <SheetModalHeader onClose={handleClose} useSafeAreaTop />
+        <SheetModalHeader onClose={handleClose} />
       ) : null}
 
       <View className="flex-row gap-2 px-4">

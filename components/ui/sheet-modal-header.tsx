@@ -24,7 +24,7 @@ export function SheetModalHeader({
   useSafeAreaTop = false,
 }: SheetModalHeaderProps) {
   const insets = useSafeAreaInsets();
-  const paddingTop = useSafeAreaTop ? Math.max(insets.top, 16) + 4 : 14;
+  const paddingTop = useSafeAreaTop ? insets.top + 4 : 8;
 
   return (
     <View className="px-4 pb-3" style={{ paddingTop }}>

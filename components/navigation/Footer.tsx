@@ -14,7 +14,7 @@ const TAB_BAR_CONTENT_PADDING_BOTTOM = 8;
 /** Web PWA でシーンの下余白用（固定フッターのおおよその高さ） */
 export const WEB_TAB_BAR_LAYOUT_HEIGHT = 64;
 
-// フッターに並べるタブの順序。ここに無いルート（settings 等）は表示しない。
+const SUBSCRIPTIONS_INDEX_HREF = '/(tabs)/subscriptions' as const;
 const VISIBLE_ROUTES = ['home', 'subscriptions', 'analytics'] as const;
 
 // ＋ボタンを表示する画面。
@@ -67,7 +67,7 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
               if (process.env.EXPO_OS === 'ios') {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               }
-              router.push('/subscriptions/new');
+              router.push('/(tabs)/subscriptions/new');
             }}
             className="items-center justify-center rounded-full bg-accent-brand shadow-lg"
             style={{ width: ADD_BUTTON_SIZE, height: ADD_BUTTON_SIZE }}
@@ -103,6 +103,14 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
 
           // ネストした Stack（new / 詳細）を残さず、常に一覧へ戻す。
           if (name === 'subscriptions') {
+            if (!isActive) {
+              navigation.navigate('subscriptions', { screen: 'index' });
+              return;
+            }
+            if (router.canDismiss()) {
+              router.dismissTo(SUBSCRIPTIONS_INDEX_HREF);
+              return;
+            }
             navigation.navigate('subscriptions', { screen: 'index' });
             return;
           }

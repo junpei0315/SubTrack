@@ -14,7 +14,15 @@ export default function SubscriptionsLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Subscriptions' }} />
-      <Stack.Screen name="new" options={{ title: 'New', presentation: 'modal' }} />
+      <Stack.Screen
+        name="new"
+        options={{
+          title: 'New',
+          presentation: 'modal',
+          sheetAllowedDetents: [1],
+          sheetGrabberVisible: false,
+        }}
+      />
       <Stack.Screen name="[id]/index" options={{ title: 'Detail' }} />
       <Stack.Screen name="[id]/edit" options={{ title: 'Edit' }} />
     </Stack>

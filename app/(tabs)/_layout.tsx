@@ -1,9 +1,13 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import { ChartColumn, CreditCard, House } from 'lucide-react-native';
 import React from 'react';
 import { Platform } from 'react-native';
 
 import { Footer, WEB_TAB_BAR_LAYOUT_HEIGHT } from '@/components/navigation/Footer';
+import {
+  HIDDEN_TAB_BAR_STYLE,
+  VISIBLE_TAB_BAR_STYLE,
+} from '@/components/navigation/tabBarVisibility';
 import { NotificationProvider } from '@/components/notifications/NotificationProvider';
 import { SubscriptionRefreshProvider } from '@/components/subscriptions/SubscriptionRefreshProvider';
 import { Header } from '@/components/ui/header';
@@ -13,43 +17,25 @@ export const unstable_settings = {
   initialRouteName: 'home',
 };
 
-export default function TabLayout() {
+function TabNavigator() {
+  const segments = useSegments();
+  const isAddScreen = segments[segments.length - 1] === 'new';
+
   return (
-    <SubscriptionRefreshProvider>
-      <NotificationProvider>
-        <Tabs
-        screenOptions={{
-          headerShown: true,
-          header: () => <Header />,
-          tabBarStyle:
-            Platform.OS === 'web'
-              ? {
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 0,
-                  overflow: 'visible',
-                  backgroundColor: 'transparent',
-                  borderTopWidth: 0,
-                  elevation: 0,
-                }
-              : {
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: AppColors.backgroundDarker,
-                  borderTopWidth: 0,
-                  elevation: 0,
-                },
-          sceneStyle: {
-            backgroundColor: AppColors.background,
-            ...(Platform.OS === 'web' ? { paddingBottom: WEB_TAB_BAR_LAYOUT_HEIGHT } : {}),
-          },
-        }}
-        tabBar={(props) => <Footer {...props} />}
-      >
+    <Tabs
+      screenOptions={{
+        lazy: false,
+        headerShown: !isAddScreen,
+        headerStatusBarHeight: 0,
+        header: () => <Header />,
+        tabBarStyle: isAddScreen ? HIDDEN_TAB_BAR_STYLE : VISIBLE_TAB_BAR_STYLE,
+        sceneStyle: {
+          backgroundColor: AppColors.background,
+          ...(Platform.OS === 'web' ? { paddingBottom: WEB_TAB_BAR_LAYOUT_HEIGHT } : {}),
+        },
+      }}
+      tabBar={(props) => <Footer {...props} />}
+    >
         <Tabs.Screen
           name="home"
           options={{
@@ -72,7 +58,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen name="settings" options={{ href: null }} />
-        </Tabs>
+    </Tabs>
+  );
+}
+
+export default function TabLayout() {
+  return (
+    <SubscriptionRefreshProvider>
+      <NotificationProvider>
+        <TabNavigator />
       </NotificationProvider>
     </SubscriptionRefreshProvider>
   );
