@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { openLineOfficialAccount } from '@/components/settings/openLineOfficialAccount';
 import { issueLineLinkCode } from '@/src/application/issueLineLinkCode';
 import { lineLinkRepositorySupabase } from '@/src/infrastructure/supabase/lineLinkRepositorySupabase';
 
@@ -33,6 +34,17 @@ export function useLineLink() {
     }
   }, []);
 
+  const openOfficialAccount = useCallback(async () => {
+    setErrorMessage(null);
+    try {
+      await openLineOfficialAccount();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'LINE公式アカウントを開けませんでした';
+      setErrorMessage(message);
+    }
+  }, []);
+
   const unlink = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -53,6 +65,7 @@ export function useLineLink() {
     isLoading,
     errorMessage,
     generateCode,
+    openOfficialAccount,
     unlink,
   };
 }
