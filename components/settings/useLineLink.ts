@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { openLineOfficialAccount } from '@/components/settings/openLineOfficialAccount';
 import { issueLineLinkCode } from '@/src/application/issueLineLinkCode';
@@ -9,6 +11,8 @@ export function useLineLink() {
   const [code, setCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [didCopyCode, setDidCopyCode] = useState(false);
+  const copyFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refreshStatus = useCallback(async () => {
     try {
@@ -21,6 +25,14 @@ export function useLineLink() {
   useEffect(() => {
     void refreshStatus();
   }, [refreshStatus]);
+
+  useEffect(() => {
+    return () => {
+      if (copyFeedbackTimerRef.current) {
+        clearTimeout(copyFeedbackTimerRef.current);
+      }
+    };
+  }, []);
 
   const generateCode = useCallback(async () => {
     setIsLoading(true);
@@ -45,6 +57,29 @@ export function useLineLink() {
     }
   }, []);
 
+  const copyCode = useCallback(async () => {
+    if (!code) {
+      return;
+    }
+
+    setErrorMessage(null);
+    try {
+      await Clipboard.setStringAsync(code);
+      setDidCopyCode(true);
+      if (copyFeedbackTimerRef.current) {
+        clearTimeout(copyFeedbackTimerRef.current);
+      }
+      copyFeedbackTimerRef.current = setTimeout(() => {
+        setDidCopyCode(false);
+      }, 2000);
+      if (process.env.EXPO_OS === 'ios') {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch {
+      setErrorMessage('コードのコピーに失敗しました');
+    }
+  }, [code]);
+
   const unlink = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -64,7 +99,9 @@ export function useLineLink() {
     code,
     isLoading,
     errorMessage,
+    didCopyCode,
     generateCode,
+    copyCode,
     openOfficialAccount,
     unlink,
   };

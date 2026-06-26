@@ -1,3 +1,4 @@
+import { Copy } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
@@ -17,7 +18,9 @@ export const LineLinkCard: React.FC = () => {
     code,
     isLoading,
     errorMessage,
+    didCopyCode,
     generateCode,
+    copyCode,
     openOfficialAccount,
     unlink,
   } = useLineLink();
@@ -63,7 +66,21 @@ export const LineLinkCard: React.FC = () => {
           {code ? (
             <View className="mt-2 items-center gap-1 rounded-xl bg-card-alt p-4">
               <Text className="text-xs text-muted">このコードを公式アカウントのトークに送ってください</Text>
-              <Text className="text-[32px] font-bold tracking-[4px] text-foreground">{code}</Text>
+              <View className="w-full flex-row items-center">
+                <View className="w-10" />
+                <Text className="flex-1 text-center text-[32px] font-bold tracking-[4px] text-foreground">
+                  {code}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => void copyCode()}
+                  accessibilityRole="button"
+                  accessibilityLabel="連携コードをコピー"
+                  className="w-10 items-center rounded-full p-1 active:opacity-70"
+                >
+                  <Copy size={22} color={AppColors.text} />
+                </TouchableOpacity>
+              </View>
+              {didCopyCode ? <Text className="text-xs text-success">コピーしました</Text> : null}
               <Text className="text-[11px] text-muted-dark">有効期限: 10 分</Text>
             </View>
           ) : null}
