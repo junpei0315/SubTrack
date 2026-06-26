@@ -12,6 +12,7 @@ import { computeGenreSpendingBreakdown } from '@/src/domain/spendingByGenre';
 import type { Subscription } from '@/src/domain/subscription';
 import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
 import { fxRateRepositorySupabase } from '@/src/infrastructure/supabase/fxRateRepositorySupabase';
+import { subscriptionPriceHistoryRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionPriceHistoryRepositorySupabase';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 import { usageLogRepositorySupabase } from '@/src/infrastructure/supabase/usageLogRepositorySupabase';
 
@@ -54,7 +55,7 @@ export function useAnalytics() {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
 
     try {
-      const [subscriptions, { rates }, unusedResult] = await Promise.all([
+      const [subscriptions, { rates }, unusedResult, priceHistory] = await Promise.all([
         getSubscriptions(subscriptionRepositorySupabase),
         getExchangeRates(fxRateRepositorySupabase),
         getUnusedSubscriptionAlerts(
@@ -62,6 +63,7 @@ export function useAnalytics() {
           usageLogRepositorySupabase,
           userId
         ),
+        subscriptionPriceHistoryRepositorySupabase.listByUserId(userId),
       ]);
 
       if (requestId !== latestRequestIdRef.current) {
@@ -71,7 +73,7 @@ export function useAnalytics() {
       setState({
         subscriptions,
         genreBreakdown: computeGenreSpendingBreakdown(subscriptions, rates),
-        spendingTrend: computeMonthlySpendingTrend(subscriptions, rates),
+        spendingTrend: computeMonthlySpendingTrend(subscriptions, rates, {}, priceHistory),
         unusedAlerts: unusedResult.alerts,
         hasUsageLogs: unusedResult.hasUsageLogs,
         isLoading: false,

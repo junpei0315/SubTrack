@@ -33,7 +33,7 @@ export default function SubscriptionDetailRoute() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { usedDateKeys, recordToday, undoToday } = useSubscriptionUsage({
+  const { usedDateKeys, recordToday, undoToday, toggleUsageDate } = useSubscriptionUsage({
     subscriptionId: id ?? '',
     userId: subscription?.userId ?? '',
   });
@@ -185,9 +185,19 @@ export default function SubscriptionDetailRoute() {
           onUndoUsagePress={() => {
             void undoToday();
           }}
+          onToggleDate={(dateKey, nextUsed) => {
+            void toggleUsageDate(dateKey, nextUsed);
+          }}
         />
 
         <View className="mt-2 gap-3">
+          <ActionButton
+            icon="edit"
+            label="契約内容を編集"
+            disabled={isBusy}
+            onPress={() => router.push(`/(tabs)/subscriptions/${subscription.id}/edit`)}
+          />
+
           {subscription.status === 'active' ? (
             <ActionButton
               icon="pause-circle-outline"

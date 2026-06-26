@@ -24,6 +24,12 @@ export interface UpdateSubscriptionTrialInput {
   nextBillingDate: Date;
 }
 
+export interface UpdateSubscriptionDetailsInput {
+  startDate: Date;
+  nextBillingDate: Date;
+  customPrice: number | null;
+}
+
 export interface SubscriptionRepository {
   findAll(): Promise<Subscription[]>;
   findByBillingMonth(year: number, month: number): Promise<Subscription[]>;
@@ -33,6 +39,7 @@ export interface SubscriptionRepository {
   createMany(inputs: CreateSubscriptionInput[]): Promise<Subscription[]>;
   updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription>;
   updateTrial(id: string, input: UpdateSubscriptionTrialInput): Promise<Subscription>;
+  updateDetails(id: string, input: UpdateSubscriptionDetailsInput): Promise<Subscription>;
   clearExpiredTrials(ids: readonly string[]): Promise<void>;
   delete(id: string): Promise<void>;
 }

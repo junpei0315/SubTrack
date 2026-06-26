@@ -9,6 +9,8 @@ import { formatLocalDate } from './localDate';
 import { addBillingCycle, toLocalDateOnly } from './nextBillingDate';
 import type { Subscription } from './subscription';
 import { getEffectiveSubscriptionPrice } from './subscriptionPrice';
+import type { SubscriptionPriceEntry } from './subscriptionPriceHistory';
+import { resolveSubscriptionPriceForMonth } from './subscriptionPriceHistory';
 
 const MAX_BILLING_ITERATIONS = 600;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -110,7 +112,8 @@ export function hasBillingOnDate(subscription: Subscription, date: Date): boolea
 export function computeBillingTotalForMonth(
   subscription: Subscription,
   year: number,
-  month: number
+  month: number,
+  priceHistory: readonly SubscriptionPriceEntry[] = []
 ): number {
   if (!isRelevantForMonth(subscription, year, month)) {
     return 0;
@@ -125,7 +128,10 @@ export function computeBillingTotalForMonth(
     }
   }
 
-  const charge = getEffectiveSubscriptionPrice(subscription);
+  const charge =
+    priceHistory.length > 0
+      ? resolveSubscriptionPriceForMonth(subscription, priceHistory, year, month)
+      : getEffectiveSubscriptionPrice(subscription);
   const cancelled =
     subscription.cancelledAt != null ? toLocalDateOnly(subscription.cancelledAt) : null;
 

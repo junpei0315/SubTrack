@@ -9,6 +9,7 @@ import {
 import { convertToJpy, DISPLAY_CURRENCY, type ExchangeRates } from './exchangeRate';
 import { toLocalDateOnly } from './nextBillingDate';
 import type { Subscription } from './subscription';
+import type { SubscriptionPriceEntry } from './subscriptionPriceHistory';
 
 export { computeBillingTotalForMonth } from './billingOccurrences';
 
@@ -54,7 +55,8 @@ export interface MonthlySpendingTrendOptions {
 export function computeMonthlySpendingTrend(
   subscriptions: Subscription[],
   rates: ExchangeRates,
-  options: MonthlySpendingTrendOptions = {}
+  options: MonthlySpendingTrendOptions = {},
+  priceHistory: readonly SubscriptionPriceEntry[] = []
 ): MonthlySpendingTrend {
   const today = options.today ?? new Date();
   const pastMonths = options.pastMonths ?? 3;
@@ -88,7 +90,12 @@ export function computeMonthlySpendingTrend(
     });
 
     const amount = targets.reduce((sum, sub) => {
-      const monthTotal = computeBillingTotalForMonth(sub, yearMonth.year, yearMonth.month);
+      const monthTotal = computeBillingTotalForMonth(
+        sub,
+        yearMonth.year,
+        yearMonth.month,
+        priceHistory
+      );
       return sum + convertToJpy(monthTotal, sub.plan.currency, rates);
     }, 0);
     const monthStart = monthBounds(yearMonth.year, yearMonth.month).start;

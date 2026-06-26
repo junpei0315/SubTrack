@@ -3,6 +3,7 @@ import type { Subscription } from '@/src/domain/subscription';
 import type {
   CreateSubscriptionInput,
   SubscriptionRepository,
+  UpdateSubscriptionDetailsInput,
   UpdateSubscriptionStatusInput,
   UpdateSubscriptionTrialInput,
 } from '@/src/ports/subscriptionRepository';
@@ -145,6 +146,32 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
     const patch = {
       trial_ends_on: input.trialEndsOn ? formatLocalDate(input.trialEndsOn) : null,
       next_billing_date: formatLocalDate(input.nextBillingDate),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .update(patch)
+      .eq('id', id)
+      .select(SUBSCRIPTION_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('サブスクの更新に失敗しました（対象が見つからないか、権限がありません）');
+    }
+
+    return mapSubscriptionRow(data as Record<string, unknown>);
+  },
+
+  async updateDetails(id: string, input: UpdateSubscriptionDetailsInput): Promise<Subscription> {
+    const patch = {
+      start_date: formatLocalDate(input.startDate),
+      next_billing_date: formatLocalDate(input.nextBillingDate),
+      custom_price: input.customPrice,
       updated_at: new Date().toISOString(),
     };
 
