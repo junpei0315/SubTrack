@@ -15,6 +15,7 @@ import type { BillingCycle } from '@/src/domain/billingCycle';
 import { BillingCycleSelector } from './BillingCycleSelector';
 import { SubscriptionPriceField } from './SubscriptionPriceField';
 import { SubscriptionStartDateField } from './SubscriptionStartDateField';
+import { TrialPeriodFields, type TrialPeriodValue } from './TrialPeriodFields';
 
 export interface ManualSubscriptionFormValues {
   serviceName: string;
@@ -22,6 +23,7 @@ export interface ManualSubscriptionFormValues {
   cycle: BillingCycle;
   price: number;
   startDate: Date;
+  trialEndsOn?: Date;
 }
 
 interface ManualSubscriptionFormProps {
@@ -38,6 +40,10 @@ export const ManualSubscriptionForm: React.FC<ManualSubscriptionFormProps> = ({
   const [cycle, setCycle] = useState<BillingCycle>('monthly');
   const [priceText, setPriceText] = useState('');
   const [startDate, setStartDate] = useState<Date>(() => new Date());
+  const [trialPeriod, setTrialPeriod] = useState<TrialPeriodValue>({
+    enabled: false,
+    trialEndsOn: null,
+  });
   const [showServiceError, setShowServiceError] = useState(false);
   const [showPriceError, setShowPriceError] = useState(false);
 
@@ -67,6 +73,7 @@ export const ManualSubscriptionForm: React.FC<ManualSubscriptionFormProps> = ({
       cycle,
       price: parsedPrice,
       startDate,
+      trialEndsOn: trialPeriod.enabled ? trialPeriod.trialEndsOn ?? undefined : undefined,
     });
   };
 
@@ -146,6 +153,15 @@ export const ManualSubscriptionForm: React.FC<ManualSubscriptionFormProps> = ({
           onChange={setStartDate}
           disabled={isSubmitting}
         />
+
+        <View className="pt-4">
+          <TrialPeriodFields
+            startDate={startDate}
+            value={trialPeriod}
+            onChange={setTrialPeriod}
+            disabled={isSubmitting}
+          />
+        </View>
       </ScrollView>
 
       <View className="border-t border-border px-5 pb-7 pt-3">

@@ -117,6 +117,14 @@ export function computeBillingTotalForMonth(
   }
 
   const { start: monthStart, end: monthEnd } = monthBounds(year, month);
+
+  if (subscription.trialEndsOn != null) {
+    const trialEnd = toLocalDateOnly(subscription.trialEndsOn);
+    if (trialEnd > monthEnd) {
+      return 0;
+    }
+  }
+
   const charge = getEffectiveSubscriptionPrice(subscription);
   const cancelled =
     subscription.cancelledAt != null ? toLocalDateOnly(subscription.cancelledAt) : null;

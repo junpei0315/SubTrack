@@ -13,15 +13,21 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { PresetPlanSelectorList } from '@/components/subscriptions/PresetPlanSelectorList';
+import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { SubscriptionStartDateField } from '@/components/subscriptions/SubscriptionStartDateField';
+import {
+  TrialPeriodFields,
+  createInitialTrialPeriodValue,
+  type TrialPeriodValue,
+} from '@/components/subscriptions/TrialPeriodFields';
 import { AppColors } from '@/constants/colors';
 import type { PresetPlan, PresetService } from '@/src/domain/preset';
 
 interface OnboardingPlanSelection {
   planId: string;
   startDate: Date;
+  trialEndsOn?: Date;
 }
 
 interface OnboardingPlanModalProps {
@@ -58,13 +64,20 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
   const insets = useSafeAreaInsets();
   const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date>(() => new Date());
+  const [trialPeriod, setTrialPeriod] = useState<TrialPeriodValue>(() =>
+    createInitialTrialPeriodValue(new Date())
+  );
 
   useEffect(() => {
     if (!visible || !preset) {
       return;
     }
-    setLocalSelectedId(resolveInitialPlanId(preset.plans, selectedPlanId));
-    setStartDate(selectedStartDate ?? new Date());
+    const initialPlanId = resolveInitialPlanId(preset.plans, selectedPlanId);
+    const initialPlan = preset.plans.find((plan) => plan.id === initialPlanId);
+    const nextStartDate = selectedStartDate ?? new Date();
+    setLocalSelectedId(initialPlanId);
+    setStartDate(nextStartDate);
+    setTrialPeriod(createInitialTrialPeriodValue(nextStartDate, initialPlan?.defaultTrialDays));
   }, [visible, selectedPlanId, selectedStartDate, preset]);
 
   const plans = preset?.plans ?? [];
@@ -141,15 +154,29 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
               plans={plans}
               selectedPlanId={localSelectedId}
               disabled={isSubmitting}
-              onSelectPlan={(plan) => setLocalSelectedId(plan.id)}
+              onSelectPlan={(plan) => {
+                setLocalSelectedId(plan.id);
+                setTrialPeriod(createInitialTrialPeriodValue(startDate, plan.defaultTrialDays));
+              }}
             />
 
             {selectedPlan != null ? (
-              <SubscriptionStartDateField
-                value={startDate}
-                onChange={setStartDate}
-                disabled={isSubmitting}
-              />
+              <>
+                <SubscriptionStartDateField
+                  value={startDate}
+                  onChange={setStartDate}
+                  disabled={isSubmitting}
+                />
+                <View className="pt-4">
+                  <TrialPeriodFields
+                    startDate={startDate}
+                    value={trialPeriod}
+                    onChange={setTrialPeriod}
+                    defaultTrialDays={selectedPlan.defaultTrialDays}
+                    disabled={isSubmitting}
+                  />
+                </View>
+              </>
             ) : null}
           </ScrollView>
 
@@ -178,7 +205,15 @@ export const OnboardingPlanModal: React.FC<OnboardingPlanModalProps> = ({
               onPress={() => {
                 void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 onConfirm(
-                  selectedPlan ? { planId: selectedPlan.id, startDate } : null
+                  selectedPlan
+                    ? {
+                        planId: selectedPlan.id,
+                        startDate,
+                        trialEndsOn: trialPeriod.enabled
+                          ? trialPeriod.trialEndsOn ?? undefined
+                          : undefined,
+                      }
+                    : null
                 );
               }}
               className={`flex-row items-center justify-center gap-2 rounded-full py-4 ${

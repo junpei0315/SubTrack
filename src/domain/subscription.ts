@@ -31,6 +31,8 @@ export interface Subscription {
   customPrice?: number;
   nextBillingDate: Date;
   startDate: Date;
+  /** お試し終了日（初回課金日）。未来日ならお試し中。 */
+  trialEndsOn?: Date;
   status: 'active' | 'paused' | 'cancelled';
   /** 解約日時。status === 'cancelled' のときのみ設定される。 */
   cancelledAt?: Date;

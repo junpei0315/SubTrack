@@ -3,7 +3,7 @@
  */
 
 import { convertToJpy, DISPLAY_CURRENCY, type ExchangeRates } from './exchangeRate';
-import { getMonthlyNormalizedPrice } from './normalizeBilling';
+import { getBillableMonthlyNormalizedPrice } from './billableSubscription';
 import type { Subscription } from './subscription';
 
 export interface GenreSpendingSubscription {
@@ -42,10 +42,14 @@ export function computeGenreSpendingBreakdown(
   const byGenre = new Map<string, GenreSpendingSubscription[]>();
 
   for (const sub of active) {
+    const amount = getBillableMonthlyNormalizedPrice(sub);
+    if (amount <= 0) {
+      continue;
+    }
     const genre = sub.service.category || OTHER_GENRE_LABEL;
-    const amount = convertToJpy(getMonthlyNormalizedPrice(sub), sub.plan.currency, rates);
+    const converted = convertToJpy(amount, sub.plan.currency, rates);
     const list = byGenre.get(genre) ?? [];
-    list.push({ id: sub.id, serviceName: sub.service.name, amount });
+    list.push({ id: sub.id, serviceName: sub.service.name, amount: converted });
     byGenre.set(genre, list);
   }
 

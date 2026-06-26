@@ -3,6 +3,7 @@ import { ScrollView } from 'react-native';
 import { Calendar } from '@/components/calendar/Calendar';
 import { MonthlySpending } from '@/components/dashboard/MonthlySpending';
 import { UpcomingSubscriptions } from '@/components/dashboard/UpcomingSubscriptions';
+import { UpcomingTrials } from '@/components/dashboard/UpcomingTrials';
 import { ThemedView } from '@/components/themed-view';
 
 // TODO: src/features/dashboard/screens/DashboardScreen.tsx を実装して差し替える
@@ -12,6 +13,7 @@ export default function HomeRoute() {
     <ScrollView className="flex-1" contentContainerClassName="grow">
       <ThemedView className="flex-1 px-4 pb-4 pt-1">
         <MonthlySpending />
+        <UpcomingTrials />
         <Calendar />
         <UpcomingSubscriptions />
       </ThemedView>

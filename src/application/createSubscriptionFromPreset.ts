@@ -14,6 +14,8 @@ export interface CreateSubscriptionFromPresetParams {
   startDate: Date;
   /** ユーザーが入力した実際の料金 */
   price: number;
+  /** 052: お試し終了日 */
+  trialEndsOn?: Date;
 }
 
 // subscriptions.custom_price は numeric(14,4)。比較・保存をこの精度に揃える。
@@ -44,7 +46,10 @@ export async function createSubscriptionFromPreset(
     throw new Error(DUPLICATE_PLAN_ERROR);
   }
 
-  const nextBillingDate = calcNextBillingDate(params.startDate, params.cycle);
+  const nextBillingDate =
+    params.trialEndsOn != null
+      ? params.trialEndsOn
+      : calcNextBillingDate(params.startDate, params.cycle);
 
   // 浮動小数誤差で「同額」が custom_price 扱いにならないよう、DB 精度に丸めてから比較する。
   const normalizedPrice = normalizePrice(params.price);
@@ -58,6 +63,7 @@ export async function createSubscriptionFromPreset(
     startDate: params.startDate,
     nextBillingDate,
     customPrice,
+    trialEndsOn: params.trialEndsOn,
   };
 
   return repository.create(input);

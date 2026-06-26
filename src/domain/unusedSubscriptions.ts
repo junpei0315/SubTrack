@@ -5,6 +5,7 @@
 import { parseLocalDate } from './localDate';
 import { toLocalDateOnly } from './nextBillingDate';
 import type { Subscription } from './subscription';
+import { isInTrial } from './trialPeriod';
 
 export const DEFAULT_UNUSED_THRESHOLD_DAYS = 30;
 export const YEARLY_UNUSED_THRESHOLD_DAYS = 90;
@@ -71,6 +72,10 @@ export function detectUnusedSubscriptions({
 
   for (const subscription of subscriptions) {
     if (subscription.status !== 'active') {
+      continue;
+    }
+
+    if (isInTrial(subscription, todayOnly)) {
       continue;
     }
 

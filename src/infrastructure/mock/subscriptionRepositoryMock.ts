@@ -3,6 +3,7 @@ import type {
   CreateSubscriptionInput,
   SubscriptionRepository,
   UpdateSubscriptionStatusInput,
+  UpdateSubscriptionTrialInput,
 } from '@/src/ports/subscriptionRepository';
 
 function buildMockSubscriptions(year: number, month: number): Subscription[] {
@@ -149,6 +150,25 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
     };
   },
 
+  async updateTrial(id: string, input: UpdateSubscriptionTrialInput): Promise<Subscription> {
+    const now = new Date();
+    const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
+    const target = all.find((sub) => sub.id === id);
+    if (!target) {
+      throw new Error(`Subscription not found: ${id}`);
+    }
+    return {
+      ...target,
+      trialEndsOn: input.trialEndsOn ?? undefined,
+      nextBillingDate: input.nextBillingDate,
+      updatedAt: now,
+    };
+  },
+
+  async clearExpiredTrials(_ids: readonly string[]): Promise<void> {
+    // モックは永続化しないため no-op。
+  },
+
   async delete(id: string): Promise<void> {
     const now = new Date();
     const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
@@ -183,6 +203,7 @@ function buildMockCreated(input: CreateSubscriptionInput): Subscription {
     customPrice: input.customPrice,
     nextBillingDate: input.nextBillingDate,
     startDate: input.startDate,
+    trialEndsOn: input.trialEndsOn,
     status: 'active',
     createdAt: now,
     updatedAt: now,

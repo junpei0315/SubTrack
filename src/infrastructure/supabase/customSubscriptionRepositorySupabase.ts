@@ -15,6 +15,7 @@ export const customSubscriptionRepositorySupabase: CustomSubscriptionRepository 
       p_cycle: input.cycle,
       p_start_date: formatLocalDate(input.startDate),
       p_currency: input.currency ?? 'JPY',
+      p_trial_ends_on: input.trialEndsOn ? formatLocalDate(input.trialEndsOn) : null,
     });
 
     if (error) {

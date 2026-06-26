@@ -14,6 +14,8 @@ export interface PresetPlan {
   price: number;
   currency: string;
   cycle: BillingCycle;
+  /** 052: デフォルトのお試し日数 */
+  defaultTrialDays?: number;
 }
 
 export interface PresetService {

@@ -4,6 +4,7 @@ import type {
   CreateSubscriptionInput,
   SubscriptionRepository,
   UpdateSubscriptionStatusInput,
+  UpdateSubscriptionTrialInput,
 } from '@/src/ports/subscriptionRepository';
 
 import { supabase } from './client';
@@ -70,6 +71,7 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
         next_billing_date: formatLocalDate(input.nextBillingDate),
         status: 'active',
         custom_price: input.customPrice ?? null,
+        trial_ends_on: input.trialEndsOn ? formatLocalDate(input.trialEndsOn) : null,
       })
       .select(SUBSCRIPTION_SELECT)
       .single();
@@ -93,6 +95,7 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
       next_billing_date: formatLocalDate(input.nextBillingDate),
       status: 'active',
       custom_price: input.customPrice ?? null,
+      trial_ends_on: input.trialEndsOn ? formatLocalDate(input.trialEndsOn) : null,
     }));
 
     const { data, error } = await supabase
@@ -136,6 +139,49 @@ export const subscriptionRepositorySupabase: SubscriptionRepository = {
     }
 
     return mapSubscriptionRow(data as Record<string, unknown>);
+  },
+
+  async updateTrial(id: string, input: UpdateSubscriptionTrialInput): Promise<Subscription> {
+    const patch = {
+      trial_ends_on: input.trialEndsOn ? formatLocalDate(input.trialEndsOn) : null,
+      next_billing_date: formatLocalDate(input.nextBillingDate),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .update(patch)
+      .eq('id', id)
+      .select(SUBSCRIPTION_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('サブスクの更新に失敗しました（対象が見つからないか、権限がありません）');
+    }
+
+    return mapSubscriptionRow(data as Record<string, unknown>);
+  },
+
+  async clearExpiredTrials(ids: readonly string[]): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('subscriptions')
+      .update({
+        trial_ends_on: null,
+        updated_at: new Date().toISOString(),
+      })
+      .in('id', [...ids]);
+
+    if (error) {
+      throw error;
+    }
   },
 
   async delete(id: string): Promise<void> {

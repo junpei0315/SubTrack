@@ -20,7 +20,7 @@ interface NotificationContextValue {
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
 function isNotificationPayloadType(value: unknown): value is NotificationPayloadType {
-  return value === 'billing' || value === 'unused_review';
+  return value === 'billing' || value === 'unused_review' || value === 'trial_ending';
 }
 
 function configureForegroundHandler(): void {
@@ -56,7 +56,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (rawType === 'billing') {
+      if (rawType === 'billing' || rawType === 'trial_ending') {
         const subscriptionId = response.notification.request.content.data?.subscriptionId;
         if (typeof subscriptionId === 'string' && subscriptionId.length > 0) {
           router.push(`/(tabs)/subscriptions/${subscriptionId}`);

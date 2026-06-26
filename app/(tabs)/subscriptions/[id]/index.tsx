@@ -9,6 +9,7 @@ import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { BillingInfo } from '@/components/subscriptions/BillingInfo';
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
 import { SubscriptionStatusBadge } from '@/components/subscriptions/SubscriptionStatusBadge';
+import { SubscriptionTrialSection } from '@/components/subscriptions/SubscriptionTrialSection';
 import { UsageFrequencyTracker } from '@/components/subscriptions/UsageFrequencyTracker';
 import { useSubscriptionActions } from '@/components/subscriptions/useSubscriptionActions';
 import { useSubscriptionUsage } from '@/components/subscriptions/useSubscriptionUsage';
@@ -19,6 +20,7 @@ import { getBillingCycleLabel } from '@/src/domain/billingCycle';
 import { getMonthlyNormalizedPrice } from '@/src/domain/normalizeBilling';
 import type { Subscription } from '@/src/domain/subscription';
 import { getEffectiveSubscriptionPrice } from '@/src/domain/subscriptionPrice';
+import { isInTrial } from '@/src/domain/trialPeriod';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 
 // TODO: src/features/subscriptions/screens/SubscriptionDetailScreen.tsx を実装して差し替える
@@ -167,7 +169,13 @@ export default function SubscriptionDetailRoute() {
           cycle={plan.cycle}
           nextBillingDate={subscription.nextBillingDate}
           startDate={subscription.startDate}
+          trialEndsOn={
+            subscription.trialEndsOn && isInTrial(subscription)
+              ? subscription.trialEndsOn
+              : undefined
+          }
         />
+        <SubscriptionTrialSection subscription={subscription} onUpdated={setSubscription} />
         <UsageFrequencyTracker
           usedDateKeys={usedDateKeys}
           monthlyPriceYen={monthlyPriceYen}

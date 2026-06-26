@@ -4,12 +4,15 @@
 
 import { formatLocalDate, parseLocalDate } from './localDate';
 import type { Subscription } from './subscription';
+import { isInTrial } from './trialPeriod';
 import type { UnusedSubscriptionAlert } from './unusedSubscriptions';
 
 export const BILLING_NOTIFICATION_HOUR = 9;
 export const UNUSED_REVIEW_NOTIFICATION_HOUR = 10;
 
-export type NotificationPayloadType = 'billing' | 'unused_review';
+export type NotificationPayloadType = 'billing' | 'unused_review' | 'trial_ending';
+
+export const TRIAL_NOTIFICATION_DAYS_BEFORE = [3, 1, 0] as const;
 
 export interface ScheduledNotificationItem {
   identifier: string;
@@ -47,7 +50,7 @@ export function buildBillingDayNotifications(
   const byDate = new Map<string, Subscription[]>();
 
   for (const subscription of subscriptions) {
-    if (subscription.status !== 'active') {
+    if (subscription.status !== 'active' || isInTrial(subscription, now)) {
       continue;
     }
     const dateKey = formatLocalDate(subscription.nextBillingDate);
@@ -80,6 +83,53 @@ export function buildBillingDayNotifications(
         subscriptionId: primary.id,
       },
     });
+  }
+
+  return items;
+}
+
+/**
+ * お試し終了の 3 日前・前日・当日 9:00 に通知を組み立てる（052）。
+ */
+export function buildTrialEndingNotifications(
+  subscriptions: readonly Subscription[],
+  now: Date = new Date()
+): ScheduledNotificationItem[] {
+  const items: ScheduledNotificationItem[] = [];
+
+  for (const subscription of subscriptions) {
+    if (!isInTrial(subscription, now) || subscription.trialEndsOn == null) {
+      continue;
+    }
+
+    const trialEndKey = formatLocalDate(subscription.trialEndsOn);
+
+    for (const daysBefore of TRIAL_NOTIFICATION_DAYS_BEFORE) {
+      const triggerBase = parseLocalDate(trialEndKey);
+      triggerBase.setDate(triggerBase.getDate() - daysBefore);
+      const triggerDate = atLocalHour(triggerBase, BILLING_NOTIFICATION_HOUR);
+      if (triggerDate <= now) {
+        continue;
+      }
+
+      const body =
+        daysBefore === 0
+          ? `${subscription.service.name} の無料お試しは本日終了です。課金が始まる前に見直しましょう`
+          : daysBefore === 1
+            ? `${subscription.service.name} の無料お試しは明日終了します`
+            : `${subscription.service.name} の無料お試しがあと${daysBefore}日で終了します`;
+
+      items.push({
+        identifier: `trial-${subscription.id}-${daysBefore}`,
+        triggerDate,
+        title: 'お試し終了のお知らせ',
+        body,
+        data: {
+          type: 'trial_ending',
+          subscriptionId: subscription.id,
+        },
+      });
+    }
   }
 
   return items;
@@ -120,7 +170,10 @@ export function buildNotificationSchedule(input: {
   now?: Date;
 }): ScheduledNotificationItem[] {
   const now = input.now ?? new Date();
-  const items = [...buildBillingDayNotifications(input.subscriptions, now)];
+  const items = [
+    ...buildBillingDayNotifications(input.subscriptions, now),
+    ...buildTrialEndingNotifications(input.subscriptions, now),
+  ];
   const unused = buildUnusedReviewNotification(input.unusedAlerts, now);
 
   if (unused) {
