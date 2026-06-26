@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
 import { useNotifications } from '@/components/notifications/NotificationProvider';
+import { useNotificationBellSecretTap } from '@/components/notifications/useNotificationBellSecretTap';
 
 export interface UseHeaderParams {
   /** 通知アイコン押下時のハンドラ（未指定時は通知設定モーダルを開く）。 */
@@ -35,13 +36,21 @@ export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
     router.push('/(tabs)/settings');
   }, [onPressAvatar, router]);
 
+  const defaultPressNotifications = useCallback(() => {
+    openSettingsModal();
+  }, [openSettingsModal]);
+
+  const handlePressNotificationsWithSecretTap = useNotificationBellSecretTap(
+    onPressNotifications ?? defaultPressNotifications
+  );
+
   const handlePressNotifications = useCallback(() => {
     if (onPressNotifications) {
       onPressNotifications();
       return;
     }
-    openSettingsModal();
-  }, [onPressNotifications, openSettingsModal]);
+    handlePressNotificationsWithSecretTap();
+  }, [onPressNotifications, handlePressNotificationsWithSecretTap]);
 
   const handlePressSettings = useCallback(() => {
     if (onPressSettings) {
