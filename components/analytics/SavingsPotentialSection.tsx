@@ -19,11 +19,14 @@ import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
 interface SavingsPotentialSectionProps {
   unusedAlerts: UnusedSubscriptionAlert[];
   hasUsageLogs: boolean;
+  /** summary: サマリータブ用（年間カード中心）。standalone: 従来の1枚カード */
+  layout?: 'standalone' | 'summary';
 }
 
 export const SavingsPotentialSection: React.FC<SavingsPotentialSectionProps> = ({
   unusedAlerts,
   hasUsageLogs,
+  layout = 'standalone',
 }) => {
   const { rates } = useExchangeRates();
 
@@ -39,7 +42,14 @@ export const SavingsPotentialSection: React.FC<SavingsPotentialSectionProps> = (
   }
 
   if (insight.monthlyAmountJpy <= 0) {
+    if (layout === 'summary') {
+      return null;
+    }
     return <NoSavingsCard hasUsageLogs={hasUsageLogs} />;
+  }
+
+  if (layout === 'summary') {
+    return <SummarySavingsCard insight={insight} hasUsageLogs={hasUsageLogs} />;
   }
 
   return <SavingsCard insight={insight} hasUsageLogs={hasUsageLogs} />;
@@ -54,6 +64,74 @@ function NoSavingsCard({ hasUsageLogs }: { hasUsageLogs: boolean }) {
           ? '今のところ、見直し候補はありません。'
           : '登録から一定期間経過したサブスクのうち、見直し候補は今のところありません。'}
       </Text>
+    </AnalyticsCard>
+  );
+}
+
+function SummarySavingsCard({
+  insight,
+  hasUsageLogs,
+}: {
+  insight: SavingsInsight;
+  hasUsageLogs: boolean;
+}) {
+  const router = useRouter();
+  const topItems = insight.items.slice(0, 3);
+
+  return (
+    <AnalyticsCard variant="accent" className="gap-4">
+      <View className="gap-0.5">
+        <Text className="text-base font-bold text-foreground">見直しで浮きそうな金額（年間）</Text>
+        <Text className="text-xs text-subtle">
+          {hasUsageLogs
+            ? 'しばらく使っていないサブスクの合計'
+            : '利用記録がないサブスクの合計'}
+        </Text>
+      </View>
+
+      <Text className="text-[36px] font-bold leading-tight text-foreground">
+        {formatPrice(insight.yearlyAmountJpy, 'JPY')}
+      </Text>
+
+      {insight.equivalents.length > 0 ? (
+        <View className="flex-row flex-wrap gap-2">
+          {insight.equivalents.map((equivalent) => (
+            <View
+              key={equivalent.description}
+              className="rounded-full bg-surface/80 px-3 py-1.5"
+            >
+              <Text className="text-xs text-foreground">{equivalent.description}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
+      {topItems.length > 0 ? (
+        <View className="gap-2">
+          {topItems.map((item) => (
+            <Pressable
+              key={item.subscriptionId}
+              onPress={() => router.push(`/(tabs)/subscriptions/${item.subscriptionId}`)}
+              className="flex-row items-center gap-3 rounded-2xl bg-surface/80 px-3 py-2.5 active:opacity-80"
+              accessibilityRole="button"
+              accessibilityLabel={`${item.serviceName}の詳細を見る`}
+            >
+              <ServiceLogoBadge
+                name={item.serviceName}
+                logoKey={item.logoKey}
+                logoUri={item.logoUri}
+                size="sm"
+              />
+              <Text className="min-w-0 flex-1 text-sm font-semibold text-foreground" numberOfLines={1}>
+                {item.serviceName}
+              </Text>
+              <Text className="text-sm font-bold text-foreground">
+                {formatPrice(item.monthlyAmountJpy, 'JPY')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </AnalyticsCard>
   );
 }
@@ -116,7 +194,7 @@ function SavingsCard({
             {topItems.map((item) => (
               <Pressable
                 key={item.subscriptionId}
-                onPress={() => router.push(`/subscriptions/${item.subscriptionId}`)}
+                onPress={() => router.push(`/(tabs)/subscriptions/${item.subscriptionId}`)}
                 className="flex-row items-center gap-3 rounded-2xl bg-surface/80 px-3 py-2.5 active:opacity-80"
                 accessibilityRole="button"
                 accessibilityLabel={`${item.serviceName}の詳細を見る`}
