@@ -25,6 +25,7 @@ import type { PresetService } from '@/src/domain/preset';
 interface OnboardingPresetSelection {
   planId: string;
   startDate: Date;
+  trialEndsOn?: Date;
 }
 
 export default function OnboardingWelcomeRoute() {
@@ -82,6 +83,7 @@ export default function OnboardingWelcomeRoute() {
         planId: plan.id,
         cycle: plan.cycle,
         startDate: selection.startDate,
+        trialEndsOn: selection.trialEndsOn,
       });
     });
 

@@ -32,6 +32,7 @@ export const SUBSCRIPTION_SELECT = `
   custom_price,
   next_billing_date,
   start_date,
+  trial_ends_on,
   status,
   cancelled_at,
   created_at,
@@ -42,6 +43,7 @@ export const SUBSCRIPTION_SELECT = `
     name,
     price,
     currency,
+    default_trial_days,
     cycles ( name ),
     services (
       id,
@@ -63,6 +65,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
           name: string;
           price: number;
           currency: string;
+          default_trial_days?: number | null;
           cycles: { name: string } | { name: string }[];
           services:
             | {
@@ -88,6 +91,7 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
           name: string;
           price: number;
           currency: string;
+          default_trial_days?: number | null;
           cycles: { name: string } | { name: string }[];
           services:
             | {
@@ -139,6 +143,10 @@ export function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
         : undefined,
     nextBillingDate: parseLocalDate(row.next_billing_date as string),
     startDate: parseLocalDate(row.start_date as string),
+    trialEndsOn:
+      row.trial_ends_on != null && row.trial_ends_on !== ''
+        ? parseLocalDate(row.trial_ends_on as string)
+        : undefined,
     status: toSubscriptionStatus(row.status as string),
     cancelledAt: row.cancelled_at ? new Date(row.cancelled_at as string) : undefined,
     createdAt: new Date(row.created_at as string),

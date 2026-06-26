@@ -125,6 +125,7 @@ function PresetAddSection() {
         cycle: selection.plan.cycle,
         startDate: selection.startDate,
         price: selection.price,
+        trialEndsOn: selection.trialEndsOn,
       });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSelectedPreset(null);
@@ -196,6 +197,7 @@ function ManualAddSection() {
         price: values.price,
         cycle: values.cycle,
         startDate: values.startDate,
+        trialEndsOn: values.trialEndsOn,
       });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();

@@ -12,18 +12,20 @@ interface SubscriptionStartDateFieldProps {
   value: Date;
   onChange: (date: Date) => void;
   disabled?: boolean;
+  label?: string;
 }
 
 export const SubscriptionStartDateField: React.FC<SubscriptionStartDateFieldProps> = ({
   value,
   onChange,
   disabled = false,
+  label = '支払い開始日',
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   return (
     <>
-      <Text className="pb-3 pt-7 text-base font-bold text-foreground">支払い開始日</Text>
+      <Text className="pb-3 pt-7 text-base font-bold text-foreground">{label}</Text>
       <View className="rounded-2xl bg-card">
         <TouchableOpacity
           activeOpacity={0.8}

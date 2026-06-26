@@ -6,7 +6,7 @@
  */
 
 import { convertToJpy, DISPLAY_CURRENCY, type ExchangeRates } from './exchangeRate';
-import { getMonthlyNormalizedPrice, getYearlyNormalizedPrice } from './normalizeBilling';
+import { getBillableMonthlyNormalizedPrice, getBillableYearlyNormalizedPrice } from './billableSubscription';
 import type { Subscription } from './subscription';
 
 export interface BillingTotal {
@@ -24,9 +24,12 @@ export type MonthlyBillingTotal = BillingTotal;
 function sumActiveNormalized(
   subscriptions: Subscription[],
   normalize: (sub: Subscription) => number,
-  rates: ExchangeRates
+  rates: ExchangeRates,
+  today: Date = new Date()
 ): BillingTotal {
-  const targets = subscriptions.filter((sub) => sub.status === 'active');
+  const targets = subscriptions.filter(
+    (sub) => sub.status === 'active' && normalize(sub) > 0
+  );
   const amount = targets.reduce(
     (sum, sub) =>
       sum + convertToJpy(normalize(sub), sub.plan.currency, rates),
@@ -46,9 +49,10 @@ function sumActiveNormalized(
  */
 export function computeActiveMonthlyTotal(
   subscriptions: Subscription[],
-  rates: ExchangeRates
+  rates: ExchangeRates,
+  today: Date = new Date()
 ): BillingTotal {
-  return sumActiveNormalized(subscriptions, getMonthlyNormalizedPrice, rates);
+  return sumActiveNormalized(subscriptions, (sub) => getBillableMonthlyNormalizedPrice(sub, today), rates, today);
 }
 
 /**
@@ -57,9 +61,10 @@ export function computeActiveMonthlyTotal(
  */
 export function computeActiveYearlyTotal(
   subscriptions: Subscription[],
-  rates: ExchangeRates
+  rates: ExchangeRates,
+  today: Date = new Date()
 ): BillingTotal {
-  return sumActiveNormalized(subscriptions, getYearlyNormalizedPrice, rates);
+  return sumActiveNormalized(subscriptions, (sub) => getBillableYearlyNormalizedPrice(sub, today), rates, today);
 }
 
 /**

@@ -101,6 +101,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
           <View className="mb-5 gap-2 rounded-xl border border-white/10 px-4 py-3">
             <Text className="text-[13px] leading-5 text-muted">
               ・支払い日当日のリマインド{'\n'}
+              ・無料お試し終了のお知らせ（3日前・前日・当日）{'\n'}
               ・長期間使っていないサブスクの見直し
             </Text>
           </View>

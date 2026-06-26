@@ -7,6 +7,8 @@ export interface CreateSubscriptionInput {
   nextBillingDate: Date;
   /** プリセット価格と異なる場合のみ設定する */
   customPrice?: number;
+  /** 052: お試し終了日 */
+  trialEndsOn?: Date;
 }
 
 export interface UpdateSubscriptionStatusInput {
@@ -17,6 +19,11 @@ export interface UpdateSubscriptionStatusInput {
   cancelledAt?: Date | null;
 }
 
+export interface UpdateSubscriptionTrialInput {
+  trialEndsOn: Date | null;
+  nextBillingDate: Date;
+}
+
 export interface SubscriptionRepository {
   findAll(): Promise<Subscription[]>;
   findByBillingMonth(year: number, month: number): Promise<Subscription[]>;
@@ -25,5 +32,7 @@ export interface SubscriptionRepository {
   /** 複数契約をまとめて登録する（初回オンボーディングの一括登録など）。 */
   createMany(inputs: CreateSubscriptionInput[]): Promise<Subscription[]>;
   updateStatus(id: string, input: UpdateSubscriptionStatusInput): Promise<Subscription>;
+  updateTrial(id: string, input: UpdateSubscriptionTrialInput): Promise<Subscription>;
+  clearExpiredTrials(ids: readonly string[]): Promise<void>;
   delete(id: string): Promise<void>;
 }

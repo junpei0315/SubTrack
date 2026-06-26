@@ -10,6 +10,7 @@ export interface CreateCustomSubscriptionParams {
   cycle: BillingCycle;
   startDate: Date;
   currency?: string;
+  trialEndsOn?: Date;
 }
 
 function assertValidPrice(value: number): void {
@@ -43,6 +44,7 @@ export async function createCustomSubscription(
     cycle: params.cycle,
     startDate: params.startDate,
     currency: params.currency,
+    trialEndsOn: params.trialEndsOn,
   };
 
   const subscriptionId = await customRepository.create(input);

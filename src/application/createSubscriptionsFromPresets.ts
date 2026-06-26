@@ -11,6 +11,8 @@ export interface PresetSelectionInput {
   cycle: BillingCycle;
   /** 支払い開始日（未指定時は呼び出し側で今日を渡す） */
   startDate: Date;
+  /** 052: お試し終了日 */
+  trialEndsOn?: Date;
 }
 
 /**
@@ -31,7 +33,11 @@ export async function createSubscriptionsFromPresets(
     userId,
     planId: selection.planId,
     startDate: selection.startDate,
-    nextBillingDate: calcNextBillingDate(selection.startDate, selection.cycle),
+    nextBillingDate:
+      selection.trialEndsOn != null
+        ? selection.trialEndsOn
+        : calcNextBillingDate(selection.startDate, selection.cycle),
+    trialEndsOn: selection.trialEndsOn,
   }));
 
   return repository.createMany(inputs);

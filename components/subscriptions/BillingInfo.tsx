@@ -6,11 +6,13 @@ import {
   getBillingCycleLabel,
   type BillingCycle,
 } from '@/src/domain/billingCycle';
+import { formatTrialEndsOnLabel } from '@/src/domain/trialPeriod';
 
 interface BillingInfoProps {
   cycle: BillingCycle;
   nextBillingDate: Date;
   startDate: Date;
+  trialEndsOn?: Date;
   title?: string;
   className?: string;
 }
@@ -19,6 +21,7 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({
   cycle,
   nextBillingDate,
   startDate,
+  trialEndsOn,
   title = '請求情報',
   className,
 }) => {
@@ -28,6 +31,12 @@ export const BillingInfo: React.FC<BillingInfoProps> = ({
       <View className="rounded-2xl bg-card px-4">
         <Row label="請求サイクル" value={getBillingCycleLabel(cycle)} valueAccent />
         <Divider />
+        {trialEndsOn ? (
+          <>
+            <Row label="お試し終了日" value={formatTrialEndsOnLabel(trialEndsOn)} valueAccent />
+            <Divider />
+          </>
+        ) : null}
         <Row label="次回請求日" value={formatBillingDate(nextBillingDate)} />
         <Divider />
         <Row label="開始日" value={formatBillingDate(startDate)} />

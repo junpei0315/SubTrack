@@ -7,6 +7,7 @@ export interface CreateCustomSubscriptionInput {
   cycle: BillingCycle;
   startDate: Date;
   currency?: string;
+  trialEndsOn?: Date;
 }
 
 export interface CustomSubscriptionRepository {

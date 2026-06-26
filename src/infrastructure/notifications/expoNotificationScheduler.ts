@@ -8,7 +8,7 @@ import type {
 } from '@/src/ports/notificationScheduler';
 
 const ANDROID_CHANNEL_ID = 'subtrack-default';
-const SUBTRACK_IDENTIFIER_PREFIXES = ['billing-', 'unused-review'] as const;
+const SUBTRACK_IDENTIFIER_PREFIXES = ['billing-', 'unused-review', 'trial-'] as const;
 
 function isSubTrackIdentifier(identifier: string): boolean {
   return SUBTRACK_IDENTIFIER_PREFIXES.some((prefix) => identifier.startsWith(prefix));

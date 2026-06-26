@@ -230,6 +230,7 @@ erDiagram
 | price      | numeric(14,4) | NO   | —                   | 決済金額             |
 | currency   | varchar(8)    | NO   | `'JPY'`             | このプランの決済通貨 |
 | cycle_id   | int           | NO   | —                   | FK → `cycles.id`     |
+| default_trial_days | integer | YES | —              | **052**: プリセット登録時のデフォルトお試し日数（NULL 可） |
 
 **インデックス**
 
@@ -252,6 +253,7 @@ erDiagram
 | custom_price      | numeric(14,4) | YES | —                 | **F-01**: ユーザー編集料金。NULL 時は `plans.price` を使用 |
 | status            | varchar(50) | NO   | `'active'`          | **F-03**: `active` / `paused` / `cancelled` のいずれか（CHECK 制約で限定） |
 | cancelled_at      | timestamptz | YES  | —                   | **F-04/044**: 解約日時。`cancelled` のとき必須・それ以外は NULL（CHECK 制約で整合） |
+| trial_ends_on     | date        | YES  | —                   | **052**: お試し終了日。NULL のとき通常課金。終了後は自動クリア |
 | memo              | text        | YES  | —                   | 解約 URL・メモ                                        |
 | created_at        | timestamptz | NO   | `now()`             |                                                       |
 | updated_at        | timestamptz | YES  | —                   |                                                       |
@@ -358,6 +360,7 @@ LINE 公式アカウントのトークから利用実績を記録するための
 
 | 日付       | 変更内容                                                                             |
 | ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-25 | `subscriptions.trial_ends_on`（date・NULL 可）、`plans.default_trial_days`（integer・NULL 可）追加。お試し期間（052、`20260625120000`） |
 | 2026-06-18 | `services.user_id` 追加、`create_custom_subscription` RPC、カスタムサービス用 RLS（F-02 / 038、`20260618100000`） |
 | 2026-06-17 | `subscriptions.cancelled_at`（timestamptz・NULL 可・status との整合 CHECK 制約）追加、`update` / `delete` の RLS ポリシー追加（044 一時停止・解約・削除、`20260617000000`） |
 | 2026-06-16 | `profiles.onboarding_completed`（boolean・NOT NULL・default false）追加、`profiles` の UPDATE RLS（自分の行のみ）追加、既存契約ありユーザーを完了扱いに backfill（初回オンボーディングのサブスク一括登録、F-01、`20260616120000`） |

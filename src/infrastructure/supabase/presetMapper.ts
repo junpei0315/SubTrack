@@ -29,6 +29,7 @@ export const PRESET_SELECT = `
     name,
     price,
     currency,
+    default_trial_days,
     cycles ( name )
   )
 `;
@@ -38,6 +39,7 @@ interface PlanRow {
   name: string;
   price: number;
   currency: string;
+  default_trial_days?: number | null;
   cycles: { name: string } | { name: string }[] | null;
 }
 
@@ -57,6 +59,8 @@ export function mapPresetRow(row: Record<string, unknown>): PresetService {
         price: Number(plan.price),
         currency: plan.currency,
         cycle: toBillingCycle(cycle.name),
+        defaultTrialDays:
+          plan.default_trial_days != null ? Number(plan.default_trial_days) : undefined,
       };
     })
     .filter((plan): plan is PresetPlan => plan !== null);

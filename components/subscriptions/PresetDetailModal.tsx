@@ -22,6 +22,11 @@ import { findFirstAvailablePlan } from '@/src/domain/registeredPlanIds';
 import { PresetPlanSelectorList } from './PresetPlanSelectorList';
 import { resolveServiceLogo } from './serviceLogos';
 import { SubscriptionStartDateField } from './SubscriptionStartDateField';
+import {
+  TrialPeriodFields,
+  createInitialTrialPeriodValue,
+  type TrialPeriodValue,
+} from './TrialPeriodFields';
 
 export interface PresetSelection {
   preset: PresetService;
@@ -29,6 +34,7 @@ export interface PresetSelection {
   /** ユーザーが編集後の実際の料金（プリセット価格から変更可能） */
   price: number;
   startDate: Date;
+  trialEndsOn?: Date;
 }
 
 interface PresetDetailModalProps {
@@ -65,6 +71,9 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [priceText, setPriceText] = useState('');
   const [startDate, setStartDate] = useState<Date>(() => new Date());
+  const [trialPeriod, setTrialPeriod] = useState<TrialPeriodValue>(() =>
+    createInitialTrialPeriodValue(new Date())
+  );
 
   const selectedPlan = useMemo(
     () => preset?.plans.find((plan) => plan.id === selectedPlanId) ?? null,
@@ -80,7 +89,11 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     const firstPlan = findFirstAvailablePlan(preset.plans, registered);
     setSelectedPlanId(firstPlan?.id ?? null);
     setPriceText(firstPlan ? String(firstPlan.price) : '');
-    setStartDate(new Date());
+    const nextStartDate = new Date();
+    setStartDate(nextStartDate);
+    setTrialPeriod(
+      createInitialTrialPeriodValue(nextStartDate, firstPlan?.defaultTrialDays)
+    );
   }, [visible, preset?.id]);
 
   // 登録状況の後追い反映: 現在の選択が登録済みになった場合のみ差し替える。
@@ -94,7 +107,10 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     const fallback = findFirstAvailablePlan(preset.plans, registeredPlanIds);
     setSelectedPlanId(fallback?.id ?? null);
     setPriceText(fallback ? String(fallback.price) : '');
-  }, [visible, preset, registeredPlanIds, selectedPlanId]);
+    setTrialPeriod(
+      createInitialTrialPeriodValue(startDate, fallback?.defaultTrialDays)
+    );
+  }, [visible, preset, registeredPlanIds, selectedPlanId, startDate]);
 
   if (!preset) {
     return null;
@@ -110,6 +126,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
     }
     setSelectedPlanId(plan.id);
     setPriceText(String(plan.price));
+    setTrialPeriod(createInitialTrialPeriodValue(startDate, plan.defaultTrialDays));
   };
 
   const parsedPrice = Number(priceText.replace(/[^0-9.]/g, ''));
@@ -134,6 +151,7 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
       plan: selectedPlan,
       price: parsedPrice,
       startDate,
+      trialEndsOn: trialPeriod.enabled ? trialPeriod.trialEndsOn ?? undefined : undefined,
     });
   };
 
@@ -240,6 +258,16 @@ export const PresetDetailModal: React.FC<PresetDetailModalProps> = ({
               onChange={setStartDate}
               disabled={isSubmitting}
             />
+
+            <View className="pt-4">
+              <TrialPeriodFields
+                startDate={startDate}
+                value={trialPeriod}
+                onChange={setTrialPeriod}
+                defaultTrialDays={selectedPlan?.defaultTrialDays}
+                disabled={isSubmitting}
+              />
+            </View>
           </ScrollView>
 
           <View className="border-t border-border px-5 pb-7 pt-3">
