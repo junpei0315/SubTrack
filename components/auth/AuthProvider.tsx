@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 
+import { useAuthDeepLink } from '@/hooks/use-auth-deep-link';
 import { getCurrentSession } from '@/src/application/getCurrentSession';
 import { signInWithEmail as signInWithEmailUseCase } from '@/src/application/signInWithEmail';
 import { signInWithGoogle as signInWithGoogleUseCase } from '@/src/application/signInWithGoogle';
@@ -34,6 +35,8 @@ const repository = authRepositorySupabase;
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useAuthDeepLink();
 
   useEffect(() => {
     let isMounted = true;

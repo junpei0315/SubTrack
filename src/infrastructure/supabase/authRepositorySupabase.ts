@@ -1,5 +1,4 @@
 import type { Session } from '@supabase/supabase-js';
-import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 
 import { AuthCancelledError, AuthValidationError, type AuthSession } from '@/src/domain/auth';
@@ -87,7 +86,9 @@ export const authRepositorySupabase: AuthRepository = {
   },
 
   async signInWithGoogle(): Promise<void> {
-    const redirectTo = Linking.createURL('/auth/callback');
+    // Supabase の Allow list（subscapp://auth/callback）と openAuthSessionAsync の
+    // 戻り URL を一致させる。Linking.createURL は本番で別形式になり得るため使わない。
+    const redirectTo = getAuthRedirectUrl();
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -103,7 +104,9 @@ export const authRepositorySupabase: AuthRepository = {
       throw new Error('Google 認証 URL を取得できませんでした');
     }
 
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo, {
+      showInRecents: true,
+    });
 
     if (result.type === 'success') {
       await establishSessionFromRedirect(result.url);
