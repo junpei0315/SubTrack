@@ -2,6 +2,7 @@ import type { Subscription } from '@/src/domain/subscription';
 import type {
   CreateSubscriptionInput,
   SubscriptionRepository,
+  UpdateSubscriptionDetailsInput,
   UpdateSubscriptionStatusInput,
   UpdateSubscriptionTrialInput,
 } from '@/src/ports/subscriptionRepository';
@@ -161,6 +162,22 @@ export const subscriptionRepositoryMock: SubscriptionRepository = {
       ...target,
       trialEndsOn: input.trialEndsOn ?? undefined,
       nextBillingDate: input.nextBillingDate,
+      updatedAt: now,
+    };
+  },
+
+  async updateDetails(id: string, input: UpdateSubscriptionDetailsInput): Promise<Subscription> {
+    const now = new Date();
+    const all = buildMockSubscriptions(now.getFullYear(), now.getMonth() + 1);
+    const target = all.find((sub) => sub.id === id);
+    if (!target) {
+      throw new Error(`Subscription not found: ${id}`);
+    }
+    return {
+      ...target,
+      startDate: input.startDate,
+      nextBillingDate: input.nextBillingDate,
+      customPrice: input.customPrice ?? undefined,
       updatedAt: now,
     };
   },

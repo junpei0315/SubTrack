@@ -19,6 +19,7 @@ interface UseSubscriptionUsageResult {
   isLoading: boolean;
   recordToday: () => Promise<void>;
   undoToday: () => Promise<void>;
+  toggleUsageDate: (dateKey: string, nextUsed: boolean) => Promise<void>;
 }
 
 /**
@@ -95,5 +96,45 @@ export function useSubscriptionUsage({
     }
   }, [repository, subscriptionId, todayKey]);
 
-  return { usedDateKeys, isLoading, recordToday, undoToday };
+  const toggleUsageDate = useCallback(
+    async (dateKey: string, nextUsed: boolean) => {
+      if (dateKey > todayKey) {
+        return;
+      }
+
+      setUsedDateKeys((prev) => {
+        const next = new Set(prev);
+        if (nextUsed) {
+          next.add(dateKey);
+        } else {
+          next.delete(dateKey);
+        }
+        return next;
+      });
+
+      try {
+        if (nextUsed) {
+          await recordUsage(repository, { userId, subscriptionId, usedDate: dateKey });
+        } else {
+          await removeUsage(repository, { subscriptionId, usedDate: dateKey });
+        }
+      } catch (error) {
+        setUsedDateKeys((prev) => {
+          const next = new Set(prev);
+          if (nextUsed) {
+            next.delete(dateKey);
+          } else {
+            next.add(dateKey);
+          }
+          return next;
+        });
+        if (__DEV__) {
+          console.error('[useSubscriptionUsage] toggle failed', error);
+        }
+      }
+    },
+    [repository, subscriptionId, userId, todayKey]
+  );
+
+  return { usedDateKeys, isLoading, recordToday, undoToday, toggleUsageDate };
 }

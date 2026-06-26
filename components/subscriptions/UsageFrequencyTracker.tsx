@@ -25,6 +25,7 @@ interface UsageFrequencyTrackerProps {
   monthsToShow?: number;
   onRecordUsagePress?: () => void;
   onUndoUsagePress?: () => void;
+  onToggleDate?: (dateKey: string, nextUsed: boolean) => void;
   title?: string;
   className?: string;
 }
@@ -55,6 +56,8 @@ interface HeatmapDayCellProps {
   isFuture: boolean;
   isUsed: boolean;
   isToday: boolean;
+  dateKey: string;
+  onToggleDate?: (dateKey: string, nextUsed: boolean) => void;
 }
 
 function HeatmapDayCell({
@@ -64,6 +67,8 @@ function HeatmapDayCell({
   isFuture,
   isUsed,
   isToday,
+  dateKey,
+  onToggleDate,
 }: HeatmapDayCellProps) {
   if (!inRange) {
     return (
@@ -83,18 +88,11 @@ function HeatmapDayCell({
       ? AppColors.accentBrand
       : undefined;
 
-  return (
-    <View
-      style={{
-        width: cellSize,
-        height: cellSize,
-        marginBottom: cellMarginBottom(dayIndex),
-        borderRadius: CELL_RADIUS,
-        backgroundColor,
-        overflow: 'hidden',
-      }}
-      className={isUsed || isFuture ? undefined : 'bg-surface'}
-    >
+  const canToggle = inRange && !isFuture && onToggleDate != null;
+
+  const cellBody = (
+    <>
+      {isUsed || isFuture ? null : <View className="absolute inset-0 bg-surface" />}
       {isToday ? (
         <View
           pointerEvents="none"
@@ -110,6 +108,34 @@ function HeatmapDayCell({
           }}
         />
       ) : null}
+    </>
+  );
+
+  const wrapperStyle = {
+    width: cellSize,
+    height: cellSize,
+    marginBottom: cellMarginBottom(dayIndex),
+    borderRadius: CELL_RADIUS,
+    backgroundColor,
+    overflow: 'hidden' as const,
+  };
+
+  if (canToggle) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={isUsed ? `${dateKey} の利用記録を取り消す` : `${dateKey} を利用済みにする`}
+        onPress={() => onToggleDate(dateKey, !isUsed)}
+        style={wrapperStyle}
+      >
+        {cellBody}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={wrapperStyle}>
+      {cellBody}
     </View>
   );
 }
@@ -121,6 +147,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   monthsToShow = DEFAULT_MONTHS_TO_SHOW,
   onRecordUsagePress,
   onUndoUsagePress,
+  onToggleDate,
   title = '利用状況トラッカー',
   className,
 }) => {
@@ -228,6 +255,9 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
   return (
     <View className={`w-full${className ? ` ${className}` : ''}`}>
       <Text className="mb-2 px-1 text-[13px] font-semibold text-subtle">{title}</Text>
+      {onToggleDate ? (
+        <Text className="mb-2 px-1 text-xs text-subtle">過去の日付をタップして利用記録を追加・取り消しできます</Text>
+      ) : null}
       <View className="gap-4 rounded-2xl bg-card px-4 pb-4 pt-4">
         <View className="flex-row items-center justify-between">
           <Pressable onPress={goPrev} hitSlop={8} accessibilityRole="button" accessibilityLabel="前の期間">
@@ -298,6 +328,7 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
                     style={{ marginRight: weekMarginRight(weekIndex, weekCount) }}
                   >
                     {week.map((cell, dayIndex) => {
+                      const dateKey = formatLocalDate(cell.date);
                       const isUsed = cell.isToday ? usedToday : cell.used;
                       return (
                         <HeatmapDayCell
@@ -308,6 +339,8 @@ export const UsageFrequencyTracker: React.FC<UsageFrequencyTrackerProps> = ({
                           isFuture={cell.isFuture}
                           isUsed={isUsed}
                           isToday={cell.isToday}
+                          dateKey={dateKey}
+                          onToggleDate={onToggleDate}
                         />
                       );
                     })}
