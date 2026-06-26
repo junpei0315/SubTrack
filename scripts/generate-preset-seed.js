@@ -99,6 +99,7 @@ const services = [
     ['DAZNベースボール（年額分割払い）', 2300, 'JPY', M],
     ['ABEMA de DAZN学割（月額更新）', 1600, 'JPY', M],
     ['ABEMA de DAZN学割（年額前払い）', 16000, 'JPY', Y],
+    ['DAZN W杯（月額更新）', 1980, 'JPY', M],
   ] },
   { name: 'ABEMA', cat: CAT.video, logoKey: 'abema', plans: [
     ['広告つきABEMAプレミアム', 680, 'JPY', M],
@@ -154,7 +155,7 @@ const services = [
   ] },
   { name: 'Gemini', cat: CAT.ai, logoKey: 'gemini', plans: [
     ['無料', 0, 'JPY', M],
-    ['Google AI Plus', 1200, 'JPY', M],
+    ['Google AI Plus', 725, 'JPY', M],
     ['Google AI Pro', 2900, 'JPY', M],
     ['Google AI Ultra', 14500, 'JPY', M],
   ] },

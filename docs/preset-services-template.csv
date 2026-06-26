@@ -25,6 +25,7 @@ dazn,DAZN,2,動画配信,DAZNベースボール（年額前払い）,27600,JPY,y
 dazn,DAZN,2,動画配信,DAZNベースボール（年額分割払い）,2300,JPY,monthly
 dazn,DAZN,2,動画配信,ABEMA de DAZN学割（月額更新）,1600,JPY,monthly
 dazn,DAZN,2,動画配信,ABEMA de DAZN学割（年額前払い）,16000,JPY,yearly
+dazn,DAZN,2,動画配信,DAZN W杯（月額更新）,1980,JPY,monthly
 abema,ABEMA,2,動画配信,広告つきABEMAプレミアム,680,JPY,monthly
 abema,ABEMA,2,動画配信,ABEMAプレミアム,1180,JPY,monthly
 abema,ABEMA,2,動画配信,広告つきABEMAプレミアム｜Disney+スタンダード,1640,JPY,monthly
@@ -56,7 +57,7 @@ claude,Claude,1,AI,無料,0,USD,monthly
 claude,Claude,1,AI,Pro,20,USD,monthly
 claude,Claude,1,AI,Max,100,USD,monthly
 Gemini,Gemini,1,AI,無料,0,JPY,monthly
-Gemini,Gemini,1,AI,Google AI Plus,1200,JPY,monthly
+Gemini,Gemini,1,AI,Google AI Plus,725,JPY,monthly
 Gemini,Gemini,1,AI,Google AI Pro,2900,JPY,monthly
 Gemini,Gemini,1,AI,Google AI Ultra,14500,JPY,monthly
 cursor,Cursor,1,AI,Hobby（月払い）,0,USD,monthly
