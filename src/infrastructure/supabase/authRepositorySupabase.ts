@@ -2,10 +2,12 @@ import type { Session } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 
-import { AuthCancelledError, type AuthSession } from '@/src/domain/auth';
+import { AuthCancelledError, AuthValidationError, type AuthSession } from '@/src/domain/auth';
 import type { AuthRepository, SignUpResult } from '@/src/ports/authRepository';
 
+import { getAuthRedirectUrl } from './authRedirectUrl';
 import { supabase } from './client';
+import { createSessionFromUrl } from './createSessionFromUrl';
 
 // ネイティブで開いた認証ブラウザを、リダイレクト後に確実に閉じるための初期化。
 WebBrowser.maybeCompleteAuthSession();
@@ -23,18 +25,13 @@ function toAuthSession(session: Session | null): AuthSession | null {
 }
 
 // OAuth リダイレクト URL に含まれる認可コードからセッションを確立する（PKCE）。
-async function createSessionFromUrl(url: string): Promise<void> {
-  const parsed = Linking.parse(url);
-  const code = parsed.queryParams?.code;
+async function establishSessionFromRedirect(url: string): Promise<void> {
+  await createSessionFromUrl(url);
+}
 
-  if (typeof code !== 'string') {
-    throw new Error('認証コードを取得できませんでした');
-  }
-
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
-    throw error;
-  }
+function isRedirectUrlError(error: { message?: string; code?: string }): boolean {
+  const text = `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
+  return /redirect/.test(text);
 }
 
 export const authRepositorySupabase: AuthRepository = {
@@ -57,15 +54,36 @@ export const authRepositorySupabase: AuthRepository = {
   },
 
   async signUpWithEmail(email: string, password: string): Promise<SignUpResult> {
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
+    const trimmedEmail = email.trim();
+    const emailRedirectTo = getAuthRedirectUrl();
+
+    let { data, error } = await supabase.auth.signUp({
+      email: trimmedEmail,
       password,
+      options: { emailRedirectTo },
     });
+
+    if (error && isRedirectUrlError(error)) {
+      ({ data, error } = await supabase.auth.signUp({
+        email: trimmedEmail,
+        password,
+      }));
+    }
+
     if (error) {
       throw error;
     }
-    // メール確認が有効な場合は session が null で返る。
-    return { needsEmailConfirmation: data.session === null };
+
+    if (data.user && data.user.identities?.length === 0) {
+      throw new AuthValidationError('このメールアドレスは既に登録されています');
+    }
+
+    const hasSession = data.session !== null;
+
+    return {
+      needsEmailConfirmation: !hasSession,
+      hasSession,
+    };
   },
 
   async signInWithGoogle(): Promise<void> {
@@ -88,7 +106,7 @@ export const authRepositorySupabase: AuthRepository = {
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
 
     if (result.type === 'success') {
-      await createSessionFromUrl(result.url);
+      await establishSessionFromRedirect(result.url);
       return;
     }
     // ユーザーがブラウザを閉じた / 戻った場合はキャンセル扱い。

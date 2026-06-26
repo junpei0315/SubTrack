@@ -34,7 +34,21 @@ const blackNavigationTheme: Theme = {
   },
 };
 
-const AUTH_ROUTE_NAMES = new Set(['sign-in', 'sign-up']);
+const AUTH_ROUTE_NAMES = new Set(['sign-in', 'sign-up', 'registration-complete']);
+
+function isRegistrationCompleteRoute(segments: string[]): boolean {
+  if (segments[0] === '(auth)' && segments[1] === 'registration-complete') {
+    return true;
+  }
+  return segments[0] === 'registration-complete';
+}
+
+function getAuthRouteName(segments: string[]): string | undefined {
+  if (segments[0] === '(auth)') {
+    return segments[1];
+  }
+  return AUTH_ROUTE_NAMES.has(segments[0] ?? '') ? segments[0] : undefined;
+}
 
 /**
  * 現在のルートが認証画面かどうか。
@@ -46,6 +60,10 @@ function isAuthRoute(segments: string[]): boolean {
     return true;
   }
   return AUTH_ROUTE_NAMES.has(segments[0] ?? '');
+}
+
+function isAuthCallbackRoute(segments: string[]): boolean {
+  return segments[0] === 'auth' && segments[1] === 'callback';
 }
 
 // Web ではグループ名が URL に出ないため、`/welcome` は segments が ['welcome'] になる。
@@ -68,7 +86,7 @@ function useProtectedRoute(): void {
     const onOnboardingScreen = isOnboardingRoute(segments);
 
     if (!session) {
-      if (!onAuthScreen) {
+      if (!onAuthScreen && !isAuthCallbackRoute(segments)) {
         router.replace('/(auth)/sign-in');
       }
       return;
@@ -79,11 +97,19 @@ function useProtectedRoute(): void {
       return;
     }
 
+    if (isRegistrationCompleteRoute(segments)) {
+      return;
+    }
+
     if (needsOnboarding) {
       if (!onOnboardingScreen) {
         router.replace('/(onboarding)/welcome');
       }
     } else if (onAuthScreen || onOnboardingScreen) {
+      if (getAuthRouteName(segments) === 'sign-up') {
+        router.replace('/(auth)/registration-complete');
+        return;
+      }
       router.replace('/(tabs)/home');
     }
   }, [session, isLoading, isResolving, needsOnboarding, segments, router]);

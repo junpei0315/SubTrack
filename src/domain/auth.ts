@@ -43,6 +43,7 @@ const AUTH_ERROR_CODE_MESSAGES: Record<string, string> = {
   over_email_send_rate_limit: 'メール送信の上限に達しました。しばらく待ってからお試しください',
   over_request_rate_limit: 'リクエストが多すぎます。しばらく待ってからお試しください',
   signup_disabled: '新規登録は現在受け付けていません',
+  email_address_invalid: '正しいメールアドレスを入力してください',
   validation_failed: '入力内容に誤りがあります',
   same_password: '新しいパスワードは現在のパスワードと異なる必要があります',
   user_not_found: 'ユーザーが見つかりません',
@@ -72,6 +73,14 @@ const AUTH_ERROR_MESSAGE_PATTERNS: { pattern: RegExp; message: string }[] = [
   {
     pattern: /rate limit|too many requests/i,
     message: 'リクエストが多すぎます。しばらく待ってからお試しください',
+  },
+  {
+    pattern: /redirect|redirect_to/i,
+    message: '認証の設定に問題があります。しばらくしてからお試しください',
+  },
+  {
+    pattern: /database error|trigger/i,
+    message: '登録処理に失敗しました。しばらくしてからお試しください',
   },
   {
     pattern: /network|fetch failed/i,

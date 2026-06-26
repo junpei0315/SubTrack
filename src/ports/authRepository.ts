@@ -1,8 +1,11 @@
 import type { AuthSession } from '@/src/domain/auth';
 
-/** メールサインアップの結果。メール確認が必要かどうかを返す。 */
+/** メールサインアップの結果。 */
 export interface SignUpResult {
+  /** メール確認が必要でセッションが未発行のとき true（Supabase で Confirm email が有効な場合）。 */
   needsEmailConfirmation: boolean;
+  /** サインアップ直後にログインセッションが発行されたとき true。 */
+  hasSession: boolean;
 }
 
 /**
