@@ -2,17 +2,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useReloadOnSubscriptionChange } from '@/components/subscriptions/useReloadOnSubscriptionChange';
-import { getGenreSpendingBreakdown } from '@/src/application/getGenreSpendingBreakdown';
-import { getMonthlySpendingTrend } from '@/src/application/getMonthlySpendingTrend';
+import { getExchangeRates } from '@/src/application/getExchangeRates';
+import { getSubscriptions } from '@/src/application/getSubscriptions';
 import { getUnusedSubscriptionAlerts } from '@/src/application/getUnusedSubscriptionAlerts';
 import type { MonthlySpendingTrend } from '@/src/domain/monthlySpendingTrend';
+import { computeMonthlySpendingTrend } from '@/src/domain/monthlySpendingTrend';
 import type { GenreSpendingBreakdown } from '@/src/domain/spendingByGenre';
+import { computeGenreSpendingBreakdown } from '@/src/domain/spendingByGenre';
+import type { Subscription } from '@/src/domain/subscription';
 import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
 import { fxRateRepositorySupabase } from '@/src/infrastructure/supabase/fxRateRepositorySupabase';
 import { subscriptionRepositorySupabase } from '@/src/infrastructure/supabase/subscriptionRepositorySupabase';
 import { usageLogRepositorySupabase } from '@/src/infrastructure/supabase/usageLogRepositorySupabase';
 
 interface AnalyticsState {
+  subscriptions: Subscription[];
   genreBreakdown: GenreSpendingBreakdown | null;
   spendingTrend: MonthlySpendingTrend | null;
   unusedAlerts: UnusedSubscriptionAlert[];
@@ -22,6 +26,7 @@ interface AnalyticsState {
 }
 
 const INITIAL_STATE: AnalyticsState = {
+  subscriptions: [],
   genreBreakdown: null,
   spendingTrend: null,
   unusedAlerts: [],
@@ -49,9 +54,9 @@ export function useAnalytics() {
     setState((prev) => ({ ...prev, isLoading: true, errorMessage: null }));
 
     try {
-      const [genreBreakdown, spendingTrend, unusedResult] = await Promise.all([
-        getGenreSpendingBreakdown(subscriptionRepositorySupabase, fxRateRepositorySupabase),
-        getMonthlySpendingTrend(subscriptionRepositorySupabase, fxRateRepositorySupabase),
+      const [subscriptions, { rates }, unusedResult] = await Promise.all([
+        getSubscriptions(subscriptionRepositorySupabase),
+        getExchangeRates(fxRateRepositorySupabase),
         getUnusedSubscriptionAlerts(
           subscriptionRepositorySupabase,
           usageLogRepositorySupabase,
@@ -64,8 +69,9 @@ export function useAnalytics() {
       }
 
       setState({
-        genreBreakdown,
-        spendingTrend,
+        subscriptions,
+        genreBreakdown: computeGenreSpendingBreakdown(subscriptions, rates),
+        spendingTrend: computeMonthlySpendingTrend(subscriptions, rates),
         unusedAlerts: unusedResult.alerts,
         hasUsageLogs: unusedResult.hasUsageLogs,
         isLoading: false,
@@ -76,6 +82,7 @@ export function useAnalytics() {
         return;
       }
       setState({
+        subscriptions: [],
         genreBreakdown: null,
         spendingTrend: null,
         unusedAlerts: [],

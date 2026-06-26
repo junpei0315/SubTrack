@@ -11,18 +11,24 @@ import type { UnusedSubscriptionAlert } from '@/src/domain/unusedSubscriptions';
 
 interface UnusedAlertsSectionProps {
   alerts: UnusedSubscriptionAlert[];
+  title?: string;
+  badge?: string;
 }
 
-export const UnusedAlertsSection: React.FC<UnusedAlertsSectionProps> = ({ alerts }) => {
+export const UnusedAlertsSection: React.FC<UnusedAlertsSectionProps> = ({
+  alerts,
+  title = '見直し候補',
+  badge,
+}) => {
   if (alerts.length === 0) {
     return null;
   }
 
   return (
     <AnalyticsSection
-      title="見直し候補"
+      title={title}
       subtitle={`${alerts.length}件のサブスクがしばらく使われていません`}
-      badge={`${alerts.length}件`}
+      badge={badge ?? `${alerts.length}件`}
     >
       <View className="gap-2">
         {alerts.map((alert) => (
@@ -47,7 +53,7 @@ function UnusedAlertCard({ alert }: { alert: UnusedSubscriptionAlert }) {
 
   return (
     <Pressable
-      onPress={() => router.push(`/subscriptions/${subscription.id}`)}
+      onPress={() => router.push(`/(tabs)/subscriptions/${subscription.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`${subscription.service.name}を見直す`}
     >

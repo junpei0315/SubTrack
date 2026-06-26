@@ -1,11 +1,11 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 
+import { AnalyticsSummaryTab } from '@/components/analytics/AnalyticsSummaryTab';
+import { AnalyticsTabBar, type AnalyticsTab } from '@/components/analytics/AnalyticsTabBar';
 import { GenreBreakdownSection } from '@/components/analytics/GenreBreakdownSection';
-import { SavingsPotentialSection } from '@/components/analytics/SavingsPotentialSection';
 import { SpendingTrendSection } from '@/components/analytics/SpendingTrendSection';
-import { UnusedAlertsSection } from '@/components/analytics/UnusedAlertsSection';
 import { useAnalytics } from '@/components/analytics/useAnalytics';
 import { useExchangeRates } from '@/components/currency/ExchangeRateProvider';
 import { ThemedView } from '@/components/themed-view';
@@ -14,7 +14,8 @@ import { AppColors } from '@/constants/colors';
 // 関連機能: F-06（ジャンル別内訳） / F-07（支出推移） / F-11（未使用アラート）
 export default function AnalyticsRoute() {
   const hasFocusedRef = useRef(false);
-  const { genreBreakdown, spendingTrend, unusedAlerts, hasUsageLogs, isLoading, errorMessage, reload } =
+  const [activeTab, setActiveTab] = useState<AnalyticsTab>('summary');
+  const { genreBreakdown, spendingTrend, subscriptions, unusedAlerts, hasUsageLogs, isLoading, errorMessage, reload } =
     useAnalytics();
   const { staleMessage } = useExchangeRates();
 
@@ -36,7 +37,9 @@ export default function AnalyticsRoute() {
         <RefreshControl refreshing={isLoading} onRefresh={reload} tintColor={AppColors.accent} />
       }
     >
-      <ThemedView className="flex-1 gap-8 px-4 pb-4 pt-2">
+      <ThemedView className="flex-1 gap-5 px-4 pb-4 pt-2">
+        <AnalyticsTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+
         {isLoading && genreBreakdown == null ? (
           <View className="items-center py-16">
             <ActivityIndicator color={AppColors.accent} />
@@ -50,13 +53,20 @@ export default function AnalyticsRoute() {
                 <Text className="text-xs text-subtle">{staleMessage}</Text>
               </View>
             ) : null}
-            <SavingsPotentialSection
-              unusedAlerts={unusedAlerts}
-              hasUsageLogs={hasUsageLogs}
-            />
-            <UnusedAlertsSection alerts={unusedAlerts} />
-            <GenreBreakdownSection breakdown={genreBreakdown} />
-            <SpendingTrendSection trend={spendingTrend} />
+
+            {activeTab === 'summary' ? (
+              <AnalyticsSummaryTab
+                genreBreakdown={genreBreakdown}
+                unusedAlerts={unusedAlerts}
+                hasUsageLogs={hasUsageLogs}
+              />
+            ) : null}
+
+            {activeTab === 'genre' ? <GenreBreakdownSection breakdown={genreBreakdown} /> : null}
+
+            {activeTab === 'trend' ? (
+              <SpendingTrendSection trend={spendingTrend} subscriptions={subscriptions} />
+            ) : null}
           </>
         )}
       </ThemedView>

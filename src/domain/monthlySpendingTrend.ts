@@ -70,18 +70,29 @@ export function computeMonthlySpendingTrend(
     months.push(shiftYearMonth(anchor, offset));
   }
 
-  const activeOrCancelled = subscriptions.filter(
-    (sub) => sub.status === 'active' || sub.status === 'cancelled'
-  );
   const currency = DISPLAY_CURRENCY;
+  const todayOnly = toLocalDateOnly(today);
 
   const points: MonthlySpendingPoint[] = months.map((yearMonth) => {
-    const amount = activeOrCancelled.reduce((sum, sub) => {
+    const { end: monthEnd } = monthBounds(yearMonth.year, yearMonth.month);
+    // 今月・未来は契約中のみ（F-07: 解約済みは支払い予定に含めない）。過去月は解約前の請求を再構成。
+    const isPastMonth = monthEnd < todayOnly;
+    const targets = subscriptions.filter((sub) => {
+      if (sub.status === 'active') {
+        return true;
+      }
+      if (sub.status === 'cancelled') {
+        return isPastMonth;
+      }
+      return false;
+    });
+
+    const amount = targets.reduce((sum, sub) => {
       const monthTotal = computeBillingTotalForMonth(sub, yearMonth.year, yearMonth.month);
       return sum + convertToJpy(monthTotal, sub.plan.currency, rates);
     }, 0);
     const monthStart = monthBounds(yearMonth.year, yearMonth.month).start;
-    const isProjected = monthStart > toLocalDateOnly(today);
+    const isProjected = monthStart > todayOnly;
 
     return {
       yearMonth,
