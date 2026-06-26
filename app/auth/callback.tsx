@@ -3,23 +3,44 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
+import { useAuth } from '@/components/auth/AuthProvider';
 import { AppColors } from '@/constants/colors';
 import { createSessionFromUrl } from '@/src/infrastructure/supabase/createSessionFromUrl';
 
 // メール確認・OAuth のリダイレクト先（subscapp://auth/callback 等）
 export default function AuthCallbackRoute() {
   const router = useRouter();
+  const linkingUrl = Linking.useURL();
+  const { session } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session) {
+      router.replace('/(tabs)/home');
+    }
+  }, [session, router]);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function handleCallback() {
-      try {
-        const url = await Linking.getInitialURL();
-        if (!url?.includes('auth/callback')) {
-          throw new Error('認証 URL を取得できませんでした');
+    async function handleCallback(url: string | null) {
+      if (!url?.includes('auth/callback')) {
+        if (isMounted) {
+          setErrorMessage('認証 URL を取得できませんでした');
         }
+        return;
+      }
+
+      const parsed = Linking.parse(url);
+      const providerError = parsed.queryParams?.error;
+      if (typeof providerError === 'string') {
+        if (isMounted) {
+          setErrorMessage('認証に失敗しました。もう一度お試しください');
+        }
+        return;
+      }
+
+      try {
         await createSessionFromUrl(url);
         if (isMounted) {
           router.replace('/(tabs)/home');
@@ -31,12 +52,12 @@ export default function AuthCallbackRoute() {
       }
     }
 
-    void handleCallback();
+    void handleCallback(linkingUrl);
 
     return () => {
       isMounted = false;
     };
-  }, [router]);
+  }, [linkingUrl, router]);
 
   return (
     <View className="flex-1 items-center justify-center bg-background px-6">
