@@ -8,6 +8,7 @@ export default function SettingsLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" options={{ title: 'Settings' }} />
+      <Stack.Screen name="line-link" options={{ title: 'Line Link' }} />
       <Stack.Screen name="account" options={{ title: 'Account' }} />
     </Stack>
   );

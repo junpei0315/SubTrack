@@ -23,8 +23,7 @@ export const LineLinkCard: React.FC = () => {
   } = useLineLink();
 
   return (
-    <View className="gap-2 self-stretch py-4">
-      <Text className="text-base font-bold text-foreground">LINE 連携</Text>
+    <View className="gap-2 self-stretch">
       <Text className="text-[13px] text-muted">
         LINE のトーク上で、アプリを開かずに「使った / 使ってない」を記録できます。
       </Text>
