@@ -167,7 +167,8 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: 12,
+    fontWeight: '700',
     color: SUBTITLE_COLOR,
     letterSpacing: 0.3,
     marginTop: -1,

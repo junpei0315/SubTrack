@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuthBrandHeader } from '@/components/auth/AuthBrandHeader';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -29,27 +30,30 @@ export default function SignUpRoute() {
       >
         <ScrollView
           className="flex-1"
-          contentContainerClassName="flex-grow justify-center px-5 py-6"
+          contentContainerClassName="flex-grow justify-center px-5 py-8"
           keyboardShouldPersistTaps="handled"
         >
-          <View className="gap-1.5 pb-6">
-            <Text className="text-2xl font-bold text-foreground">新規登録</Text>
-            <Text className="text-sm text-subtle">アカウントを作成して始めましょう</Text>
-          </View>
+          <View className="gap-8">
+            <AuthBrandHeader />
 
-          <AuthForm
-            submitLabel="登録する"
-            onSubmit={handleSignUp}
-            onGoogleSignIn={signInWithGoogle}
-            successMessage={successMessage}
-            footer={
-              <Link href="/(auth)/sign-in">
-                <Text className="text-base font-semibold text-accent">
-                  すでにアカウントをお持ちの方はこちら
-                </Text>
-              </Link>
-            }
-          />
+            <View className="gap-6">
+              <Text className="text-2xl font-bold text-foreground">新規登録</Text>
+
+              <AuthForm
+                submitLabel="登録する"
+                onSubmit={handleSignUp}
+                onGoogleSignIn={signInWithGoogle}
+                successMessage={successMessage}
+                footer={
+                  <Link href="/(auth)/sign-in">
+                    <Text className="text-base font-semibold text-accent">
+                      すでにアカウントをお持ちの方はこちら
+                    </Text>
+                  </Link>
+                }
+              />
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
