@@ -92,9 +92,9 @@ export function Footer({ state, descriptors, navigation }: BottomTabBarProps) {
             return;
           }
 
-          // ネストした Stack（new 等）が残らないよう、常に一覧へ戻す。
+          // ネストした Stack（new / 詳細）を残さず、常に一覧へ戻す。
           if (name === 'subscriptions') {
-            router.navigate('/subscriptions');
+            navigation.navigate('subscriptions', { screen: 'index' });
             return;
           }
 
