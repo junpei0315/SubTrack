@@ -82,6 +82,12 @@ export function useCalendarSubscriptions() {
     setIsExpanded((prev) => !prev);
   }, []);
 
+  const selectDate = useCallback((date: Date) => {
+    const normalized = startOfDay(date);
+    setSelectedDate(normalized);
+    setCurrentDate(new Date(normalized.getFullYear(), normalized.getMonth(), 1));
+  }, []);
+
   return {
     currentDate,
     selectedDate,
@@ -90,5 +96,6 @@ export function useCalendarSubscriptions() {
     goToPrev,
     goToNext,
     toggleExpanded,
+    selectDate,
   };
 }

@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { resolveServiceLogo } from '@/components/subscriptions/serviceLogos';
@@ -9,6 +9,7 @@ import { hasBillingOnDate } from '@/src/domain/billingOccurrences';
 import { formatLocalDate } from '@/src/domain/localDate';
 import type { Subscription } from '@/src/domain/subscription';
 
+import { CalendarDayModal } from './CalendarDayModal';
 import { useCalendarSubscriptions } from './useCalendarSubscriptions';
 
 interface CalendarDay {
@@ -30,7 +31,10 @@ export const Calendar: React.FC = () => {
     goToPrev,
     goToNext,
     toggleExpanded,
+    selectDate,
   } = useCalendarSubscriptions();
+  const [modalDate, setModalDate] = useState<Date | null>(null);
+  const [modalSubscriptions, setModalSubscriptions] = useState<Subscription[]>([]);
 
   const buildDay = (date: Date): CalendarDay => {
     const daySubscriptions = subscriptions.filter((sub) => hasBillingOnDate(sub, date));
@@ -92,6 +96,20 @@ export const Calendar: React.FC = () => {
       'ChatGPT Plus': 'chat-bubble-outline',
     };
     return iconMap[serviceName] || 'shopping-cart';
+  };
+
+  const handleDayPress = (day: CalendarDay) => {
+    if (day.subscriptions.length === 0) {
+      return;
+    }
+    selectDate(day.date);
+    setModalDate(day.date);
+    setModalSubscriptions(day.subscriptions);
+  };
+
+  const closeDayModal = () => {
+    setModalDate(null);
+    setModalSubscriptions([]);
   };
 
   return (
@@ -159,14 +177,25 @@ export const Calendar: React.FC = () => {
               <View key={weekIndex} className="flex-row">
                 {week.map((day, dayIndex) => {
                   const isToday = formatLocalDate(day.date) === todayString;
+                  const isSelected = formatLocalDate(day.date) === formatLocalDate(selectedDate);
+                  const hasBilling = day.subscriptions.length > 0;
                   const isSunday = dayIndex === 0;
                   const isSaturday = dayIndex === 6;
                   return (
                     <View key={dayIndex} className="h-16 flex-1 items-center px-0.5 py-0.5">
-                      <View
+                      <TouchableOpacity
                         className={`h-full w-full items-center rounded-lg pt-1.5 ${
                           isToday ? 'bg-accent' : ''
-                        }`}
+                        } ${isSelected && hasBilling && !isToday ? 'bg-white/[0.06]' : ''}`}
+                        activeOpacity={hasBilling ? 0.7 : 1}
+                        disabled={!hasBilling}
+                        onPress={() => handleDayPress(day)}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          hasBilling
+                            ? `${day.day}日の支払い ${day.subscriptions.length}件`
+                            : `${day.day}日`
+                        }
                       >
                         <Text
                           className={`text-base ${isToday ? 'font-bold' : 'font-medium'} ${
@@ -215,7 +244,7 @@ export const Calendar: React.FC = () => {
                             </Text>
                           )}
                         </View>
-                      </View>
+                      </TouchableOpacity>
                     </View>
                   );
                 })}
@@ -224,6 +253,12 @@ export const Calendar: React.FC = () => {
           </View>
         </View>
       </View>
+
+      <CalendarDayModal
+        date={modalDate}
+        subscriptions={modalSubscriptions}
+        onClose={closeDayModal}
+      />
     </View>
   );
 };
