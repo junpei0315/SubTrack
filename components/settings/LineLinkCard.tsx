@@ -1,3 +1,4 @@
+import { Copy } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
@@ -5,12 +6,27 @@ import { AppColors } from '@/constants/colors';
 
 import { useLineLink } from './useLineLink';
 
+const LINK_STEPS = [
+  '1. 公式アカウントを友だち追加',
+  '2. 連携コードを発行',
+  '3. トークにコードを送信',
+] as const;
+
 export const LineLinkCard: React.FC = () => {
-  const { isLinked, code, isLoading, errorMessage, generateCode, unlink } = useLineLink();
+  const {
+    isLinked,
+    code,
+    isLoading,
+    errorMessage,
+    didCopyCode,
+    generateCode,
+    copyCode,
+    openOfficialAccount,
+    unlink,
+  } = useLineLink();
 
   return (
-    <View className="gap-2 self-stretch py-4">
-      <Text className="text-base font-bold text-foreground">LINE 連携</Text>
+    <View className="gap-2 self-stretch">
       <Text className="text-[13px] text-muted">
         LINE のトーク上で、アプリを開かずに「使った / 使ってない」を記録できます。
       </Text>
@@ -28,13 +44,47 @@ export const LineLinkCard: React.FC = () => {
         </>
       ) : (
         <>
+          <View className="mt-2 gap-1">
+            <Text className="text-xs text-muted">連携手順</Text>
+            {LINK_STEPS.map((step) => (
+              <Text key={step} className="text-[13px] text-foreground">
+                {step}
+              </Text>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            className="mt-2 items-center rounded-full bg-line-brand py-3"
+            onPress={() => void openOfficialAccount()}
+            disabled={isLoading}
+            accessibilityRole="button"
+            accessibilityLabel="LINE公式アカウントを追加"
+          >
+            <Text className="text-sm font-semibold text-foreground">LINE公式アカウントを追加</Text>
+          </TouchableOpacity>
+
           {code ? (
             <View className="mt-2 items-center gap-1 rounded-xl bg-card-alt p-4">
-              <Text className="text-xs text-muted">このコードを公式アカウントに送ってください</Text>
-              <Text className="text-[32px] font-bold tracking-[4px] text-foreground">{code}</Text>
+              <Text className="text-xs text-muted">このコードを公式アカウントのトークに送ってください</Text>
+              <View className="w-full flex-row items-center">
+                <View className="w-10" />
+                <Text className="flex-1 text-center text-[32px] font-bold tracking-[4px] text-foreground">
+                  {code}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => void copyCode()}
+                  accessibilityRole="button"
+                  accessibilityLabel="連携コードをコピー"
+                  className="w-10 items-center rounded-full p-1 active:opacity-70"
+                >
+                  <Copy size={22} color={AppColors.text} />
+                </TouchableOpacity>
+              </View>
+              {didCopyCode ? <Text className="text-xs text-success">コピーしました</Text> : null}
               <Text className="text-[11px] text-muted-dark">有効期限: 10 分</Text>
             </View>
           ) : null}
+
           <TouchableOpacity
             className="mt-2 items-center rounded-full bg-accent-brand py-3"
             onPress={() => void generateCode()}

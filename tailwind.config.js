@@ -25,6 +25,7 @@ module.exports = {
         error: AppColors.error,
         'error-alt': AppColors.errorAlt,
         success: AppColors.success,
+        'line-brand': AppColors.lineBrand,
         'sign-out': AppColors.signOut,
         weekend: AppColors.weekend,
       },

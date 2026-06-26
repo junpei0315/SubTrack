@@ -17,6 +17,7 @@ export const AppColors: {
   readonly error: '#DC052D';
   readonly errorAlt: '#ff6b6b';
   readonly success: '#5fd07d';
+  readonly lineBrand: '#06C755';
   readonly signOut: '#c0392b';
   readonly weekend: '#DC052D';
   readonly whiteMuted40: 'rgba(255, 255, 255, 0.4)';

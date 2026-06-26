@@ -21,6 +21,7 @@ const AppColors = {
   error: '#DC052D',
   errorAlt: '#ff6b6b',
   success: '#5fd07d',
+  lineBrand: '#06C755',
   signOut: '#c0392b',
   weekend: '#DC052D',
   whiteMuted40: 'rgba(255, 255, 255, 0.4)',
