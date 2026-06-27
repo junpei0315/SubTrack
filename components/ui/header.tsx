@@ -23,16 +23,16 @@ const VERTICAL_PADDING = 10;
 export const Header: React.FC<HeaderProps> = ({
   onPressNotifications,
   onPressSettings,
-  onPressAvatar,
+  onPressLogo,
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
 
-  const { handlePressNotifications, handlePressSettings, handlePressAvatar } = useHeader({
+  const { handlePressNotifications, handlePressSettings, handlePressLogo } = useHeader({
     onPressNotifications,
     onPressSettings,
-    onPressAvatar,
+    onPressLogo,
   });
 
   return (
@@ -48,9 +48,9 @@ export const Header: React.FC<HeaderProps> = ({
       ]}
     >
       <Pressable
-        onPress={handlePressAvatar}
+        onPress={handlePressLogo}
         accessibilityRole="button"
-        accessibilityLabel="プロフィール"
+        accessibilityLabel="ホーム"
         hitSlop={8}
       >
         <SubTrackMark size={56} />
