@@ -9,14 +9,14 @@ export interface UseHeaderParams {
   onPressNotifications?: () => void;
   /** 設定アイコン押下時のハンドラ（未指定なら設定画面へ遷移）。 */
   onPressSettings?: () => void;
-  /** アバター押下時のハンドラ（未指定なら設定画面へ遷移）。 */
-  onPressAvatar?: () => void;
+  /** ブランドマーク押下時のハンドラ（未指定ならホーム画面へ遷移）。 */
+  onPressLogo?: () => void;
 }
 
 export interface UseHeaderResult {
   handlePressNotifications: () => void;
   handlePressSettings: () => void;
-  handlePressAvatar: () => void;
+  handlePressLogo: () => void;
 }
 
 /**
@@ -24,17 +24,17 @@ export interface UseHeaderResult {
  * 通知は props 未指定時に通知設定モーダルを開く。
  */
 export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
-  const { onPressNotifications, onPressSettings, onPressAvatar } = params;
+  const { onPressNotifications, onPressSettings, onPressLogo } = params;
   const router = useRouter();
   const { openSettingsModal } = useNotifications();
 
-  const handlePressAvatar = useCallback(() => {
-    if (onPressAvatar) {
-      onPressAvatar();
+  const handlePressLogo = useCallback(() => {
+    if (onPressLogo) {
+      onPressLogo();
       return;
     }
-    router.push('/(tabs)/settings');
-  }, [onPressAvatar, router]);
+    router.replace('/(tabs)/home');
+  }, [onPressLogo, router]);
 
   const defaultPressNotifications = useCallback(() => {
     openSettingsModal();
@@ -60,5 +60,5 @@ export function useHeader(params: UseHeaderParams = {}): UseHeaderResult {
     router.push('/(tabs)/settings');
   }, [onPressSettings, router]);
 
-  return { handlePressNotifications, handlePressSettings, handlePressAvatar };
+  return { handlePressNotifications, handlePressSettings, handlePressLogo };
 }
